@@ -6,6 +6,7 @@ import type { ReportStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/rbac";
 import { logAudit } from "@/lib/audit";
+import { REVIEW_TRANSITIONS } from "@/lib/report-transitions";
 
 const schema = z.object({
   reportId: z.string().cuid(),
@@ -38,18 +39,10 @@ export async function reviewReport(input: {
   if (!parsed.success) return { ok: false, error: "Yêu cầu không hợp lệ." };
   const { reportId, decision, note } = parsed.data;
 
-  // State machine (blueprint draft→review→approved→published). Each decision is
-  // only valid from specific current states — illegal jumps are rejected
-  // (SEC-09 / STATE-N1: previously any status→any status was allowed).
-  const TRANSITIONS: Record<
-    typeof decision,
-    { from: ReportStatus[]; to: ReportStatus }
-  > = {
-    approve: { from: ["REVIEW"], to: "APPROVED" },
-    reject: { from: ["REVIEW", "APPROVED"], to: "REJECTED" },
-    publish: { from: ["APPROVED"], to: "PUBLISHED" },
-  };
-  const rule = TRANSITIONS[decision];
+  // State machine (SEC-09 / STATE-N1): each decision is only valid from
+  // specific current states — illegal jumps are rejected. The map lives in
+  // @/lib/report-transitions (pure + unit-tested; single source of truth).
+  const rule = REVIEW_TRANSITIONS[decision];
   const status = rule.to;
 
   const existing = await prisma.report.findUnique({
