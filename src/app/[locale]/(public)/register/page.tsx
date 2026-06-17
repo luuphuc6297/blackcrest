@@ -4,9 +4,25 @@ import { Icon } from "@/components/icon";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { RegisterForm } from "./register-form";
 
-export const metadata: Metadata = {
-  title: "Yêu cầu truy cập",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  return {
+    title:
+      locale === "en"
+        ? "Request access"
+        : locale === "zh"
+          ? "申请访问"
+          : "Yêu cầu truy cập",
+    alternates: {
+      canonical: `/${locale}/register`,
+      languages: { vi: "/vi/register", en: "/en/register", zh: "/zh/register" },
+    },
+  };
+}
 
 /**
  * Register ("request access") screen — same two-column composition as login. The

@@ -9,12 +9,35 @@ import { LanguageSwitcher } from "@/components/language-switcher";
 import { Reveal } from "@/components/reveal";
 import { MobileMenu } from "./mobile-menu";
 
-export const metadata: Metadata = {
-  title: "Tài liệu đầu tư, được kiểm soát đến từng trang",
-  description:
-    "Blackcrest phát hành, phê duyệt và phân phối báo cáo đầu tư bảo mật tới nhà đầu tư — trong một quy trình duy nhất, chính xác và nhanh.",
-  robots: { index: true, follow: true },
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const title =
+    locale === "en"
+      ? "Investment documents, controlled to every page"
+      : locale === "zh"
+        ? "投资文件，逐页严格管控"
+        : "Tài liệu đầu tư, được kiểm soát đến từng trang";
+  const description =
+    locale === "en"
+      ? "Blackcrest issues, approves and distributes confidential investment reports to investors — in one precise, fast workflow."
+      : locale === "zh"
+        ? "Blackcrest 在单一流程中发布、审批并向投资者分发机密投资报告——精准高效。"
+        : "Blackcrest phát hành, phê duyệt và phân phối báo cáo đầu tư bảo mật tới nhà đầu tư — trong một quy trình duy nhất, chính xác và nhanh.";
+  // Marketing landing — the one public page we DO want indexed.
+  return {
+    title,
+    description,
+    robots: { index: true, follow: true },
+    alternates: {
+      canonical: `/${locale}`,
+      languages: { vi: "/vi", en: "/en", zh: "/zh", "x-default": "/vi" },
+    },
+  };
+}
 
 type NavItem = { label: string; href: string };
 

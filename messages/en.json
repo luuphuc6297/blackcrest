@@ -97,7 +97,13 @@
     "confirmPasswordPlaceholder": "Re-enter your password",
     "emailPlaceholder": "name@fund.com",
     "namePlaceholder": "Jane Doe",
-    "organizationPlaceholder": "Blackcrest Balanced Fund"
+    "organizationPlaceholder": "Blackcrest Balanced Fund",
+    "nameMinLength": "Please enter your full name.",
+    "emailInvalid": "Email is invalid.",
+    "passwordMinLength": "Password must be at least 8 characters.",
+    "confirmPasswordMismatch": "Passwords do not match.",
+    "emailDuplicate": "Email is already registered.",
+    "registrationPending": "Your request has been recorded and is awaiting approval."
   },
   "Common": {
     "loading": "Loading…",

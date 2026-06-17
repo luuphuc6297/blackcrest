@@ -97,7 +97,13 @@
     "confirmPasswordPlaceholder": "请再次输入密码",
     "emailPlaceholder": "name@fund.com",
     "namePlaceholder": "张三",
-    "organizationPlaceholder": "Blackcrest 平衡基金"
+    "organizationPlaceholder": "Blackcrest 平衡基金",
+    "nameMinLength": "请输入您的全名。",
+    "emailInvalid": "邮箱格式不正确。",
+    "passwordMinLength": "密码至少 8 个字符。",
+    "confirmPasswordMismatch": "两次输入的密码不匹配。",
+    "emailDuplicate": "该邮箱已被注册。",
+    "registrationPending": "您的申请已记录，正在等待审批。"
   },
   "Common": {
     "loading": "加载中…",

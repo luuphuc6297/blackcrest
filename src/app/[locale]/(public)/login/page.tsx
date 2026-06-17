@@ -5,9 +5,20 @@ import { Logo } from "@/components/logo";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { LoginForm } from "./login-form";
 
-export const metadata: Metadata = {
-  title: "Đăng nhập",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  return {
+    title: locale === "en" ? "Sign in" : locale === "zh" ? "登录" : "Đăng nhập",
+    alternates: {
+      canonical: `/${locale}/login`,
+      languages: { vi: "/vi/login", en: "/en/login", zh: "/zh/login" },
+    },
+  };
+}
 
 /**
  * Login screen — two columns: the credentials form (left) beside the dark

@@ -19,27 +19,34 @@ export type AuthFormState = {
   fieldErrors?: Record<string, string>;
 };
 
-const registerSchema = z
-  .object({
-    name: z.string().min(2, "Vui lòng nhập họ tên."),
-    email: z.string().email("Email không hợp lệ."),
-    organization: z.string().optional(),
-    password: z.string().min(8, "Mật khẩu tối thiểu 8 ký tự."),
-    confirmPassword: z.string(),
-  })
-  .refine((d) => d.password === d.confirmPassword, {
-    path: ["confirmPassword"],
-    message: "Mật khẩu xác nhận không khớp.",
-  });
-
 /**
  * Register → status PENDING, NO auto-login (blueprint §F3). An approver promotes
- * the account before the user can sign in.
+ * the account before the user can sign in. Validation messages are localized
+ * (mirrors loginAction) — the register form submits a hidden `locale`.
  */
 export async function registerAction(
   _prev: AuthFormState,
   formData: FormData,
 ): Promise<AuthFormState> {
+  const rawLocale = String(formData.get("locale") ?? "");
+  const locale = (routing.locales as readonly string[]).includes(rawLocale)
+    ? rawLocale
+    : routing.defaultLocale;
+  const t = await getTranslations({ locale, namespace: "Auth" });
+
+  const registerSchema = z
+    .object({
+      name: z.string().min(2, t("nameMinLength")),
+      email: z.string().email(t("emailInvalid")),
+      organization: z.string().optional(),
+      password: z.string().min(8, t("passwordMinLength")),
+      confirmPassword: z.string(),
+    })
+    .refine((d) => d.password === d.confirmPassword, {
+      path: ["confirmPassword"],
+      message: t("confirmPasswordMismatch"),
+    });
+
   const parsed = registerSchema.safeParse({
     name: formData.get("name"),
     email: formData.get("email"),
@@ -67,7 +74,7 @@ export async function registerAction(
     // Avoid leaking which emails exist beyond a generic field hint.
     return {
       status: "error",
-      fieldErrors: { email: "Email này đã được đăng ký." },
+      fieldErrors: { email: t("emailDuplicate") },
     };
   }
 
@@ -85,7 +92,7 @@ export async function registerAction(
 
   return {
     status: "success",
-    message: "Yêu cầu của bạn đã được ghi nhận và đang chờ phê duyệt.",
+    message: t("registrationPending"),
   };
 }
 

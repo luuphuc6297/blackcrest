@@ -97,7 +97,13 @@
     "confirmPasswordPlaceholder": "Nhập lại mật khẩu",
     "emailPlaceholder": "ten@quy.vn",
     "namePlaceholder": "Nguyễn Minh Anh",
-    "organizationPlaceholder": "Quỹ Cân bằng Blackcrest"
+    "organizationPlaceholder": "Quỹ Cân bằng Blackcrest",
+    "nameMinLength": "Vui lòng nhập họ tên.",
+    "emailInvalid": "Email không hợp lệ.",
+    "passwordMinLength": "Mật khẩu tối thiểu 8 ký tự.",
+    "confirmPasswordMismatch": "Mật khẩu xác nhận không khớp.",
+    "emailDuplicate": "Email này đã được đăng ký.",
+    "registrationPending": "Yêu cầu của bạn đã được ghi nhận và đang chờ phê duyệt."
   },
   "Common": {
     "loading": "Đang tải…",

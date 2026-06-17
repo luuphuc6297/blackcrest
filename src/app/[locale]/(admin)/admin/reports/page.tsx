@@ -77,7 +77,7 @@ export default async function AdminReportsPage({
             <StatCard
               key={s.label}
               label={s.label}
-              value={formatNumber(s.value, 0)}
+              value={formatNumber(s.value, locale, 0)}
               dot={s.tone}
             />
           ))}
@@ -93,7 +93,7 @@ export default async function AdminReportsPage({
               data-numeric
               className="font-mono text-[12px] tabular-nums text-ink-3"
             >
-              {formatNumber(reports.length, 0)}
+              {formatNumber(reports.length, locale, 0)}
             </span>
           </div>
 
@@ -155,7 +155,7 @@ export default async function AdminReportsPage({
                 cellClassName:
                   "font-mono text-[13px] tabular-nums text-ink-2",
                 cell: (r) =>
-                  r.pageCount != null ? formatNumber(r.pageCount, 0) : "—",
+                  r.pageCount != null ? formatNumber(r.pageCount, locale, 0) : "—",
               },
               {
                 header: tCommon("updatedAt"),

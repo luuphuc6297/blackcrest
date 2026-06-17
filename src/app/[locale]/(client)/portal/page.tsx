@@ -51,25 +51,25 @@ export default async function PortalPage({
   }[] = [
     {
       label: t("kpiNavLabel"),
-      value: formatVNDCompact(1_280_000_000),
-      sub: formatPercent(2.4) + " " + t("kpiNavSub"),
+      value: formatVNDCompact(1_280_000_000, locale),
+      sub: formatPercent(2.4, locale) + " " + t("kpiNavSub"),
       tone: "success",
     },
     {
       label: t("kpiNavPerUnitLabel"),
-      value: formatNumber(12847, 0),
-      sub: formatPercent(8.42) + " " + t("kpiNavPerUnitSub"),
+      value: formatNumber(12847, locale, 0),
+      sub: formatPercent(8.42, locale) + " " + t("kpiNavPerUnitSub"),
       tone: "success",
     },
     {
       label: t("kpiNetFlowLabel"),
-      value: formatVNDCompact(186_000_000),
-      sub: formatPercent(-1.1) + " " + t("kpiNetFlowSub"),
+      value: formatVNDCompact(186_000_000, locale),
+      sub: formatPercent(-1.1, locale) + " " + t("kpiNetFlowSub"),
       tone: "warning",
     },
     {
       label: t("kpiUncalledLabel"),
-      value: formatVNDCompact(320_000_000),
+      value: formatVNDCompact(320_000_000, locale),
       sub: t("kpiUncalledSub", { count: 3 }),
       tone: "neutral",
     },
