@@ -1,7 +1,14 @@
 # Blackcrest — production stack on one VN VPS (blueprint §5).
 # nginx (TLS, rate-limit) → web (Next standalone) → postgres (127.0.0.1 only).
+# Release order is fail-closed: db healthy → migrate exits 0 → web starts.
 # Blue/green: run web_blue + web_green and flip the nginx upstream after
 # /api/health returns 200. A single `web` is shown here for clarity.
+#
+# First deploy (once): provision TLS + dirs before `up`:
+#   mkdir -p nginx/certbot/conf nginx/certbot/www
+#   docker compose -f docker-compose.prod.yml run --rm --entrypoint "\
+#     certbot certonly --webroot -w /var/www/certbot -d <domain> \
+#     --cert-name blackcrest --agree-tos -m <email> --no-eff-email" certbot
 
 services:
   db:
@@ -23,14 +30,35 @@ services:
       timeout: 5s
       retries: 10
 
-  web:
-    build: .
-    restart: unless-stopped
+  # One-shot migration runner (blueprint §5). MUST exit 0 before web starts —
+  # no `|| true`, no restart. A failed migration blocks the release on purpose.
+  migrate:
+    build:
+      context: .
+      target: migrator
+    restart: "no"
     depends_on:
       db:
         condition: service_healthy
     environment:
       DATABASE_URL: postgresql://blackcrest:${POSTGRES_PASSWORD}@db:5432/blackcrest?schema=public
+      DIRECT_URL: postgresql://blackcrest:${POSTGRES_PASSWORD}@db:5432/blackcrest?schema=public
+      TZ: Asia/Ho_Chi_Minh
+
+  web:
+    build:
+      context: .
+      target: runner
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      # Fail-closed: web only starts once migrations applied cleanly.
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      DATABASE_URL: postgresql://blackcrest:${POSTGRES_PASSWORD}@db:5432/blackcrest?schema=public
+      DIRECT_URL: postgresql://blackcrest:${POSTGRES_PASSWORD}@db:5432/blackcrest?schema=public
       AUTH_SECRET: ${AUTH_SECRET:?}
       AUTH_TRUST_HOST: "true"
       DOWNLOAD_TOKEN_SECRET: ${DOWNLOAD_TOKEN_SECRET:?}
@@ -39,10 +67,28 @@ services:
       TZ: Asia/Ho_Chi_Minh
     volumes:
       - storage:/data/storage
-    # Run migrations then start (blueprint: migrate deploy on release).
-    command: sh -c "node node_modules/prisma/build/index.js migrate deploy || true; node server.js"
     expose:
       - "3000"
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "require('http').get('http://127.0.0.1:3000/api/health',r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      start_period: 15s
+      retries: 3
+
+  # ACME renewal daemon (webroot mode — shares nginx's /var/www/certbot).
+  certbot:
+    image: certbot/certbot:latest
+    restart: unless-stopped
+    volumes:
+      - ./nginx/certbot/conf:/etc/letsencrypt
+      - ./nginx/certbot/www:/var/www/certbot
+    # Check twice daily; certbot only renews when <30 days remain.
+    entrypoint: /bin/sh -c "trap exit TERM; while :; do certbot renew --webroot -w /var/www/certbot --quiet; sleep 12h & wait $${!}; done"
 
   nginx:
     image: nginx:1.27-alpine
@@ -54,8 +100,15 @@ services:
       - "443:443"
     volumes:
       - ./nginx/blackcrest.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/proxy_params_blackcrest.conf:/etc/nginx/proxy_params_blackcrest.conf:ro
       - ./nginx/certbot/www:/var/www/certbot:ro
       - ./nginx/certbot/conf:/etc/letsencrypt:ro
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1/api/health"]
+      interval: 30s
+      timeout: 5s
+      start_period: 5s
+      retries: 3
 
 volumes:
   pgdata:
