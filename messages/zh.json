@@ -243,7 +243,10 @@
     "rejectedToastMessage": "已退还给编辑。",
     "reviewError": "无法更新报告状态。",
     "downloadLinkError": "无法生成下载链接。",
-    "downloadErrorTitle": "下载失败"
+    "downloadErrorTitle": "下载失败",
+    "loadingDocument": "正在加载文档…",
+    "renderError": "无法渲染该 PDF 文档。",
+    "emptyDocument": "该文档尚无 PDF 文件。"
   },
   "Admin": {
     "totalReports": "报告总数",

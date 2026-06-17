@@ -243,7 +243,10 @@
     "rejectedToastMessage": "Returned to the editor.",
     "reviewError": "Could not update the report status.",
     "downloadLinkError": "Could not generate the download link.",
-    "downloadErrorTitle": "Download failed"
+    "downloadErrorTitle": "Download failed",
+    "loadingDocument": "Loading document…",
+    "renderError": "Could not render the PDF document.",
+    "emptyDocument": "This document has no PDF file yet."
   },
   "Admin": {
     "totalReports": "Total reports",

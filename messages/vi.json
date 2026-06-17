@@ -243,7 +243,10 @@
     "rejectedToastMessage": "Đã gửi lại cho biên tập viên.",
     "reviewError": "Không thể cập nhật trạng thái báo cáo.",
     "downloadLinkError": "Không thể tạo liên kết tải xuống.",
-    "downloadErrorTitle": "Không thể tải xuống"
+    "downloadErrorTitle": "Không thể tải xuống",
+    "loadingDocument": "Đang tải tài liệu…",
+    "renderError": "Không thể hiển thị tài liệu PDF.",
+    "emptyDocument": "Tài liệu chưa có tệp PDF."
   },
   "Admin": {
     "totalReports": "Tổng báo cáo",
