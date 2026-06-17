@@ -1,0 +1,10 @@
+# pnpm 11 build-script approvals (native postinstalls we trust).
+allowBuilds:
+  '@node-rs/argon2': true
+  '@parcel/watcher': true
+  '@prisma/client': true
+  '@prisma/engines': true
+  '@swc/core': true
+  esbuild: true
+  prisma: true
+  sharp: true

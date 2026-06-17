@@ -1,0 +1,23 @@
+<!-- @dsCard group="Type" viewport="700x260" name="Thang tiêu đề" subtitle="Line-height chặt hơn + tracking âm hơn khi lớn dần" -->
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; padding: 28px; background: var(--color-bg-primary); font-family: var(--font-regular); }
+  .stack > * + * { margin-top: 12px; }
+  .row { display: flex; align-items: baseline; gap: 16px; }
+  .lab { font-family: var(--font-monospace); font-size: 11px; color: var(--color-text-tertiary); width: 60px; flex: none; }
+  .s { color: var(--color-text-primary); }
+</style>
+</head>
+<body>
+  <div class="stack">
+    <div class="row"><span class="lab">title-1</span><span class="s" style="font-size:2.25rem;line-height:1.1;letter-spacing:-0.022em;font-weight:590">Báo cáo thường niên</span></div>
+    <div class="row"><span class="lab">title-2</span><span class="s" style="font-size:1.5rem;line-height:1.33;letter-spacing:-0.012em;font-weight:590">Hiệu suất danh mục</span></div>
+    <div class="row"><span class="lab">title-3</span><span class="s" style="font-size:1.25rem;line-height:1.33;letter-spacing:-0.012em;font-weight:590">Phân bổ tài sản</span></div>
+    <div class="row"><span class="lab">title-4</span><span class="s" style="font-size:1.0625rem;line-height:1.4;letter-spacing:-0.012em;font-weight:590">Ghi chú quản lý quỹ</span></div>
+  </div>
+</body>
+</html>

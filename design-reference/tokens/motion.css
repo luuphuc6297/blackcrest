@@ -1,0 +1,38 @@
+/* Blackcrest — Motion tokens. Fast (180ms), precise, expressive easing library. */
+
+:root {
+  /* Durations */
+  --duration-instant: 80ms; /* @kind other */
+  --duration: 180ms;        /* @kind other */
+  --duration-slow: 260ms;   /* @kind other */
+  --duration-slower: 400ms; /* @kind other */
+
+  /* Signature easings */
+  --ease-signature: cubic-bezier(0.16, 1, 0.3, 1);   /* @kind other */
+  --ease-standard: cubic-bezier(0.25, 0.46, 0.45, 0.94); /* @kind other */
+
+  /* Easing library */
+  --ease-in-quad: cubic-bezier(0.55, 0.085, 0.68, 0.53); /* @kind other */
+  --ease-out-quad: cubic-bezier(0.25, 0.46, 0.45, 0.94); /* @kind other */
+  --ease-in-out-quad: cubic-bezier(0.455, 0.03, 0.515, 0.955); /* @kind other */
+
+  --ease-in-cubic: cubic-bezier(0.55, 0.055, 0.675, 0.19); /* @kind other */
+  --ease-out-cubic: cubic-bezier(0.215, 0.61, 0.355, 1); /* @kind other */
+  --ease-in-out-cubic: cubic-bezier(0.645, 0.045, 0.355, 1); /* @kind other */
+
+  --ease-in-quart: cubic-bezier(0.895, 0.03, 0.685, 0.22); /* @kind other */
+  --ease-out-quart: cubic-bezier(0.165, 0.84, 0.44, 1); /* @kind other */
+  --ease-in-out-quart: cubic-bezier(0.77, 0, 0.175, 1); /* @kind other */
+
+  --ease-in-quint: cubic-bezier(0.755, 0.05, 0.855, 0.06); /* @kind other */
+  --ease-out-quint: cubic-bezier(0.23, 1, 0.32, 1); /* @kind other */
+  --ease-in-out-quint: cubic-bezier(0.86, 0, 0.07, 1); /* @kind other */
+
+  --ease-in-circ: cubic-bezier(0.6, 0.04, 0.98, 0.335); /* @kind other */
+  --ease-out-circ: cubic-bezier(0.075, 0.82, 0.165, 1); /* @kind other */
+  --ease-in-out-circ: cubic-bezier(0.785, 0.135, 0.15, 0.86); /* @kind other */
+
+  --ease-in-expo: cubic-bezier(0.95, 0.05, 0.795, 0.035); /* @kind other */
+  --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1); /* @kind other */
+  --ease-in-out-expo: cubic-bezier(1, 0, 0, 1); /* @kind other */
+}

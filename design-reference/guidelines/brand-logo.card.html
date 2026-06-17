@@ -1,0 +1,34 @@
+<!-- @dsCard group="Brand" viewport="700x240" name="Logo Blackcrest" subtitle="Wordmark, mark, và biến thể nền tối" -->
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; padding: 28px; background: var(--color-bg-primary); font-family: var(--font-regular); }
+  .grid { display: flex; gap: 20px; align-items: stretch; flex-wrap: wrap; }
+  .tile { flex: 1; min-width: 200px; border: 1px solid var(--color-border-primary); border-radius: var(--radius-card); padding: 24px; display: flex; align-items: center; justify-content: center; gap: 14px; }
+  .dark { background: var(--color-bg-inverse); border-color: #23252a; }
+  .mark-wrap { width: 52px; height: 52px; border-radius: 12px; background: var(--color-accent); display: flex; align-items: center; justify-content: center; }
+  .word { font-family: var(--font-serif-display); font-size: 30px; font-weight: 600; letter-spacing: -0.012em; color: var(--color-text-primary); }
+  .word-dark { color: #f7f8f8; }
+  svg { display: block; }
+</style>
+</head>
+<body>
+  <div class="grid">
+    <div class="tile">
+      <div class="mark-wrap">
+        <svg width="32" height="32" viewBox="0 0 64 64" fill="none"><path d="M16 39 L32 21 L48 39" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><path d="M20.5 46.5 L32 33.5 L43.5 46.5" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity="0.62"/></svg>
+      </div>
+      <span class="word">Blackcrest</span>
+    </div>
+    <div class="tile dark">
+      <div class="mark-wrap" style="background:rgba(255,255,255,0.1)">
+        <svg width="32" height="32" viewBox="0 0 64 64" fill="none"><path d="M16 39 L32 21 L48 39" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><path d="M20.5 46.5 L32 33.5 L43.5 46.5" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity="0.62"/></svg>
+      </div>
+      <span class="word word-dark">Blackcrest</span>
+    </div>
+  </div>
+</body>
+</html>

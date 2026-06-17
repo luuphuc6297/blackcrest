@@ -1,0 +1,40 @@
+/* Blackcrest — Base layer. Minimal, opinionated resets that activate the type system. */
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  font-family: var(--font-regular);
+  font-feature-settings: var(--font-settings);
+  font-size: var(--font-size-regular);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-primary);
+  background: var(--color-bg-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Tabular numerals everywhere figures matter */
+table, .tabular, time, [data-numeric] {
+  font-feature-settings: var(--font-settings-numeric);
+}
+
+a { color: var(--color-link); text-decoration: none; }
+a:hover { color: var(--color-link-hover); }
+
+/* Icons (Lucide) — thin, refined stroke. Overrides the default 2px weight. */
+svg.lucide, [data-lucide] { stroke-width: 1.5px; }
+
+:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 1px var(--color-accent);
+  border-radius: var(--radius-control);
+}
+
+h1, h2, h3, h4, h5, h6 { margin: 0; font-weight: var(--font-weight-semibold); }
+p { margin: 0; }

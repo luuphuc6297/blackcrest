@@ -1,0 +1,24 @@
+/* Blackcrest — Shape (radii) tokens.
+ * INSTITUTIONAL geometry: sharp, squared corners — the Blackstone register.
+ * Controls 2px, cards/panels 4px, badges 3px. Nothing soft or playful. */
+
+:root {
+  --radius-2: 2px;
+  --radius-3: 3px;
+  --radius-4: 4px;
+  --radius-6: 6px;
+  --radius-8: 8px;
+  --radius-12: 12px;
+  --radius-16: 16px;
+  --radius-24: 24px;
+  --radius-32: 32px;
+  --radius-circle: 50%;
+  --radius-full: 9999px;
+
+  /* Semantic aliases — sharp by design */
+  --radius-control: 2px;   /* buttons, inputs, selects */
+  --radius-badge: 3px;     /* badges, tags — squared labels */
+  --radius-card: 4px;      /* cards, panels */
+  --radius-card-lg: 4px;   /* large surfaces, modals */
+  --radius-pill: 9999px;   /* avatars / status dots only */
+}

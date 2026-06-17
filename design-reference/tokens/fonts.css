@@ -1,0 +1,14 @@
+/* Blackcrest — Webfonts.
+ *
+ * SUBSTITUTION NOTE (flagged to user):
+ *   • Inter           — exact match to Linear's UI face. Free, self-hostable.
+ *   • Source Serif 4  — SUBSTITUTE for the commercial "Tiempos Headline". A transitional
+ *                       serif with editorial warmth: trustworthy + clean + fresh.
+ *   • IBM Plex Mono   — SUBSTITUTE for the commercial "Berkeley Mono". Tabular, even color,
+ *                       good for figures and numerals in a finance context.
+ *
+ * Loaded from Google Fonts here for reliability. For production, self-host the .woff2 files
+ * and replace this @import with local @font-face rules (and license Tiempos/Berkeley if desired).
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300..700;1,14..32,300..700&family=Source+Serif+4:ital,opsz,wght@0,8..60,300..700;1,8..60,300..700&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&display=swap');

@@ -1,0 +1,62 @@
+# Blackcrest — production stack on one VN VPS (blueprint §5).
+# nginx (TLS, rate-limit) → web (Next standalone) → postgres (127.0.0.1 only).
+# Blue/green: run web_blue + web_green and flip the nginx upstream after
+# /api/health returns 200. A single `web` is shown here for clarity.
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: blackcrest
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set in .env}
+      POSTGRES_DB: blackcrest
+      TZ: Asia/Ho_Chi_Minh
+    # Bind to localhost ONLY — Docker bypasses UFW (blueprint §5 hardening).
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U blackcrest -d blackcrest"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  web:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://blackcrest:${POSTGRES_PASSWORD}@db:5432/blackcrest?schema=public
+      AUTH_SECRET: ${AUTH_SECRET:?}
+      AUTH_TRUST_HOST: "true"
+      DOWNLOAD_TOKEN_SECRET: ${DOWNLOAD_TOKEN_SECRET:?}
+      STORAGE_DRIVER: filesystem
+      STORAGE_ROOT: /data/storage
+      TZ: Asia/Ho_Chi_Minh
+    volumes:
+      - storage:/data/storage
+    # Run migrations then start (blueprint: migrate deploy on release).
+    command: sh -c "node node_modules/prisma/build/index.js migrate deploy || true; node server.js"
+    expose:
+      - "3000"
+
+  nginx:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    depends_on:
+      - web
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/blackcrest.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/certbot/www:/var/www/certbot:ro
+      - ./nginx/certbot/conf:/etc/letsencrypt:ro
+
+volumes:
+  pgdata:
+  storage:

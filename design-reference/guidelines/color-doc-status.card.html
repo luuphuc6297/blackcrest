@@ -1,0 +1,24 @@
+<!-- @dsCard group="Colors" viewport="700x150" name="Trạng thái tài liệu" subtitle="Vòng đời báo cáo PDF: nháp → duyệt → phát hành" -->
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; padding: 24px; background: var(--color-bg-primary); font-family: var(--font-regular); }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  .pill { display: inline-flex; align-items: center; gap: 7px; padding: 5px 12px; border-radius: var(--radius-pill); font-size: var(--font-size-small); font-weight: var(--font-weight-medium); border: 1px solid var(--color-border-primary); background: var(--color-bg-level-1); }
+  .dot { width: 8px; height: 8px; border-radius: 50%; }
+</style>
+</head>
+<body>
+  <div class="row">
+    <span class="pill"><span class="dot" style="background:var(--status-draft)"></span>Nháp</span>
+    <span class="pill"><span class="dot" style="background:var(--status-review)"></span>Chờ duyệt</span>
+    <span class="pill"><span class="dot" style="background:var(--status-approved)"></span>Đã duyệt</span>
+    <span class="pill"><span class="dot" style="background:var(--status-published)"></span>Đã phát hành</span>
+    <span class="pill"><span class="dot" style="background:var(--status-rejected)"></span>Từ chối</span>
+    <span class="pill"><span class="dot" style="background:var(--status-archived)"></span>Lưu trữ</span>
+  </div>
+</body>
+</html>

@@ -1,0 +1,29 @@
+<!-- @dsCard group="Spacing" viewport="700x180" name="Chuyển động" subtitle="180ms · cubic-bezier(.16,1,.3,1) — di chuột để xem" -->
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; padding: 26px; background: var(--color-bg-primary); font-family: var(--font-regular); }
+  .hint { font-size: var(--font-size-small); color: var(--color-text-tertiary); margin-bottom: 16px; }
+  .track { display: flex; flex-direction: column; gap: 12px; }
+  .row { display: flex; align-items: center; gap: 14px; }
+  .name { width: 130px; font-family: var(--font-monospace); font-size: 11px; color: var(--color-text-secondary); }
+  .rail { flex: 1; height: 10px; background: var(--color-bg-level-2); border-radius: var(--radius-full); position: relative; }
+  .dot { position: absolute; top: -3px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: var(--color-accent); }
+  body:hover .dot { left: calc(100% - 18px); }
+  .r1 .dot { transition: left 180ms var(--ease-signature); }
+  .r2 .dot { transition: left 400ms var(--ease-in-out-expo); }
+  .r3 .dot { transition: left 260ms var(--ease-out-quart); }
+</style>
+</head>
+<body>
+  <div class="hint">Di chuột vào thẻ để chạy các đường cong easing</div>
+  <div class="track">
+    <div class="row r1"><span class="name">signature 180ms</span><span class="rail"><span class="dot"></span></span></div>
+    <div class="row r2"><span class="name">in-out-expo 400ms</span><span class="rail"><span class="dot"></span></span></div>
+    <div class="row r3"><span class="name">out-quart 260ms</span><span class="rail"><span class="dot"></span></span></div>
+  </div>
+</body>
+</html>

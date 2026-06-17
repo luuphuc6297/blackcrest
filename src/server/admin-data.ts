@@ -1,0 +1,78 @@
+import "server-only";
+import type { UserStatus } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
+import { requireRole } from "@/lib/rbac";
+import { categoryName } from "@/server/reports";
+
+/** Admin Accounts list (staff only). */
+export async function listAccounts(filter?: { status?: UserStatus }) {
+  await requireRole("SUPER_ADMIN", "APPROVER");
+  const users = await prisma.user.findMany({
+    where: filter?.status ? { status: filter.status } : undefined,
+    orderBy: [{ status: "asc" }, { createdAt: "desc" }],
+    include: {
+      memberships: { include: { group: { select: { name: true } } } },
+    },
+  });
+  return users.map((u) => ({
+    id: u.id,
+    name: u.name,
+    email: u.email,
+    organization: u.organization,
+    role: u.role,
+    status: u.status,
+    createdAt: u.createdAt,
+    groups: u.memberships.map((m) => m.group.name),
+  }));
+}
+
+/** Groups with their current entitlements + member count (staff only). */
+export async function listGroupsWithEntitlements(locale: string) {
+  await requireRole("SUPER_ADMIN", "APPROVER");
+  const groups = await prisma.group.findMany({
+    orderBy: { name: "asc" },
+    include: {
+      _count: { select: { members: true } },
+      entitlements: {
+        include: {
+          category: true,
+          report: { include: { translations: true } },
+        },
+      },
+    },
+  });
+  return groups.map((g) => ({
+    id: g.id,
+    name: g.name,
+    slug: g.slug,
+    memberCount: g._count.members,
+    entitlements: g.entitlements.map((e) => ({
+      id: e.id,
+      kind: e.categoryId ? ("category" as const) : ("report" as const),
+      label: e.category
+        ? categoryName(e.category, locale)
+        : (e.report?.translations.find((t) => t.locale === locale)?.title ??
+          e.report?.translations.find((t) => t.locale === "vi")?.title ??
+          "—"),
+    })),
+  }));
+}
+
+/** Recent audit events (staff only) — blueprint §6.5. */
+export async function listAuditLog(take = 50) {
+  await requireRole("SUPER_ADMIN", "APPROVER");
+  const events = await prisma.auditLog.findMany({
+    orderBy: { createdAt: "desc" },
+    take,
+    include: { actor: { select: { name: true, email: true } } },
+  });
+  return events.map((e) => ({
+    id: e.id,
+    action: e.action,
+    targetType: e.targetType,
+    targetId: e.targetId,
+    actor: e.actor?.name ?? "—",
+    metadata: e.metadata,
+    createdAt: e.createdAt,
+  }));
+}

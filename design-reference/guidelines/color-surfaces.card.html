@@ -1,0 +1,26 @@
+<!-- @dsCard group="Colors" viewport="700x210" name="Surfaces" subtitle="Độ sâu bằng các bước nền, không phải bóng đổ" -->
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; padding: 24px; background: var(--color-bg-primary); font-family: var(--font-regular); }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .sw { width: 124px; }
+  .chip { height: 56px; border-radius: var(--radius-8); border: 1px solid var(--color-border-primary); }
+  .name { margin-top: 7px; font-size: var(--font-size-mini); font-weight: var(--font-weight-medium); color: var(--color-text-primary); }
+  .val { font-family: var(--font-monospace); font-size: 10px; color: var(--color-text-tertiary); }
+</style>
+</head>
+<body>
+  <div class="row">
+    <div class="sw"><div class="chip" style="background:var(--color-bg-primary)"></div><div class="name">bg-primary</div><div class="val">#ffffff</div></div>
+    <div class="sw"><div class="chip" style="background:var(--color-bg-level-1)"></div><div class="name">level-1</div><div class="val">#f8f8f9</div></div>
+    <div class="sw"><div class="chip" style="background:var(--color-bg-level-2)"></div><div class="name">level-2 / card</div><div class="val">#f4f4f6</div></div>
+    <div class="sw"><div class="chip" style="background:var(--color-bg-level-3)"></div><div class="name">level-3 / popover</div><div class="val">#eeeef1</div></div>
+    <div class="sw"><div class="chip" style="background:var(--color-bg-tertiary)"></div><div class="name">tertiary / hover</div><div class="val">#f0f0f3</div></div>
+    <div class="sw"><div class="chip" style="background:var(--color-bg-quaternary)"></div><div class="name">quaternary / press</div><div class="val">#e7e7ec</div></div>
+  </div>
+</body>
+</html>

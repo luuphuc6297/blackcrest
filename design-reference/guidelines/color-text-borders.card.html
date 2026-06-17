@@ -1,0 +1,29 @@
+<!-- @dsCard group="Colors" viewport="700x180" name="Text & Borders" subtitle="Bốn cấp chữ, ba cấp viền hairline" -->
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; padding: 24px; background: var(--color-bg-primary); font-family: var(--font-regular); display: flex; gap: 40px; }
+  .col { display: flex; flex-direction: column; gap: 10px; }
+  .txt { font-size: var(--font-size-regular); font-weight: var(--font-weight-medium); }
+  .lab { font-family: var(--font-monospace); font-size: var(--font-size-mini); color: var(--color-text-tertiary); margin-left: 8px; }
+  .brow { display: flex; align-items: center; gap: 12px; }
+  .bbar { width: 120px; height: 0; border-top: 2px solid; }
+</style>
+</head>
+<body>
+  <div class="col">
+    <div><span class="txt" style="color:var(--color-text-primary)">Chữ chính — primary</span><span class="lab">#1c1d21</span></div>
+    <div><span class="txt" style="color:var(--color-text-secondary)">Chữ phụ — secondary</span><span class="lab">#3c4149</span></div>
+    <div><span class="txt" style="color:var(--color-text-tertiary)">Chữ mờ — tertiary</span><span class="lab">#6a6f78</span></div>
+    <div><span class="txt" style="color:var(--color-text-quaternary)">Chữ rất mờ — quaternary</span><span class="lab">#9aa0a8</span></div>
+  </div>
+  <div class="col">
+    <div class="brow"><span class="bbar" style="border-color:var(--color-border-primary)"></span><span class="lab">border-primary</span></div>
+    <div class="brow"><span class="bbar" style="border-color:var(--color-border-secondary)"></span><span class="lab">border-secondary</span></div>
+    <div class="brow"><span class="bbar" style="border-color:var(--color-border-tertiary)"></span><span class="lab">border-tertiary</span></div>
+  </div>
+</body>
+</html>

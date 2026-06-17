@@ -1,0 +1,345 @@
+// Blackcrest — data model (blueprint §4).
+//
+// Two INDEPENDENT axes, never mixed:
+//   • RBAC        = User.role            → decides ACTIONS (upload/approve/grant).
+//   • Entitlement = Entitlement table    → decides WHICH GROUP sees WHICH report,
+//                                           granted at group→report OR group→category.
+// Staff (SUPER_ADMIN/EDITOR/APPROVER) bypass entitlement EXPLICITLY in code (lib/authz).
+// Multilingual content lives in ReportTranslation — one Report = one access entity.
+
+generator client {
+  provider      = "prisma-client-js"
+  // "native" for local dev; the musl target is for the node:22-alpine image.
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  // url = pooled (transaction mode) for runtime; directUrl = session pooler for
+  // migrations (Prisma + pgbouncer requires the two be split). For local Docker
+  // both resolve to the same DSN, so DIRECT_URL is optional there.
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─── Enums ───────────────────────────────────────────────────────────────────
+
+enum Role {
+  SUPER_ADMIN
+  EDITOR
+  APPROVER
+  CLIENT
+}
+
+enum UserStatus {
+  PENDING // registered, awaiting manual approval — CANNOT log in
+  APPROVED
+  SUSPENDED
+}
+
+enum ReportStatus {
+  DRAFT
+  REVIEW
+  APPROVED
+  PUBLISHED
+  REJECTED
+  ARCHIVED
+}
+
+enum AccessLevel {
+  PUBLIC // any approved user may view
+  RESTRICTED // entitlement required
+}
+
+enum CategoryKind {
+  DAILY
+  WEEKLY
+  MONTHLY
+  THEMATIC
+}
+
+enum AccessAction {
+  VIEW
+  DOWNLOAD
+}
+
+enum AuditAction {
+  ACCOUNT_APPROVE
+  ACCOUNT_REJECT
+  ACCOUNT_SUSPEND
+  ACCOUNT_REINSTATE
+  ACCOUNT_LOCKED
+  ENTITLEMENT_GRANT
+  ENTITLEMENT_REVOKE
+  REPORT_UPLOAD
+  REPORT_SUBMIT
+  REPORT_APPROVE
+  REPORT_REJECT
+  REPORT_PUBLISH
+  REPORT_ARCHIVE
+  GROUP_CREATE
+  GROUP_MEMBER_ADD
+  GROUP_MEMBER_REMOVE
+}
+
+// ─── Identity / RBAC ─────────────────────────────────────────────────────────
+
+model User {
+  id           String     @id @default(cuid())
+  email        String     @unique
+  passwordHash String?
+  name         String
+  organization String?
+  role         Role       @default(CLIENT)
+  status       UserStatus @default(PENDING)
+  // Bumped to invalidate outstanding JWTs immediately (suspend / force re-login).
+  tokenVersion Int        @default(0)
+  // Login throttle / lockout (blueprint §F3) — reset on success.
+  failedLoginCount Int       @default(0)
+  lockedUntil      DateTime?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  memberships     GroupMembership[]
+  accessLogs      ReportAccessLog[]
+  auditEvents     AuditLog[]        @relation("AuditActor")
+  grantedEntitle  Entitlement[]     @relation("EntitlementGrantedBy")
+  uploadedReports Report[]          @relation("ReportUploadedBy")
+  uploadSessions  UploadSession[]
+
+  // Auth.js adapter relations (kept for future OAuth/magic-link; JWT is primary).
+  accounts Account[]
+  sessions Session[]
+
+  @@index([status])
+  @@index([role])
+}
+
+// ─── Auth.js adapter models (standard) ───────────────────────────────────────
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ─── Client groups (tệp khách hàng) ──────────────────────────────────────────
+
+model Group {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+
+  members      GroupMembership[]
+  entitlements Entitlement[]
+}
+
+model GroupMembership {
+  id        String   @id @default(cuid())
+  userId    String
+  groupId   String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, groupId])
+  @@index([groupId])
+}
+
+// ─── Reports + categories + translations ─────────────────────────────────────
+
+model Category {
+  id        String       @id @default(cuid())
+  kind      CategoryKind
+  slug      String       @unique
+  nameVi    String
+  nameEn    String
+  nameZh    String
+  sortOrder Int          @default(0)
+
+  reports      Report[]
+  entitlements Entitlement[]
+}
+
+model Report {
+  id          String       @id @default(cuid())
+  slug        String       @unique
+  categoryId  String
+  status      ReportStatus @default(DRAFT)
+  accessLevel AccessLevel  @default(RESTRICTED)
+  publishedAt DateTime?
+  // Storage pointer — NEVER exposed to the client; streamed via authed endpoint.
+  fileKey     String?
+  fileSize    Int?
+  fileSha256  String?
+  pageCount   Int?
+  coverLabel  String? // short label shown on the document tile
+  uploadedById String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  category     Category           @relation(fields: [categoryId], references: [id])
+  uploadedBy   User?              @relation("ReportUploadedBy", fields: [uploadedById], references: [id])
+  translations ReportTranslation[]
+  entitlements Entitlement[]
+  accessLogs   ReportAccessLog[]
+
+  // Keyset pagination index (publishedAt, id) — blueprint §F2.
+  @@index([status, publishedAt, id])
+  @@index([categoryId])
+  // Fast content-dedup lookup (Upload Flow: deduplication / duplicate-content).
+  @@index([fileSha256])
+}
+
+model ReportTranslation {
+  id       String @id @default(cuid())
+  reportId String
+  locale   String // "vi" | "en" | "zh"
+  title    String
+  summary  String?
+  author   String?
+  report   Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@unique([reportId, locale])
+}
+
+// ─── Entitlements (group → report OR group → category) ───────────────────────
+// CHECK ("reportId" IS NOT NULL) <> ("categoryId" IS NOT NULL) is added via raw
+// SQL in the migration (Prisma cannot express it) — blueprint §4.
+
+model Entitlement {
+  id          String   @id @default(cuid())
+  groupId     String
+  reportId    String?
+  categoryId  String?
+  grantedById String?
+  createdAt   DateTime @default(now())
+
+  group     Group     @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  report    Report?   @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  category  Category? @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  grantedBy User?     @relation("EntitlementGrantedBy", fields: [grantedById], references: [id])
+
+  @@unique([groupId, reportId])
+  @@unique([groupId, categoryId])
+  @@index([groupId])
+  @@index([reportId])
+  @@index([categoryId])
+}
+
+// ─── Audit + access logs (append-only) ───────────────────────────────────────
+
+model ReportAccessLog {
+  id        String       @id @default(cuid())
+  userId    String
+  reportId  String
+  action    AccessAction
+  ip        String?
+  userAgent String?
+  createdAt DateTime     @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  report Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@index([reportId, createdAt])
+  @@index([userId, createdAt])
+}
+
+model AuditLog {
+  id         String      @id @default(cuid())
+  actorId    String?
+  action     AuditAction
+  targetType String
+  targetId   String?
+  metadata   Json?
+  createdAt  DateTime    @default(now())
+
+  actor User? @relation("AuditActor", fields: [actorId], references: [id])
+
+  @@index([action, createdAt])
+  @@index([targetType, targetId])
+}
+
+// ─── Resumable chunked upload ────────────────────────────────────────────────
+// One session = one file uploaded in parts. Chunks are written to temp storage,
+// reassembled + integrity-verified (size + SHA-256) at finalize, then a Report
+// is created. Covers idempotency (uploadId), resume (received chunks), dedup
+// (sha256), and completeness verification. Sweep expired OPEN sessions.
+model UploadSession {
+  id          String   @id @default(cuid())
+  userId      String
+  filename    String
+  totalSize   Int
+  totalChunks Int
+  chunkSize   Int
+  sha256      String // client-declared full-file SHA-256 (hex) — VERIFIED at finalize
+  status      String   @default("OPEN") // OPEN | FINALIZING | COMPLETED | ABORTED
+  reportId    String? // set on completion so finalize is idempotent
+  meta        Json // report metadata captured at init (titles, category, access, status)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  expiresAt   DateTime
+
+  user   User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chunks UploadChunk[]
+
+  @@index([userId, status])
+  @@index([sha256])
+  @@index([expiresAt])
+}
+
+// One received chunk. The composite PK makes re-uploading a chunk idempotent
+// (PUT same index twice = no-op), which is what makes retry/resume safe.
+model UploadChunk {
+  sessionId String
+  index     Int
+  size      Int
+  createdAt DateTime @default(now())
+
+  session UploadSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@id([sessionId, index])
+}
+
+// One-time, short-lived download grant (blueprint §F1) — the jti is recorded so
+// a token can be used exactly once. Sweep expired rows periodically.
+model DownloadToken {
+  jti        String    @id
+  userId     String
+  reportId   String
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([expiresAt])
+}

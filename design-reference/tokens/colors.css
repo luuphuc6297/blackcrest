@@ -1,0 +1,126 @@
+/* Blackcrest — Color tokens
+ * Light-first (primary identity). A dark scope is mirrored under [data-theme="dark"].
+ * Author against ROLE tokens (--color-bg-primary, --color-text-secondary, --color-border-primary)
+ * so both themes work without touching component code.
+ */
+
+:root {
+  /* ---- Accent & brand (monochrome — black is the brand, à la Blackstone) ---- */
+  --color-accent: #16181d;          /* primary action — near-black buttons, active states */
+  --color-accent-hover: #2c2f36;    /* accent hover (light) */
+  --color-accent-active: #000000;   /* accent pressed */
+  --color-accent-vivid: #16181d;    /* strong black — focus, emphasis */
+  --color-accent-tint: #f0f0f1;     /* faint neutral surface */
+  --color-brand-bg: #0a0b0d;        /* brand fills / logo lockup / dark bands */
+  --color-bg-inverse: #0c0d10;      /* powerful near-black band (CTA, brand panels) */
+  --color-link: #16181d;            /* links — near-black, underline on hover */
+  --color-link-hover: #000000;
+  --color-focus-ring: rgba(20, 22, 27, 0.28);
+  --color-selection-bg: rgba(20, 22, 27, 0.12);
+
+  /* ---- Base palette ---- */
+  --color-indigo: #5e6ad2;
+  --color-violet: #7170ff;
+  --color-blue: #4ea7fc;
+  --color-teal: #00b8cc;
+  --color-green: #27a644;
+  --color-yellow: #f0bf00;
+  --color-orange: #fc7840;
+  --color-red: #eb5757;
+  --color-black: #000000;
+  --color-white: #ffffff;
+
+  /* ---- Surfaces (light, primary) ---- */
+  --color-bg-primary: #ffffff;      /* app canvas */
+  --color-bg-marketing: #fbfbfd;    /* marketing pages */
+  --color-bg-level-1: #f8f8f9;      /* raised surface / panel */
+  --color-bg-level-2: #f4f4f6;      /* cards */
+  --color-bg-level-3: #eeeef1;      /* popovers */
+  --color-bg-secondary: #f7f7f9;    /* inputs / wells */
+  --color-bg-tertiary: #f0f0f3;     /* hover fills */
+  --color-bg-quaternary: #e7e7ec;   /* pressed fills */
+  --color-bg-translucent: rgba(16, 17, 26, 0.04); /* glass overlays */
+  --color-bg-overlay: rgba(16, 17, 26, 0.32);     /* modal scrim */
+
+  /* ---- Text (light) ---- */
+  --color-text-primary: #1c1d21;
+  --color-text-secondary: #3c4149;
+  --color-text-tertiary: #6a6f78;
+  --color-text-quaternary: #9aa0a8;
+  --color-text-on-accent: #ffffff;  /* white text on the black accent */
+
+  /* ---- Borders (light) ---- */
+  --color-border-primary: #e8e8ec;
+  --color-border-secondary: #dddde2;
+  --color-border-tertiary: #cfd0d6;
+  --color-border-translucent: rgba(16, 17, 26, 0.07);
+  --color-border-focus: var(--color-accent);
+
+  /* ---- Semantic: status surfaces ---- */
+  --color-success: #1f9a3d;
+  --color-success-tint: rgba(39, 166, 68, 0.10);
+  --color-warning: #b8860b;
+  --color-warning-tint: rgba(240, 191, 0, 0.14);
+  --color-danger: #d6453f;
+  --color-danger-tint: rgba(235, 87, 87, 0.10);
+  --color-info: #2f7fd6;
+  --color-info-tint: rgba(78, 167, 252, 0.12);
+
+  /* ---- Semantic: diffs ---- */
+  --diff-new-fg: #1f9a3d;
+  --diff-new-bg: rgba(39, 166, 68, 0.07);
+  --diff-old-fg: #d6453f;
+  --diff-old-bg: rgba(243, 78, 82, 0.10);
+
+  /* ---- Document workflow status (Blackcrest-specific) ---- */
+  --status-draft: #8a8f98;          /* nháp */
+  --status-review: #b8860b;         /* chờ duyệt */
+  --status-approved: #1f7a3d;       /* đã duyệt */
+  --status-published: #16181d;      /* đã phát hành — màu thương hiệu (đen) */
+  --status-archived: #9aa0a8;       /* lưu trữ */
+  --status-rejected: #b23b36;       /* từ chối */
+}
+
+/* ---- Dark theme (mirrored, the Linear identity) ---- */
+[data-theme="dark"] {
+  --color-accent: #f7f8f8;
+  --color-accent-hover: #e2e4e8;
+  --color-accent-active: #ffffff;
+  --color-accent-vivid: #f7f8f8;
+  --color-accent-tint: rgba(255, 255, 255, 0.08);
+  --color-brand-bg: #f7f8f8;
+  --color-bg-inverse: #f7f8f8;
+  --color-link: #f7f8f8;
+  --color-link-hover: #ffffff;
+  --color-text-on-accent: #08090a;
+  --color-focus-ring: rgba(255, 255, 255, 0.30);
+  --color-selection-bg: rgba(255, 255, 255, 0.16);
+
+  --color-bg-primary: #08090a;
+  --color-bg-marketing: #010102;
+  --color-bg-level-1: #0f1011;
+  --color-bg-level-2: #141516;
+  --color-bg-level-3: #191a1b;
+  --color-bg-secondary: #1c1c1f;
+  --color-bg-tertiary: #232326;
+  --color-bg-quaternary: #28282c;
+  --color-bg-translucent: rgba(255, 255, 255, 0.05);
+  --color-bg-overlay: rgba(0, 0, 0, 0.55);
+
+  --color-text-primary: #f7f8f8;
+  --color-text-secondary: #d0d6e0;
+  --color-text-tertiary: #8a8f98;
+  --color-text-quaternary: #62666d;
+
+  --color-border-primary: #23252a;
+  --color-border-secondary: #34343a;
+  --color-border-tertiary: #3e3e44;
+  --color-border-translucent: rgba(255, 255, 255, 0.06);
+
+  --color-success: #27a644;
+  --color-warning: #f0bf00;
+  --color-danger: #eb5757;
+  --color-info: #4ea7fc;
+}
+
+::selection { background: var(--color-selection-bg); }

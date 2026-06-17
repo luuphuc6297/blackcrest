@@ -1,0 +1,6 @@
+<svg width="232" height="48" viewBox="0 0 232 48" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Blackcrest">
+  <rect x="0" y="4" width="40" height="40" rx="9" fill="#ffffff" fill-opacity="0.10"></rect>
+  <path d="M10 28 L20 16.5 L30 28" stroke="#ffffff" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round"></path>
+  <path d="M12.8 32.6 L20 24.4 L27.2 32.6" stroke="#ffffff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.62"></path>
+  <text x="54" y="32.5" font-family="&#39;Source Serif 4&#39;, Georgia, serif" font-size="25" font-weight="600" letter-spacing="-0.012em" fill="#f7f8f8">Blackcrest</text>
+</svg>

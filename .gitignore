@@ -1,0 +1,35 @@
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+
+# next.js
+/.next/
+/out/
+next-env.d.ts
+
+# production
+/build
+/dist
+
+# prisma
+/prisma/*.db
+
+# env
+.env
+.env*.local
+
+# storage volume (uploaded PDFs / watermark cache) — never commit
+/storage/
+
+# TLS material (certbot-issued certs / ACME challenge)
+/nginx/certbot/
+
+# misc
+.DS_Store
+*.pem
+/coverage
+.vitest
+*.tsbuildinfo
+.idea
+.vscode

@@ -1,0 +1,27 @@
+# Blackcrest — local development stack.
+# Production (web blue/green + nginx + certbot) is layered in M6.
+# Hardening note (blueprint §5): Postgres is bound to 127.0.0.1 ONLY — Docker
+# bypasses UFW, so we must never publish the DB to 0.0.0.0.
+
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: blackcrest_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: blackcrest
+      POSTGRES_PASSWORD: blackcrest
+      POSTGRES_DB: blackcrest
+      TZ: Asia/Ho_Chi_Minh
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - blackcrest_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U blackcrest -d blackcrest"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  blackcrest_pgdata:

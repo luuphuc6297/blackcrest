@@ -1,0 +1,14 @@
+/* Blackcrest Design System — global entry point.
+ * Consumers link THIS one file. It is an @import manifest only — no rules live here.
+ * Author against the role tokens (--color-bg-primary, --color-text-secondary, …);
+ * light is primary, [data-theme="dark"] mirrors the Linear identity.
+ */
+
+@import "tokens/fonts.css";
+@import "tokens/colors.css";
+@import "tokens/typography.css";
+@import "tokens/spacing.css";
+@import "tokens/shape.css";
+@import "tokens/elevation.css";
+@import "tokens/motion.css";
+@import "tokens/base.css";
