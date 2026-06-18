@@ -166,14 +166,21 @@ export function AppShell({
               />
             ),
           )}
-          <div className="mt-[6px] flex items-center gap-[10px] border-t border-line px-[8px] py-[10px]">
-            <Avatar name={user.name} size={30} />
-            <div className="min-w-0 flex-1">
-              <div className="truncate text-[13px] font-semibold">
-                {user.name}
+          <div className="mt-[6px] flex items-center gap-[8px] border-t border-line px-[6px] py-[10px]">
+            <Link
+              href="/profile"
+              onClick={close}
+              aria-label={user.name}
+              className="-mx-1 flex min-w-0 flex-1 items-center gap-[10px] rounded-control px-2 py-1 transition-colors hover:bg-surface-hover"
+            >
+              <Avatar name={user.name} size={30} />
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-[13px] font-semibold">
+                  {user.name}
+                </div>
+                <div className="text-[11px] text-ink-3">{user.role}</div>
               </div>
-              <div className="text-[11px] text-ink-3">{user.role}</div>
-            </div>
+            </Link>
             <form action={signOutAction} className="flex">
               <button
                 type="submit"

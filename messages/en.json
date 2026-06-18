@@ -359,5 +359,29 @@
     "notFoundTitle": "Page not found",
     "notFoundDesc": "The page or document you are looking for does not exist, or you do not have access.",
     "backHome": "Back to home"
+  },
+  "Profile": {
+    "title": "Profile",
+    "accountInfo": "Account information",
+    "name": "Full name",
+    "email": "Email",
+    "organization": "Organization",
+    "role": "Role",
+    "save": "Save changes",
+    "saving": "Saving…",
+    "savedProfile": "Profile updated.",
+    "changePassword": "Change password",
+    "changePasswordNote": "After changing your password you will be signed out of all sessions and must sign in again.",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm new password",
+    "updatePassword": "Update password",
+    "updating": "Updating…",
+    "nameRequired": "Please enter your full name.",
+    "currentRequired": "Enter your current password.",
+    "passwordMinLength": "Password must be at least 8 characters.",
+    "passwordMismatch": "Passwords do not match.",
+    "wrongCurrentPassword": "Current password is incorrect.",
+    "notAllowed": "Invalid session. Please sign in again."
   }
 }

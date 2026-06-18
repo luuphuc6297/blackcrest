@@ -359,5 +359,29 @@
     "notFoundTitle": "Không tìm thấy trang",
     "notFoundDesc": "Trang hoặc tài liệu bạn tìm không tồn tại, hoặc bạn không có quyền truy cập.",
     "backHome": "Về trang chủ"
+  },
+  "Profile": {
+    "title": "Hồ sơ",
+    "accountInfo": "Thông tin tài khoản",
+    "name": "Họ và tên",
+    "email": "Email",
+    "organization": "Tổ chức",
+    "role": "Vai trò",
+    "save": "Lưu thay đổi",
+    "saving": "Đang lưu…",
+    "savedProfile": "Đã cập nhật hồ sơ.",
+    "changePassword": "Đổi mật khẩu",
+    "changePasswordNote": "Sau khi đổi mật khẩu, bạn sẽ bị đăng xuất khỏi mọi phiên và cần đăng nhập lại.",
+    "currentPassword": "Mật khẩu hiện tại",
+    "newPassword": "Mật khẩu mới",
+    "confirmPassword": "Xác nhận mật khẩu mới",
+    "updatePassword": "Cập nhật mật khẩu",
+    "updating": "Đang cập nhật…",
+    "nameRequired": "Vui lòng nhập họ tên.",
+    "currentRequired": "Nhập mật khẩu hiện tại.",
+    "passwordMinLength": "Mật khẩu tối thiểu 8 ký tự.",
+    "passwordMismatch": "Mật khẩu xác nhận không khớp.",
+    "wrongCurrentPassword": "Mật khẩu hiện tại không đúng.",
+    "notAllowed": "Phiên không hợp lệ. Vui lòng đăng nhập lại."
   }
 }
