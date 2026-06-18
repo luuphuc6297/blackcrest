@@ -15,7 +15,12 @@ export async function generateMetadata({
     title: locale === "en" ? "Sign in" : locale === "zh" ? "登录" : "Đăng nhập",
     alternates: {
       canonical: `/${locale}/login`,
-      languages: { vi: "/vi/login", en: "/en/login", zh: "/zh/login" },
+      languages: {
+        vi: "/vi/login",
+        en: "/en/login",
+        zh: "/zh/login",
+        "x-default": "/vi/login",
+      },
     },
   };
 }

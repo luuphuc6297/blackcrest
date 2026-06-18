@@ -161,6 +161,16 @@ export async function createReportFromPdf(opts: {
     // Roll back the orphaned file — the row was NOT committed, so it is safe
     // to delete (the catch only runs when the transaction failed).
     await storage.del(fileKey);
+    // A concurrent upload of identical content won the @@unique(fileSha256)
+    // race — return THAT report instead of erroring (closes the dedup TOCTOU
+    // window the app-level pre-check left open).
+    if (err && typeof err === "object" && (err as { code?: string }).code === "P2002") {
+      const dup = await prisma.report.findFirst({
+        where: { fileSha256: sha256 },
+        select: { id: true, slug: true },
+      });
+      if (dup) return { reportId: dup.id, slug: dup.slug, duplicate: true };
+    }
     throw err;
   }
 }

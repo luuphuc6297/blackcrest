@@ -4,12 +4,13 @@ import { routing } from "@/i18n/routing";
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://blackcrest.vn";
 
 /**
- * Sitemap for the PUBLIC, indexable routes only (landing/login/register) across
- * all locales, each with hreflang alternates. Gated portal/admin/report pages
- * are intentionally excluded (robots: index=false).
+ * Sitemap for the PUBLIC, indexable routes across all locales, each with
+ * hreflang alternates. Only the marketing landing is indexable — login/register
+ * inherit robots:index=false (so they're excluded to avoid a robots↔sitemap
+ * contradiction), and gated portal/admin/report pages are never listed.
  */
 export default function sitemap(): MetadataRoute.Sitemap {
-  const routes = ["", "/login", "/register"];
+  const routes = [""];
 
   return routing.locales.flatMap((locale) =>
     routes.map((route) => ({

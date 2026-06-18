@@ -217,8 +217,10 @@ model Report {
   // Keyset pagination index (publishedAt, id) — blueprint §F2.
   @@index([status, publishedAt, id])
   @@index([categoryId])
-  // Fast content-dedup lookup (Upload Flow: deduplication / duplicate-content).
-  @@index([fileSha256])
+  // Content dedup (Upload Flow). UNIQUE closes the app-level TOCTOU race —
+  // Postgres allows multiple NULLs, so file-less drafts are unaffected; the
+  // create path catches P2002 and returns the existing report.
+  @@unique([fileSha256])
 }
 
 model ReportTranslation {

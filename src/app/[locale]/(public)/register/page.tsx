@@ -19,7 +19,12 @@ export async function generateMetadata({
           : "Yêu cầu truy cập",
     alternates: {
       canonical: `/${locale}/register`,
-      languages: { vi: "/vi/register", en: "/en/register", zh: "/zh/register" },
+      languages: {
+        vi: "/vi/register",
+        en: "/en/register",
+        zh: "/zh/register",
+        "x-default": "/vi/register",
+      },
     },
   };
 }

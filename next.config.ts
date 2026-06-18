@@ -15,6 +15,9 @@ const isDev = process.env.NODE_ENV !== "production";
 const csp = [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
+  // pdf.js worker is self-hosted (/pdf.worker.min.mjs); blob: covers its
+  // fallback-worker path. Explicit so it doesn't rely on script-src fallback.
+  "worker-src 'self' blob:",
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
   "font-src 'self'",

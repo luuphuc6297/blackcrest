@@ -4,9 +4,9 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import type { ReportStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { requireRole } from "@/lib/rbac";
+import { requireFreshRole } from "@/lib/rbac";
 import { logAudit } from "@/lib/audit";
-import { REVIEW_TRANSITIONS } from "@/lib/report-transitions";
+import { REVIEW_TRANSITIONS, resolveReportTransition } from "@/lib/report-transitions";
 
 const schema = z.object({
   reportId: z.string().cuid(),
@@ -30,7 +30,10 @@ export async function reviewReport(input: {
 }): Promise<ReviewResult> {
   let actor;
   try {
-    actor = await requireRole("SUPER_ADMIN", "APPROVER");
+    // Fresh DB re-check (status + tokenVersion + role): a suspended/demoted
+    // APPROVER must NOT be able to approve/publish within the JWT window —
+    // same guarantee the upload routes already have (SEC-12).
+    actor = await requireFreshRole("SUPER_ADMIN", "APPROVER");
   } catch {
     return { ok: false, error: "Bạn không có quyền duyệt báo cáo." };
   }
@@ -39,19 +42,17 @@ export async function reviewReport(input: {
   if (!parsed.success) return { ok: false, error: "Yêu cầu không hợp lệ." };
   const { reportId, decision, note } = parsed.data;
 
-  // State machine (SEC-09 / STATE-N1): each decision is only valid from
-  // specific current states — illegal jumps are rejected. The map lives in
-  // @/lib/report-transitions (pure + unit-tested; single source of truth).
-  const rule = REVIEW_TRANSITIONS[decision];
-  const status = rule.to;
-
   const existing = await prisma.report.findUnique({
     where: { id: reportId },
     select: { id: true, status: true },
   });
   if (!existing) return { ok: false, error: "Không tìm thấy báo cáo." };
 
-  if (!rule.from.includes(existing.status)) {
+  // State machine (SEC-09): each decision is only valid from specific current
+  // states — illegal jumps are rejected. resolveReportTransition + the optimistic
+  // updateMany guard below share the single map in @/lib/report-transitions.
+  const status = resolveReportTransition(decision, existing.status);
+  if (!status) {
     return {
       ok: false,
       error: "Không thể thực hiện thao tác này ở trạng thái hiện tại của báo cáo.",
@@ -61,7 +62,7 @@ export async function reviewReport(input: {
   // Guard the write against a concurrent transition (optimistic): only update
   // if the status is still one we validated.
   const res = await prisma.report.updateMany({
-    where: { id: reportId, status: { in: rule.from } },
+    where: { id: reportId, status: { in: REVIEW_TRANSITIONS[decision].from } },
     data: decision === "publish" ? { status, publishedAt: new Date() } : { status },
   });
   if (res.count !== 1) {

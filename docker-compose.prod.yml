@@ -4,11 +4,17 @@
 # Blue/green: run web_blue + web_green and flip the nginx upstream after
 # /api/health returns 200. A single `web` is shown here for clarity.
 #
-# First deploy (once): provision TLS + dirs before `up`:
+# First deploy (once) — bootstrap TLS BEFORE the stack runs nginx. nginx's 443
+# server references a cert that doesn't exist yet, so it would fail to start and
+# couldn't even serve the ACME challenge on :80 (chicken-and-egg, INFRA-02). Use
+# certbot --standalone, which binds :80 ITSELF while nginx is still down:
 #   mkdir -p nginx/certbot/conf nginx/certbot/www
-#   docker compose -f docker-compose.prod.yml run --rm --entrypoint "\
-#     certbot certonly --webroot -w /var/www/certbot -d <domain> \
+#   docker compose -f docker-compose.prod.yml run --rm -p 80:80 \
+#     --entrypoint "certbot certonly --standalone -d <domain> \
 #     --cert-name blackcrest --agree-tos -m <email> --no-eff-email" certbot
+#   docker compose -f docker-compose.prod.yml up -d
+# After the first cert exists, the long-running `certbot` service renews via
+# --webroot (nginx serves /.well-known/acme-challenge on :80) — no downtime.
 
 services:
   db:
