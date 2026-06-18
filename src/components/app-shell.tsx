@@ -196,7 +196,7 @@ export function AppShell({
 
       {/* Main */}
       <main className="flex min-w-0 flex-col overflow-hidden">
-        <header className="flex h-14 flex-none items-center gap-2 border-b border-line px-4 md:gap-3 md:px-7">
+        <header className="flex h-12 flex-none items-center gap-2 border-b border-line px-4 md:gap-3 md:px-7">
           <button
             type="button"
             aria-label={tc("openMenu")}

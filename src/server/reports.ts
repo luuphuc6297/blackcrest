@@ -1,16 +1,7 @@
 import "server-only";
-import type { Category, Prisma, ReportStatus, Role } from "@prisma/client";
+import type { Category, Role } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { canViewReport, resolveTranslation } from "@/lib/authz";
-
-const REPORT_STATUSES: ReportStatus[] = [
-  "DRAFT",
-  "REVIEW",
-  "APPROVED",
-  "PUBLISHED",
-  "REJECTED",
-  "ARCHIVED",
-];
 
 export function categoryName(category: Category, locale: string): string {
   if (locale === "en") return category.nameEn;
@@ -68,68 +59,14 @@ export async function getPortalSummary(user: { id: string; role: Role }) {
   };
 }
 
-/** Overall report counts by status — drives the admin stat cards (filter/page
- * independent). Returns { total, DRAFT, REVIEW, ... }. */
-export async function getReportStatusCounts() {
-  const grouped = await prisma.report.groupBy({
-    by: ["status"],
-    _count: { _all: true },
+/** Admin Reports table (staff only) — full list; the client table does the
+ * (instant, in-memory) search / status-filter / pagination. */
+export async function listAdminReports(locale: string) {
+  const rows = await prisma.report.findMany({
+    orderBy: [{ updatedAt: "desc" }],
+    include: { translations: true, category: true },
   });
-  const counts: Record<string, number> = { total: 0 };
-  for (const s of REPORT_STATUSES) counts[s] = 0;
-  for (const g of grouped) {
-    counts[g.status] = g._count._all;
-    counts.total += g._count._all;
-  }
-  return counts;
-}
-
-/** Admin Reports table (staff only) — search + status filter + pagination. */
-export async function listAdminReports(
-  locale: string,
-  opts: {
-    q?: string | null;
-    status?: string | null;
-    page?: number;
-    pageSize?: number;
-  } = {},
-) {
-  const pageSize = opts.pageSize ?? 10;
-  const page = Math.max(1, opts.page ?? 1);
-
-  const where: Prisma.ReportWhereInput = {};
-  const term = opts.q?.trim();
-  if (term) {
-    where.OR = [
-      { slug: { contains: term, mode: "insensitive" } },
-      {
-        translations: {
-          some: {
-            OR: [
-              { title: { contains: term, mode: "insensitive" } },
-              { author: { contains: term, mode: "insensitive" } },
-            ],
-          },
-        },
-      },
-    ];
-  }
-  if (opts.status && (REPORT_STATUSES as string[]).includes(opts.status)) {
-    where.status = opts.status as ReportStatus;
-  }
-
-  const [total, rows] = await Promise.all([
-    prisma.report.count({ where }),
-    prisma.report.findMany({
-      where,
-      orderBy: [{ updatedAt: "desc" }],
-      skip: (page - 1) * pageSize,
-      take: pageSize,
-      include: { translations: true, category: true },
-    }),
-  ]);
-
-  const items = rows.map((r) => ({
+  return rows.map((r) => ({
     id: r.id,
     slug: r.slug,
     status: r.status,
@@ -140,13 +77,6 @@ export async function listAdminReports(
     categoryLabel: categoryName(r.category, locale),
     ...resolveTranslation(r.translations, locale),
   }));
-
-  return {
-    items,
-    total,
-    page,
-    totalPages: Math.max(1, Math.ceil(total / pageSize)),
-  };
 }
 
 /** All reports as { id, title } for select dropdowns (e.g. entitlement grant). */

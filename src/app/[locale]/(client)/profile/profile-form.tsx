@@ -42,8 +42,8 @@ export function ProfileForm({
         <form action={pAction} className="flex flex-col gap-[14px] p-[18px]">
           <input type="hidden" name="locale" value={locale} />
           <div className="grid grid-cols-1 gap-[14px] sm:grid-cols-2">
-            <ReadOnlyField label={t("email")} value={email} />
-            <ReadOnlyField label={t("role")} value={role} />
+            <Input label={t("email")} defaultValue={email} disabled />
+            <Input label={t("role")} defaultValue={role} disabled />
           </div>
           <Input
             label={t("name")}
@@ -122,19 +122,6 @@ export function ProfileForm({
           />
         </div>
       )}
-    </div>
-  );
-}
-
-function ReadOnlyField({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex flex-col gap-[6px]">
-      <span className="text-[11px] font-semibold uppercase tracking-[0.07em] text-ink-3">
-        {label}
-      </span>
-      <span className="flex h-9 items-center rounded-control border border-line bg-surface-2 px-3 text-[13px] text-ink-2">
-        {value}
-      </span>
     </div>
   );
 }

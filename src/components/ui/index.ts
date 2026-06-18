@@ -16,4 +16,5 @@ export * from "./tabs";
 export * from "./stat-card";
 export * from "./empty-state";
 export * from "./data-table";
+export * from "./client-table";
 export * from "./list-controls";
