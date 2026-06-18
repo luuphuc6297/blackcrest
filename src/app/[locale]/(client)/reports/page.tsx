@@ -2,7 +2,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { auth } from "@/auth";
 import { AppShell } from "@/components/app-shell";
 import { LanguageSwitcher } from "@/components/language-switcher";
-import { Badge, Card, EmptyState } from "@/components/ui";
+import { Badge, Card, EmptyState, FilterTabs, SearchBox } from "@/components/ui";
 import { Icon } from "@/components/icon";
 import { Link } from "@/i18n/navigation";
 import { listVisibleReports } from "@/lib/authz";
@@ -19,11 +19,11 @@ export default async function ReportsPage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ cat?: string }>;
+  searchParams: Promise<{ cat?: string; q?: string }>;
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const { cat } = await searchParams;
+  const { cat, q } = await searchParams;
 
   const session = await auth();
   const user = session!.user;
@@ -41,6 +41,7 @@ export default async function ReportsPage({
       locale,
       take: 24,
       categorySlug: cat ?? null,
+      q: q ?? null,
     }),
     listCategories(),
   ]);
@@ -72,18 +73,20 @@ export default async function ReportsPage({
           </span>
         </div>
 
-        {/* Category filter */}
-        <div className="mb-6 flex flex-wrap items-center gap-[6px] border-b border-line pb-4">
-          <Icon name="filter" size={15} className="mr-1 text-ink-4" />
-          <FilterChip href="/reports" label={t("filterAll")} active={!cat} />
-          {categories.map((c) => (
-            <FilterChip
-              key={c.id}
-              href={`/reports?cat=${c.slug}`}
-              label={categoryName(c, locale)}
-              active={cat === c.slug}
+        {/* Category filter + search (URL-param; compose so both persist) */}
+        <div className="mb-6 flex flex-col gap-3 border-b border-line pb-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-[6px]">
+            <Icon name="filter" size={15} className="flex-none text-ink-4" />
+            <FilterTabs
+              paramKey="cat"
+              allLabel={t("filterAll")}
+              options={categories.map((c) => ({
+                value: c.slug,
+                label: categoryName(c, locale),
+              }))}
             />
-          ))}
+          </div>
+          <SearchBox className="sm:w-[260px]" />
         </div>
 
         {/* Document grid */}
@@ -179,27 +182,3 @@ export default async function ReportsPage({
   );
 }
 
-/** Category filter pill — a locale-aware link styled like the kit's chips. */
-function FilterChip({
-  href,
-  label,
-  active,
-}: {
-  href: string;
-  label: string;
-  active: boolean;
-}) {
-  return (
-    <Link
-      href={href}
-      aria-current={active ? "true" : undefined}
-      className={
-        active
-          ? "rounded-control border border-accent bg-accent px-[11px] py-[5px] text-[12px] font-medium text-on-accent"
-          : "rounded-control border border-line bg-surface px-[11px] py-[5px] text-[12px] font-medium text-ink-2 transition-colors hover:bg-surface-hover hover:text-ink"
-      }
-    >
-      {label}
-    </Link>
-  );
-}

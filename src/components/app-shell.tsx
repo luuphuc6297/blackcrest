@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { Avatar } from "@/components/ui/avatar";
@@ -90,6 +91,7 @@ export function AppShell({
 }: AppShellProps) {
   const [open, setOpen] = React.useState(false);
   const close = React.useCallback(() => setOpen(false), []);
+  const router = useRouter();
   const tc = useTranslations("Common");
   const tNav = useTranslations("Nav");
 
@@ -187,16 +189,24 @@ export function AppShell({
 
       {/* Main */}
       <main className="flex min-w-0 flex-col overflow-hidden">
-        <header className="flex h-16 flex-none items-center gap-3 border-b border-line px-4 md:px-7">
+        <header className="flex h-14 flex-none items-center gap-2 border-b border-line px-4 md:gap-3 md:px-7">
           <button
             type="button"
             aria-label={tc("openMenu")}
             onClick={() => setOpen(true)}
-            className="flex h-9 w-9 items-center justify-center rounded-control border border-line text-ink-2 hover:bg-surface-hover md:hidden"
+            className="flex h-9 w-9 flex-none items-center justify-center rounded-control border border-line text-ink-2 hover:bg-surface-hover md:hidden"
           >
             <Icon name="menu" size={18} />
           </button>
-          <h1 className="truncate text-[18px] font-semibold tracking-[-0.012em] md:text-[20px]">
+          <button
+            type="button"
+            aria-label={tc("back")}
+            onClick={() => router.back()}
+            className="flex h-9 w-9 flex-none items-center justify-center rounded-control text-ink-3 transition-colors hover:bg-surface-hover hover:text-ink"
+          >
+            <Icon name="arrow-left" size={18} />
+          </button>
+          <h1 className="truncate text-[17px] font-semibold tracking-[-0.012em] md:text-[19px]">
             {title}
           </h1>
           <div className="ml-auto flex items-center gap-[10px]">{actions}</div>

@@ -55,13 +55,25 @@ export async function listVisibleReports(opts: {
   take?: number;
   cursor?: string | null;
   categorySlug?: string | null;
+  q?: string | null;
 }) {
-  const { userId, role, locale, take = 12, cursor, categorySlug } = opts;
+  const { userId, role, locale, take = 12, cursor, categorySlug, q } = opts;
 
   const where: Prisma.ReportWhereInput = isStaff(role)
     ? { status: "PUBLISHED" }
     : visibleWhere(userId);
   if (categorySlug) where.category = { ...(where.category as object), slug: categorySlug };
+  const term = q?.trim();
+  if (term) {
+    where.translations = {
+      some: {
+        OR: [
+          { title: { contains: term, mode: "insensitive" } },
+          { summary: { contains: term, mode: "insensitive" } },
+        ],
+      },
+    };
+  }
 
   const rows = await prisma.report.findMany({
     where,

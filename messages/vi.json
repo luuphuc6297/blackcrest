@@ -114,7 +114,15 @@
     "of": "trên",
     "updatedAt": "Cập nhật",
     "openMenu": "Mở menu",
-    "closeMenu": "Đóng menu"
+    "closeMenu": "Đóng menu",
+    "back": "Quay lại",
+    "search": "Tìm kiếm",
+    "searchPlaceholder": "Tìm kiếm…",
+    "all": "Tất cả",
+    "noResults": "Không có kết quả phù hợp.",
+    "prevPage": "Trang trước",
+    "nextPage": "Trang sau",
+    "pageOf": "Trang {page}/{total}"
   },
   "Landing": {
     "menu": "Menu",

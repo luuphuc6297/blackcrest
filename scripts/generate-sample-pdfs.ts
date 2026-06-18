@@ -5,7 +5,7 @@
  */
 import { mkdir, writeFile, readFile } from "node:fs/promises";
 import path from "node:path";
-import { PDFDocument, degrees, rgb } from "pdf-lib";
+import { PDFDocument, rgb } from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
 import { PrismaClient } from "@prisma/client";
 
@@ -51,16 +51,9 @@ async function main() {
       const page = pdf.addPage([595, 842]); // A4
       const { width, height } = page.getSize();
 
-      // Faint diagonal confidentiality watermark on every page.
-      page.drawText("BẢO MẬT", {
-        x: 120,
-        y: height / 2 - 60,
-        size: 92,
-        font: fBold,
-        color: rgb(0.08, 0.086, 0.106),
-        opacity: 0.05,
-        rotate: degrees(30),
-      });
+      // NOTE: the "BẢO MẬT" diagonal watermark is NOT baked here — it is applied
+      // PER-USER at stream time (lib/watermark). Baking it too produced a
+      // double/overlapping watermark.
 
       if (i === 0) {
         page.drawText("BLACKCREST", {

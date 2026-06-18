@@ -114,7 +114,15 @@
     "of": "of",
     "updatedAt": "Updated",
     "openMenu": "Open menu",
-    "closeMenu": "Close menu"
+    "closeMenu": "Close menu",
+    "back": "Back",
+    "search": "Search",
+    "searchPlaceholder": "Search…",
+    "all": "All",
+    "noResults": "No matching results.",
+    "prevPage": "Previous page",
+    "nextPage": "Next page",
+    "pageOf": "Page {page}/{total}"
   },
   "Landing": {
     "menu": "Menu",

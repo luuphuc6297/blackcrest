@@ -63,7 +63,13 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale} className={fontVariables} suppressHydrationWarning>
-      <body className="min-h-screen bg-surface text-ink antialiased">
+      {/* suppressHydrationWarning: browser extensions (Grammarly etc.) inject
+          attributes onto <body> before React hydrates — harmless, but it would
+          otherwise log a hydration-attribute mismatch. */}
+      <body
+        className="min-h-screen bg-surface text-ink antialiased"
+        suppressHydrationWarning
+      >
         <NextIntlClientProvider>
           <Providers>{children}</Providers>
         </NextIntlClientProvider>

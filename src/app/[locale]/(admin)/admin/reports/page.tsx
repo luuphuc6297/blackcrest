@@ -110,8 +110,8 @@ export default async function AdminReportsPage({
                     href={`/reports/${r.slug}`}
                     className="flex min-w-0 items-center gap-[11px] text-inherit no-underline"
                   >
-                    <span className="flex h-9 w-[30px] flex-none items-center justify-center rounded-card border border-line bg-surface-2">
-                      <Icon name="file-text" size={15} className="text-ink-2" />
+                    <span className="flex h-9 w-9 flex-none items-center justify-center rounded-card border border-line bg-surface-2">
+                      <Icon name="file-text" size={16} className="text-ink-2" />
                     </span>
                     <span className="min-w-0">
                       <span className="block truncate text-[14px] font-medium text-ink">
