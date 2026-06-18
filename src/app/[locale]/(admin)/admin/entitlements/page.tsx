@@ -9,7 +9,7 @@ import { Select } from "@/components/ui/select";
 import { Icon } from "@/components/icon";
 import { adminNav } from "@/lib/nav";
 import { listGroupsWithEntitlements } from "@/server/admin-data";
-import { listCategories, listAdminReports, categoryName } from "@/server/reports";
+import { listCategories, listReportOptions, categoryName } from "@/server/reports";
 import { grantEntitlement, revokeEntitlement } from "@/server/entitlements";
 
 // Gated, per-user data — never prerender/cache.
@@ -35,7 +35,7 @@ export default async function AdminEntitlementsPage({
   const [groups, categories, reports] = await Promise.all([
     listGroupsWithEntitlements(locale),
     listCategories(),
-    listAdminReports(locale),
+    listReportOptions(locale),
   ]);
 
   return (
