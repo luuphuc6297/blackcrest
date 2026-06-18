@@ -9,6 +9,9 @@ import {
   Card,
   DataTable,
   EmptyState,
+  FilterTabs,
+  Pagination,
+  SearchBox,
   StatCard,
   type Column,
 } from "@/components/ui";
@@ -16,7 +19,7 @@ import { Icon } from "@/components/icon";
 import { adminNav } from "@/lib/nav";
 import { formatDate } from "@/lib/format";
 import { ACCOUNT_STATUS } from "@/lib/status";
-import { listAccounts } from "@/server/admin-data";
+import { listAccounts, getAccountStatusCounts } from "@/server/admin-data";
 import {
   approveAccount,
   suspendAccount,
@@ -28,11 +31,15 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminAccountsPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ q?: string; status?: string; page?: string }>;
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  const { q, status, page } = await searchParams;
+  const pageNum = Math.max(1, Number(page) || 1);
 
   const session = await auth();
   const user = session!.user;
@@ -45,14 +52,18 @@ export default async function AdminAccountsPage({
     getTranslations("Admin"),
   ]);
 
-  const accounts = await listAccounts();
+  const [result, counts] = await Promise.all([
+    listAccounts({ q, status, page: pageNum }),
+    getAccountStatusCounts(),
+  ]);
+  const accounts = result.items;
+  const { total, active, pending, admins } = counts;
 
-  const total = accounts.length;
-  const active = accounts.filter((a) => a.status === "APPROVED").length;
-  const pending = accounts.filter((a) => a.status === "PENDING").length;
-  const admins = accounts.filter((a) => a.role === "SUPER_ADMIN").length;
+  const statusOptions = (["PENDING", "APPROVED", "SUSPENDED"] as const).map(
+    (s) => ({ value: s, label: tStatus(ACCOUNT_STATUS[s].key) }),
+  );
 
-  type Account = (typeof accounts)[number];
+  type Account = (typeof result.items)[number];
 
   const columns: Column<Account>[] = [
     {
@@ -156,11 +167,12 @@ export default async function AdminAccountsPage({
 
         {/* Accounts table */}
         <Card padding={0}>
-          <div className="flex items-center gap-3 px-[18px] py-4">
+          <div className="flex flex-col gap-3 px-[18px] py-[14px] sm:flex-row sm:items-center">
             <h2 className="text-[18px] font-semibold tracking-[-0.012em]">
               {tNav("accounts")}
             </h2>
-            <div className="ml-auto">
+            <div className="flex flex-1 items-center gap-3 sm:justify-end">
+              <SearchBox className="w-full sm:w-[240px]" />
               <Button
                 variant="primary"
                 size="sm"
@@ -169,6 +181,9 @@ export default async function AdminAccountsPage({
                 {t("invite")}
               </Button>
             </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-[6px] border-t border-line px-[18px] py-3">
+            <FilterTabs paramKey="status" options={statusOptions} />
           </div>
 
           <DataTable
@@ -179,6 +194,11 @@ export default async function AdminAccountsPage({
             caption={tNav("accounts")}
             empty={<EmptyState icon="user-plus" title={tAdmin("emptyAccounts")} />}
           />
+          {result.totalPages > 1 && (
+            <div className="px-[18px] pb-3">
+              <Pagination page={result.page} totalPages={result.totalPages} />
+            </div>
+          )}
         </Card>
       </div>
     </AppShell>
