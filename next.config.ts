@@ -44,9 +44,24 @@ const securityHeaders = [
   },
 ];
 
+// `output: "standalone"` is for the Docker/VPS image. It must NOT be used on
+// Vercel: it breaks @vercel/nft tracing of next-intl's dynamic
+// `import("../../messages/${locale}.json")`, so the message bundles aren't shipped
+// into the serverless function. Any RUNTIME-rendered page then throws at request
+// time — e.g. /[locale]/login (dynamic because it reads searchParams) → 500, while
+// prerendered pages (landing, register) are fine. Vercel sets VERCEL=1 and builds
+// its own functions, so leave output unset there.
+const standaloneOutput: NextConfig["output"] = process.env.VERCEL
+  ? undefined
+  : "standalone";
+
 const nextConfig: NextConfig = {
-  // Standalone output for a lean Docker image (blueprint §5).
-  output: "standalone",
+  output: standaloneOutput,
+  // Belt-and-suspenders: always trace the i18n message JSON into the server
+  // bundle (the template-literal dynamic import isn't statically analyzable).
+  outputFileTracingIncludes: {
+    "/**": ["./messages/**"],
+  },
   // PDF streaming + Prisma + argon2 must run on the Node runtime.
   serverExternalPackages: ["@node-rs/argon2", "pdf-lib", "@pdf-lib/fontkit"],
   experimental: {
