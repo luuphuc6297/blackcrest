@@ -35,6 +35,55 @@ function getTransport(): Transporter | null {
 
 const FROM = process.env.SMTP_FROM ?? "Blackcrest <no-reply@blackcrest.vn>";
 
+/** Parse `Name <email>` (or a bare email) into the shape SendGrid's API wants. */
+function parseFrom(from: string): { email: string; name?: string } {
+  const m = from.match(/^\s*(.*?)\s*<([^>]+)>\s*$/);
+  if (m) return { name: m[1] || undefined, email: m[2].trim() };
+  return { email: from.trim() };
+}
+
+/**
+ * SendGrid Web API key, if available. Prefer the HTTP API over SMTP because
+ * serverless platforms (Vercel/Lambda) routinely block or time out outbound
+ * SMTP (587/465/25) — HTTPS (443) always works. Reuses the existing SMTP_PASS
+ * SendGrid key so no extra env var is needed.
+ */
+function sendgridApiKey(): string | null {
+  const explicit = process.env.SENDGRID_API_KEY;
+  if (explicit) return explicit;
+  const host = process.env.SMTP_HOST ?? "";
+  const pass = process.env.SMTP_PASS ?? "";
+  if (host.includes("sendgrid") && pass.startsWith("SG.")) return pass;
+  return null;
+}
+
+async function sendViaSendgridApi(
+  key: string,
+  opts: { to: string; subject: string; html: string; text: string },
+): Promise<void> {
+  const res = await fetch("https://api.sendgrid.com/v3/mail/send", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${key}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      personalizations: [{ to: [{ email: opts.to }] }],
+      from: parseFrom(FROM), // MUST be a verified sender / authenticated domain
+      subject: opts.subject,
+      // SendGrid requires text/plain BEFORE text/html in the content array.
+      content: [
+        { type: "text/plain", value: opts.text },
+        { type: "text/html", value: opts.html },
+      ],
+    }),
+  });
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(`SendGrid API ${res.status}: ${body.slice(0, 500)}`);
+  }
+}
+
 /** Absolute base URL for links inside emails. */
 export function getAppUrl(): string {
   return (
@@ -51,10 +100,17 @@ export async function sendMail(opts: {
   html: string;
   text: string;
 }): Promise<{ delivered: boolean }> {
+  // 1) SendGrid HTTP API (works on serverless where SMTP is blocked).
+  const key = sendgridApiKey();
+  if (key) {
+    await sendViaSendgridApi(key, opts);
+    return { delivered: true };
+  }
+  // 2) Generic SMTP (e.g. an in-VN server in production).
   const transport = getTransport();
   if (!transport) {
     console.warn(
-      `\n[mailer:dev] SMTP not configured — email NOT sent (dev fallback).\n` +
+      `\n[mailer:dev] Email transport not configured — email NOT sent (dev fallback).\n` +
         `  To:      ${opts.to}\n  Subject: ${opts.subject}\n  ${opts.text}\n`,
     );
     return { delivered: false };
