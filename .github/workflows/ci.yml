@@ -35,15 +35,18 @@ jobs:
       AUTH_TRUST_HOST: "true"
 
     steps:
-      - uses: actions/checkout@v4
+      # Action majors pinned to current node24 runtimes (older node20-runtime
+      # actions are deprecated on GitHub-hosted runners — Sept 2025 changelog).
+      - uses: actions/checkout@v5
 
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 11.7.0
+      # No `version:` here on purpose — pnpm/action-setup reads the version from
+      # package.json's `packageManager` field (the single source of truth). Passing
+      # both errors with ERR_PNPM_BAD_PM_VERSION ("Multiple versions of pnpm specified").
+      - uses: pnpm/action-setup@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
-          node-version: "22"
+          node-version: "24"
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
