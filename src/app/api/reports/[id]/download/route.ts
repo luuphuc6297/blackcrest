@@ -79,6 +79,8 @@ export async function GET(
       "Content-Disposition": `attachment; filename="${report.slug}.pdf"`,
       "Content-Length": String(size),
       "Cache-Control": "private, no-store",
+      // Gated, per-user watermarked attachment — never index/cache/snippet it.
+      "X-Robots-Tag": "noindex, noarchive, nosnippet",
     },
   });
 }

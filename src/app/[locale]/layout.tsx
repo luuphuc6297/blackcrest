@@ -1,24 +1,24 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
+import { SITE_URL, OG_LOCALE } from "@/lib/site-url";
 import { fontVariables } from "../fonts";
 import { Providers } from "../providers";
 import "../globals.css";
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://blackcrest.vn";
+/** Browser-chrome colour: grey desk in light, near-black brand in dark. */
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f6f6f8" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0b0d" },
+  ],
+};
 
-const TITLES: Record<string, string> = {
-  vi: "Blackcrest — Cổng tài liệu đầu tư",
-  en: "Blackcrest — Investment Document Portal",
-  zh: "Blackcrest — 投资文件门户",
-};
-const DESCRIPTIONS: Record<string, string> = {
-  vi: "Cổng phân phối tài liệu đầu tư tư nhân, kiểm soát truy cập đến từng trang.",
-  en: "Private-wealth investment document portal with page-level access control.",
-  zh: "私人财富投资文件门户，逐页严格的访问控制。",
-};
+/** Document language. The zh bundle is Simplified, so emit `zh-Hans` (matching
+ *  the zh_CN used in og:locale / JSON-LD) instead of the coarse `zh`. */
+const HTML_LANG: Record<string, string> = { vi: "vi", en: "en", zh: "zh-Hans" };
 
 export async function generateMetadata({
   params,
@@ -26,13 +26,17 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Metadata" });
+  const ogLocale = OG_LOCALE[locale] ?? OG_LOCALE.vi;
+
   return {
-    metadataBase: new URL(APP_URL),
+    metadataBase: new URL(SITE_URL),
+    applicationName: "Blackcrest",
     title: {
-      default: TITLES[locale] ?? TITLES.vi,
+      default: t("defaultTitle"),
       template: "%s · Blackcrest",
     },
-    description: DESCRIPTIONS[locale] ?? DESCRIPTIONS.vi,
+    description: t("defaultDescription"),
     // Gated portal — keep search engines out by default; the marketing landing
     // page opts back in via its own generateMetadata.
     robots: { index: false, follow: false },
@@ -40,6 +44,24 @@ export async function generateMetadata({
       canonical: `/${locale}`,
       languages: { vi: "/vi", en: "/en", zh: "/zh", "x-default": "/vi" },
     },
+    // Brand defaults inherited by every route. og:title/og:description fall back
+    // to each page's title/description; the image comes from the opengraph-image
+    // file convention (src/app/opengraph-image.tsx).
+    openGraph: {
+      type: "website",
+      siteName: "Blackcrest",
+      url: `/${locale}`,
+      locale: ogLocale,
+      alternateLocale: Object.values(OG_LOCALE).filter((l) => l !== ogLocale),
+    },
+    twitter: { card: "summary_large_image" },
+    ...(process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+      ? {
+          verification: {
+            google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
+          },
+        }
+      : {}),
   };
 }
 
@@ -62,7 +84,11 @@ export default async function LocaleLayout({
   setRequestLocale(locale);
 
   return (
-    <html lang={locale} className={fontVariables} suppressHydrationWarning>
+    <html
+      lang={HTML_LANG[locale] ?? locale}
+      className={fontVariables}
+      suppressHydrationWarning
+    >
       {/* suppressHydrationWarning: browser extensions (Grammarly etc.) inject
           attributes onto <body> before React hydrates — harmless, but it would
           otherwise log a hydration-attribute mismatch. */}

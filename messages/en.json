@@ -1,4 +1,12 @@
 {
+  "Metadata": {
+    "defaultTitle": "Blackcrest — Investment Document Portal",
+    "defaultDescription": "Blackcrest's private-wealth document portal — issue, approve and distribute confidential investment reports with page-level access control.",
+    "landingTitle": "Investment documents, controlled to every page",
+    "landingDescription": "Blackcrest issues, approves and distributes confidential investment reports to investors in one precise, fast and secure workflow.",
+    "loginTitle": "Sign in",
+    "registerTitle": "Request access"
+  },
   "Brand": {
     "name": "Blackcrest",
     "tagline": "Investment documents, controlled to the page"

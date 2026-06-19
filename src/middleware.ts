@@ -26,7 +26,15 @@ export default auth((req) => {
   const locale = hasLocale ? segments[0] : routing.defaultLocale;
   const rest = "/" + segments.slice(hasLocale ? 1 : 0).join("/");
 
-  const needsAuth = rest.startsWith("/portal") || rest.startsWith("/admin");
+  // Gate every post-login area so unauthenticated crawlers/visitors get a 307 →
+  // /login instead of a 200 HTML shell (defence-in-depth + keeps gated routes
+  // out of search). startsWith("/reports") covers both the library index and the
+  // /reports/[slug] viewer. needsStaff stays /admin-only — clients use the rest.
+  const needsAuth =
+    rest.startsWith("/portal") ||
+    rest.startsWith("/admin") ||
+    rest.startsWith("/reports") ||
+    rest.startsWith("/profile");
   const needsStaff = rest.startsWith("/admin");
 
   if (needsAuth && !session?.user) {
@@ -43,6 +51,11 @@ export default auth((req) => {
 
 export const config = {
   // Everything EXCEPT Next internals, /api (auth + PDF stream, locale-independent),
-  // and files with an extension.
-  matcher: ["/((?!api|_next|_vercel|.*\\..*).*)"],
+  // files with an extension, and the GENERATED metadata routes. The latter have no
+  // file extension, so without listing them here next-intl would 307 them to a
+  // locale-prefixed path (/opengraph-image → /vi/opengraph-image → 404) and the
+  // social share image / app icons would silently break for crawlers.
+  matcher: [
+    "/((?!api|_next|_vercel|.*\\..*)(?!(?:opengraph-image|apple-icon)(?![\\w-])).*)",
+  ],
 };

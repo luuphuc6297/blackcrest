@@ -1,4 +1,12 @@
 {
+  "Metadata": {
+    "defaultTitle": "Blackcrest — Cổng tài liệu đầu tư",
+    "defaultDescription": "Cổng tài liệu đầu tư tư nhân của Blackcrest — phát hành, phê duyệt và phân phối báo cáo bảo mật với kiểm soát truy cập đến từng trang.",
+    "landingTitle": "Tài liệu đầu tư, được kiểm soát đến từng trang",
+    "landingDescription": "Blackcrest phát hành, phê duyệt và phân phối báo cáo đầu tư bảo mật tới nhà đầu tư trong một quy trình duy nhất — chính xác, nhanh và an toàn.",
+    "loginTitle": "Đăng nhập",
+    "registerTitle": "Yêu cầu truy cập"
+  },
   "Brand": {
     "name": "Blackcrest",
     "tagline": "Tài liệu đầu tư, được kiểm soát đến từng trang"

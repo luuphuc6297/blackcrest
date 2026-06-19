@@ -7,6 +7,7 @@ import type { IconName } from "@/components/icon";
 import { Logo } from "@/components/logo";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { Reveal } from "@/components/reveal";
+import { SITE_URL, OG_LOCALE } from "@/lib/site-url";
 import { MobileMenu } from "./mobile-menu";
 
 export async function generateMetadata({
@@ -15,22 +16,13 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  const title =
-    locale === "en"
-      ? "Investment documents, controlled to every page"
-      : locale === "zh"
-        ? "投资文件，逐页严格管控"
-        : "Tài liệu đầu tư, được kiểm soát đến từng trang";
-  const description =
-    locale === "en"
-      ? "Blackcrest issues, approves and distributes confidential investment reports to investors — in one precise, fast workflow."
-      : locale === "zh"
-        ? "Blackcrest 在单一流程中发布、审批并向投资者分发机密投资报告——精准高效。"
-        : "Blackcrest phát hành, phê duyệt và phân phối báo cáo đầu tư bảo mật tới nhà đầu tư — trong một quy trình duy nhất, chính xác và nhanh.";
-  // Marketing landing — the one public page we DO want indexed.
+  const t = await getTranslations({ locale, namespace: "Metadata" });
+  // Marketing landing — the one public page we DO want indexed (overrides the
+  // layout's noindex default). OG/twitter (siteName, locale, image) are inherited
+  // from the layout; og:title/description fall back to title/description here.
   return {
-    title,
-    description,
+    title: t("landingTitle"),
+    description: t("landingDescription"),
     robots: { index: true, follow: true },
     alternates: {
       canonical: `/${locale}`,
@@ -50,6 +42,33 @@ export default async function LandingPage({
   setRequestLocale(locale);
   const t = await getTranslations();
 
+  // Organization + WebSite structured data — landing only (gated content never
+  // gets JSON-LD). Drives brand SERP / knowledge-panel signals.
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": `${SITE_URL}/#organization`,
+        name: "Blackcrest",
+        url: SITE_URL,
+        // Google's logo guidance wants a raster image ≥112px — point at the
+        // generated 180×180 PNG app icon, not the SVG crest.
+        logo: `${SITE_URL}/apple-icon`,
+        description: t("Metadata.defaultDescription"),
+        areaServed: "VN",
+      },
+      {
+        "@type": "WebSite",
+        "@id": `${SITE_URL}/#website`,
+        name: "Blackcrest",
+        url: `${SITE_URL}/${locale}`,
+        publisher: { "@id": `${SITE_URL}/#organization` },
+        inLanguage: (OG_LOCALE[locale] ?? OG_LOCALE.vi).replace("_", "-"),
+      },
+    ],
+  };
+
   const nav: NavItem[] = [
     { label: t("Marketing.products"), href: "#san-pham" },
     { label: t("Marketing.security"), href: "#bao-mat" },
@@ -59,6 +78,10 @@ export default async function LandingPage({
 
   return (
     <div className="min-h-screen bg-surface-marketing">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <div className="bg-surface">
         <Header
           nav={nav}

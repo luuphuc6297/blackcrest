@@ -72,6 +72,8 @@ export async function GET(
     "Content-Disposition": `inline; filename="${report.slug}.pdf"`,
     "Cache-Control": "private, no-store",
     "Accept-Ranges": "bytes",
+    // Gated, per-user watermarked stream — never index/cache/snippet it.
+    "X-Robots-Tag": "noindex, noarchive, nosnippet",
   };
 
   // Fire-and-forget access log (after authorization).
@@ -91,7 +93,10 @@ export async function GET(
     if (start >= size || end >= size || start > end) {
       return new Response("Range Not Satisfiable", {
         status: 416,
-        headers: { "Content-Range": `bytes */${size}` },
+        headers: {
+          "Content-Range": `bytes */${size}`,
+          "X-Robots-Tag": "noindex, noarchive, nosnippet",
+        },
       });
     }
     const stream = storage.getStream(key, { start, end });

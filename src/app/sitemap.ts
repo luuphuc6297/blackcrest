@@ -1,7 +1,6 @@
 import type { MetadataRoute } from "next";
 import { routing } from "@/i18n/routing";
-
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://blackcrest.vn";
+import { SITE_URL } from "@/lib/site-url";
 
 /**
  * Sitemap for the PUBLIC, indexable routes across all locales, each with
@@ -14,14 +13,17 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   return routing.locales.flatMap((locale) =>
     routes.map((route) => ({
-      url: `${APP_URL}/${locale}${route}`,
+      url: `${SITE_URL}/${locale}${route}`,
       lastModified: new Date(),
       changeFrequency: route === "" ? ("weekly" as const) : ("monthly" as const),
       priority: route === "" ? 1 : 0.6,
       alternates: {
-        languages: Object.fromEntries(
-          routing.locales.map((l) => [l, `${APP_URL}/${l}${route}`]),
-        ),
+        languages: {
+          ...Object.fromEntries(
+            routing.locales.map((l) => [l, `${SITE_URL}/${l}${route}`]),
+          ),
+          "x-default": `${SITE_URL}/${routing.defaultLocale}${route}`,
+        },
       },
     })),
   );

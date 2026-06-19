@@ -12,8 +12,9 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Metadata" });
   return {
-    title: locale === "en" ? "Sign in" : locale === "zh" ? "登录" : "Đăng nhập",
+    title: t("loginTitle"),
     alternates: {
       canonical: `/${locale}/login`,
       languages: {

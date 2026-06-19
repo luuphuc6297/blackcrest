@@ -1,4 +1,12 @@
 {
+  "Metadata": {
+    "defaultTitle": "Blackcrest — 投资文件门户",
+    "defaultDescription": "Blackcrest 私人财富文件门户——发布、审批并分发机密投资报告，逐页严格的访问控制。",
+    "landingTitle": "投资文件，逐页严格管控",
+    "landingDescription": "Blackcrest 在单一流程中发布、审批并向投资者分发机密投资报告——精准、高效且安全。",
+    "loginTitle": "登录",
+    "registerTitle": "申请访问"
+  },
   "Brand": {
     "name": "Blackcrest",
     "tagline": "投资文件，逐页可控"
