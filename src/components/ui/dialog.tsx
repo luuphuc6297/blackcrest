@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
 
 /**
@@ -35,18 +36,32 @@ export function Dialog({
   footer,
   width = 460,
 }: DialogProps) {
+  // Mount gate so createPortal only runs on the client (document exists).
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => setMounted(true), []);
+
   React.useEffect(() => {
     if (!open) return;
+    // Lock background scroll while the modal is open.
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose?.();
     };
     document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      document.removeEventListener("keydown", onKey);
+    };
   }, [open, onClose]);
 
-  if (!open) return null;
+  if (!open || !mounted) return null;
 
-  return (
+  // Portal to <body> so the fixed scrim + panel escape any ancestor that creates
+  // a containing block (transform/filter/contain — e.g. the .bc-rise reveal
+  // animation). Otherwise the scrim only covers the local container and the modal
+  // renders mispositioned with the page showing through un-dimmed.
+  return createPortal(
     <div
       onMouseDown={onClose}
       className="fixed inset-0 z-[100] flex items-center justify-center bg-overlay p-5 backdrop-blur-[2px]"
@@ -94,6 +109,7 @@ export function Dialog({
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
