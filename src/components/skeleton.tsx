@@ -22,11 +22,11 @@ export function AppShellSkeleton() {
       {/* Sidebar — desktop only (mobile shows the drawer/hamburger in AppShell) */}
       <aside className="hidden flex-col gap-2 border-r border-line bg-surface-1 px-3 py-[14px] md:flex">
         <div className="mb-3 flex items-center gap-[9px] px-1.5 py-1">
-          <Skeleton className="h-7 w-7 rounded-[7px]" />
+          <Skeleton className="h-7 w-7 rounded-card" />
           <Skeleton className="h-4 w-24" />
         </div>
         {Array.from({ length: 4 }).map((_, i) => (
-          <Skeleton key={i} className="h-8 w-full rounded-[6px]" />
+          <Skeleton key={i} className="h-8 w-full rounded-card" />
         ))}
         <div className="mt-auto flex items-center gap-[10px] border-t border-line px-1.5 py-2.5">
           <Skeleton className="h-[30px] w-[30px] rounded-pill" />
@@ -36,11 +36,11 @@ export function AppShellSkeleton() {
 
       {/* Main */}
       <main className="flex min-w-0 flex-col overflow-hidden">
-        <header className="flex h-16 flex-none items-center gap-3 border-b border-line px-4 md:px-7">
+        <header className="flex h-12 flex-none items-center gap-2 border-b border-line px-4 md:gap-3 md:px-7">
           {/* Hamburger placeholder — mobile only */}
-          <Skeleton className="h-9 w-9 rounded-control md:hidden" />
+          <Skeleton className="size-[28px] rounded-control md:hidden" />
           <Skeleton className="h-5 w-32 sm:w-40" />
-          <Skeleton className="ml-auto h-9 w-16" />
+          <Skeleton className="ml-auto h-[28px] w-16" />
         </header>
         <div className="mx-auto w-full max-w-[1180px] px-4 py-5 md:px-7 md:py-7">
           <div className="mb-6 grid grid-cols-2 gap-[14px] lg:grid-cols-4">
@@ -49,7 +49,7 @@ export function AppShellSkeleton() {
             ))}
           </div>
           <Skeleton className="mb-3 h-7 w-48 sm:w-56" />
-          <div className="overflow-hidden rounded-card border border-line">
+          <div className="overflow-hidden rounded-card border border-line bg-surface-card shadow-soft-lit">
             {Array.from({ length: 6 }).map((_, i) => (
               <div
                 key={i}

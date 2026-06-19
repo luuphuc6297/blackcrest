@@ -52,7 +52,7 @@ export function LanguageSwitcher({ className }: { className?: string }) {
         aria-label={t("label")}
         disabled={pending}
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex h-9 items-center gap-1.5 rounded-control border border-line bg-surface px-2.5 font-mono text-[12px] font-medium uppercase tracking-[0.04em] text-ink transition-colors hover:bg-surface-hover disabled:opacity-60"
+        className="inline-flex h-[28px] items-center gap-1.5 rounded-control border border-line bg-surface px-2.5 font-mono text-mini font-medium uppercase tracking-[0.04em] text-ink transition-colors hover:bg-surface-hover disabled:opacity-60"
       >
         {SHORT[locale] ?? locale}
         <Icon
@@ -84,14 +84,14 @@ export function LanguageSwitcher({ className }: { className?: string }) {
               aria-selected={active}
               onClick={() => select(loc)}
               className={cn(
-                "flex w-full items-center justify-between gap-3 px-3 py-[7px] text-left text-[13px] transition-colors",
+                "flex w-full items-center justify-between gap-3 px-3 py-[7px] text-left text-small transition-colors",
                 active
                   ? "font-semibold text-ink"
                   : "font-medium text-ink-2 hover:bg-surface-hover hover:text-ink",
               )}
             >
               <span className="flex items-center gap-[10px]">
-                <span className="w-5 font-mono text-[11px] uppercase text-ink-4">
+                <span className="w-5 font-mono text-micro uppercase text-ink-4">
                   {SHORT[loc]}
                 </span>
                 {t(loc)}

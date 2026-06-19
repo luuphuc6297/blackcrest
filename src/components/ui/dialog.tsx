@@ -65,18 +65,18 @@ export function Dialog({
           maxWidth: width,
           animation: "bc-pop var(--duration-slow) var(--ease-signature)",
         }}
-        className="w-full overflow-hidden rounded-card-lg border border-line bg-surface shadow-float"
+        className="w-full overflow-hidden rounded-card-lg bg-surface-card shadow-stack-high"
       >
         <div className="flex flex-col gap-[14px] px-[22px] py-5">
           {(title || description) && (
             <div className="flex flex-col gap-[5px]">
               {title && (
-                <h2 className="font-sans text-[20px] font-semibold tracking-[-0.012em] text-ink">
+                <h2 className="font-sans text-title-3 font-semibold tracking-tight text-ink">
                   {title}
                 </h2>
               )}
               {description && (
-                <p className="font-sans text-[15px] leading-[1.5] text-ink-3">
+                <p className="font-sans text-regular leading-normal text-ink-3">
                   {description}
                 </p>
               )}

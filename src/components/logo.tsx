@@ -16,7 +16,7 @@ export function Logo({ variant = "full", size = 28, className }: LogoProps) {
   return (
     <div className={cn("flex items-center gap-[9px]", className)}>
       <span
-        className="flex shrink-0 items-center justify-center rounded-[7px] bg-accent"
+        className="flex shrink-0 items-center justify-center rounded-card bg-accent"
         style={{ width: size, height: size }}
       >
         <svg
@@ -45,7 +45,7 @@ export function Logo({ variant = "full", size = 28, className }: LogoProps) {
       </span>
       {variant === "full" && (
         <span
-          className="font-serif font-semibold tracking-[-0.012em] text-ink"
+          className="font-serif font-semibold tracking-tight text-ink"
           style={{ fontSize: Math.round(size * 0.68) }}
         >
           Blackcrest

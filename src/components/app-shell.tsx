@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip } from "@/components/ui/tooltip";
 import { Icon, type IconName } from "@/components/icon";
 import { Logo } from "@/components/logo";
 import { signOutAction } from "@/server/auth-actions";
@@ -58,7 +59,7 @@ function NavLink({
       aria-current={active ? "page" : undefined}
       onClick={onNavigate}
       className={cn(
-        "flex w-full items-center gap-[10px] rounded-[6px] px-[10px] py-[7px] text-left font-sans text-[15px] transition-[background-color,color] duration-[180ms]",
+        "flex w-full items-center gap-[10px] rounded-card px-[10px] py-[7px] text-left font-sans text-regular transition-[background-color,color] duration-[180ms]",
         active
           ? "bg-accent-tint font-semibold text-accent"
           : "font-medium text-ink-2 hover:bg-surface-hover active:bg-surface-active",
@@ -103,7 +104,15 @@ export function AppShell({
   }, [open]);
 
   return (
-    <div className="h-screen bg-surface font-sans text-ink md:grid md:grid-cols-[240px_1fr]">
+    <div className="h-[100dvh] bg-surface font-sans text-ink md:grid md:grid-cols-[240px_1fr]">
+      {/* Skip-link — first focusable element; lets keyboard users jump past the
+          240px sidebar straight to the page content. */}
+      <a
+        href="#main"
+        className="sr-only rounded-control border border-line bg-surface-card px-3 py-2 text-small font-medium text-ink shadow-stack focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-[100]"
+      >
+        {tc("skipToContent")}
+      </a>
       {/* Mobile scrim */}
       {open && (
         <button
@@ -116,8 +125,9 @@ export function AppShell({
 
       {/* Sidebar (fixed drawer on mobile, in-grid on md+) */}
       <aside
+        aria-label={tc("primaryNav")}
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex w-[240px] flex-col border-r border-line bg-surface-1 px-[12px] py-[14px] transition-transform duration-[260ms] ease-signature md:static md:z-auto md:translate-x-0",
+          "fixed inset-y-0 left-0 z-50 flex w-[240px] flex-col border-r border-line-2 bg-surface-1 px-[12px] py-[14px] transition-transform duration-[260ms] ease-signature md:static md:z-auto md:translate-x-0",
           open ? "translate-x-0 shadow-float md:shadow-none" : "-translate-x-full",
         )}
       >
@@ -129,9 +139,9 @@ export function AppShell({
             type="button"
             aria-label={tc("closeMenu")}
             onClick={close}
-            className="flex h-7 w-7 items-center justify-center rounded-control text-ink-3 hover:bg-surface-hover md:hidden"
+            className="flex size-[28px] items-center justify-center rounded-control text-ink-3 hover:bg-surface-hover md:hidden"
           >
-            <Icon name="x" size={18} />
+            <Icon name="x" size={16} />
           </button>
         </div>
 
@@ -140,7 +150,7 @@ export function AppShell({
             "section" in item ? (
               <div
                 key={item.section}
-                className="px-[10px] pb-[6px] pt-[14px] font-sans text-[10px] font-medium uppercase tracking-[0.06em] text-ink-3"
+                className="px-[10px] pb-[6px] pt-[14px] font-sans text-[10px] font-medium uppercase tracking-caps text-ink-3"
               >
                 {item.section}
               </div>
@@ -175,50 +185,52 @@ export function AppShell({
             >
               <Avatar name={user.name} size={30} />
               <div className="min-w-0 flex-1">
-                <div className="truncate text-[13px] font-semibold">
+                <div className="truncate text-small font-semibold">
                   {user.name}
                 </div>
-                <div className="text-[11px] text-ink-3">{user.role}</div>
+                <div className="text-micro text-ink-3">{user.role}</div>
               </div>
             </Link>
             <form action={signOutAction} className="flex">
-              <button
-                type="submit"
-                aria-label={tNav("signOut")}
-                className="flex h-7 w-7 items-center justify-center rounded-control text-ink-4 transition-colors hover:bg-surface-hover hover:text-ink"
-              >
-                <Icon name="log-out" size={15} />
-              </button>
+              <Tooltip content={tNav("signOut")} side="top">
+                <button
+                  type="submit"
+                  aria-label={tNav("signOut")}
+                  className="flex size-[28px] items-center justify-center rounded-control text-ink-3 transition-colors hover:bg-surface-hover hover:text-ink"
+                >
+                  <Icon name="log-out" size={16} />
+                </button>
+              </Tooltip>
             </form>
           </div>
         </div>
       </aside>
 
       {/* Main */}
-      <main className="flex min-w-0 flex-col overflow-hidden">
+      <main id="main" tabIndex={-1} className="flex min-w-0 flex-col overflow-hidden outline-none">
         <header className="flex h-12 flex-none items-center gap-2 border-b border-line px-4 md:gap-3 md:px-7">
           <button
             type="button"
             aria-label={tc("openMenu")}
             onClick={() => setOpen(true)}
-            className="flex h-9 w-9 flex-none items-center justify-center rounded-control border border-line text-ink-2 hover:bg-surface-hover md:hidden"
+            className="flex size-[28px] flex-none items-center justify-center rounded-control border border-line text-ink-3 hover:bg-surface-hover md:hidden"
           >
-            <Icon name="menu" size={18} />
+            <Icon name="menu" size={16} />
           </button>
           <button
             type="button"
             aria-label={tc("back")}
             onClick={() => router.back()}
-            className="flex h-9 w-9 flex-none items-center justify-center rounded-control text-ink-3 transition-colors hover:bg-surface-hover hover:text-ink"
+            className="flex size-[28px] flex-none items-center justify-center rounded-control text-ink-3 transition-colors hover:bg-surface-hover hover:text-ink"
           >
-            <Icon name="arrow-left" size={18} />
+            <Icon name="arrow-left" size={16} />
           </button>
-          <h1 className="truncate text-[17px] font-semibold tracking-[-0.012em] md:text-[19px]">
+          <h1 className="truncate text-[17px] font-semibold tracking-tight md:text-[19px]">
             {title}
           </h1>
           <div className="ml-auto flex items-center gap-[10px]">{actions}</div>
         </header>
-        <div className="flex-1 overflow-auto">{children}</div>
+        <div className="flex-1 overflow-auto bg-surface">{children}</div>
       </main>
     </div>
   );

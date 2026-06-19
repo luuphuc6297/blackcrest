@@ -30,8 +30,34 @@
   --font-weight-semibold: 590;
   --font-weight-bold: 680;
 
+  /* ── Font sizes → text-micro, text-regular, text-title-1, … (additive) ─── */
+  --text-micro: var(--font-size-micro);
+  --text-mini: var(--font-size-mini);
+  --text-small: var(--font-size-small);
+  --text-regular: var(--font-size-regular);
+  --text-medium: var(--font-size-medium);
+  --text-large: var(--font-size-large);
+  --text-title-3: var(--font-size-title-3);
+  --text-title-2: var(--font-size-title-2);
+  --text-title-1: var(--font-size-title-1);
+
+  /* ── Tracking → tracking-tight, tracking-caps, … ──────────────────────── */
+  --tracking-tight: var(--tracking-tight);
+  --tracking-tighter: var(--tracking-tighter);
+  --tracking-normal: var(--tracking-normal);
+  --tracking-wide: var(--tracking-wide);
+  --tracking-caps: var(--tracking-caps);
+
+  /* ── Line-height → leading-tight, leading-relaxed, … ──────────────────── */
+  --leading-tight: var(--line-height-tight);
+  --leading-snug: var(--line-height-snug);
+  --leading-normal: var(--line-height-normal);
+  --leading-relaxed: var(--line-height-relaxed);
+
   /* ── Surfaces → bg-surface, bg-surface-1, … (theme-aware) ──────────────── */
   --color-surface: var(--color-bg-primary);
+  --color-surface-card: var(--color-bg-card);
+  --color-canvas-reading: var(--color-bg-canvas-reading);
   --color-surface-marketing: var(--color-bg-marketing);
   --color-surface-1: var(--color-bg-level-1);
   --color-surface-2: var(--color-bg-level-2);
@@ -69,6 +95,8 @@
   --color-warning: var(--color-warning);
   --color-warning-tint: var(--color-warning-tint);
   --color-danger: var(--color-danger);
+  --color-danger-hover: var(--color-danger-hover);
+  --color-danger-active: var(--color-danger-active);
   --color-danger-tint: var(--color-danger-tint);
   --color-info: var(--color-info);
   --color-info-tint: var(--color-info-tint);
@@ -81,13 +109,9 @@
   --color-status-archived: var(--status-archived);
   --color-status-rejected: var(--status-rejected);
 
-  /* ── Radii — institutional sharp geometry (also emitted as CSS vars) ───── */
-  --radius-control: 2px; /* buttons, inputs, selects */
-  --radius-badge: 3px; /* badges, tags */
-  --radius-card: 4px; /* cards, panels */
-  --radius-card-lg: 4px; /* large surfaces, modals */
-  --radius-page: 2px; /* PDF page surface — near-square */
-  --radius-pill: 9999px; /* avatars / status dots */
+  /* ── Radii — moved to the NON-inline @theme block below, so the rounded-*
+   *    utilities reference var(--radius-*) (live-overridable by the Appearance
+   *    "Corner radius" setting) instead of inlining literal px. ───────────── */
 
   /* ── Shadows (theme-aware) → shadow-soft / shadow-card / shadow-float ──── */
   --shadow-soft: var(--shadow-low);
@@ -110,6 +134,74 @@
 @theme {
   --default-transition-timing-function: var(--ease-signature);
   --default-transition-duration: 180ms;
+
+  /* Radii — NON-inline on purpose: emits :root --radius-* vars AND makes the
+   * rounded-* utilities reference var(--radius-*), so the Appearance "Corner
+   * radius" setting (html[data-radius=...] overrides below) applies live. */
+  --radius-control: 2px; /* buttons, inputs, selects */
+  --radius-badge: 3px; /* badges, tags */
+  --radius-card: 4px; /* cards, panels */
+  --radius-card-lg: 4px; /* large surfaces, modals */
+  --radius-page: 2px; /* PDF page surface — near-square */
+  --radius-pill: 9999px; /* avatars / status dots */
+}
+
+/* ── Appearance: Density (data-density on <html>) ──────────────────────────
+ * Drives the high-volume spacing (table rows + card bodies). Comfortable is the
+ * default; compact tightens it for users managing many reports. Scoped tokens —
+ * NOT --spacing (which multiplies every utility). */
+:root {
+  --density-cell-py: 11px; /* DataTable row cell vertical padding */
+  --density-card-p: 18px; /* card body padding */
+}
+html[data-density="compact"] {
+  --density-cell-py: 6px;
+  --density-card-p: 13px;
+}
+
+/* ── Appearance: Corner radius (data-radius on <html>) ─────────────────────
+ * Sharp is the institutional default (in @theme). Soft/Round soften corners.
+ * The PDF page stays near-square (it's a document, not a UI chip). */
+html[data-radius="soft"] {
+  --radius-control: 5px;
+  --radius-badge: 5px;
+  --radius-card: 8px;
+  --radius-card-lg: 10px;
+  --radius-page: 3px;
+}
+html[data-radius="round"] {
+  --radius-control: 9px;
+  --radius-badge: 8px;
+  --radius-card: 14px;
+  --radius-card-lg: 18px;
+  --radius-page: 4px;
+}
+
+/* ── Elevation utilities ───────────────────────────────────────────────────
+ * Defined as direct box-shadow utilities (NOT @theme --shadow-* tokens) because
+ * Tailwind v4's shadow machinery mangles multi-layer values that begin with
+ * `inset` (the key-light). These read the raw tokens, which retune live via
+ * <html data-depth/data-reading>. */
+@utility shadow-soft-lit {
+  box-shadow: var(--shadow-low-lit);
+}
+@utility shadow-card-lit {
+  box-shadow: var(--shadow-medium-lit);
+}
+@utility shadow-float-lit {
+  box-shadow: var(--shadow-high-lit);
+}
+@utility shadow-well {
+  box-shadow: var(--shadow-well-raw);
+}
+@utility shadow-page {
+  box-shadow: var(--shadow-page-raw);
+}
+@utility shadow-page-active {
+  box-shadow: var(--shadow-page-active-raw);
+}
+@utility shadow-chrome-scrolled {
+  box-shadow: var(--shadow-chrome-raw);
 }
 
 @layer base {

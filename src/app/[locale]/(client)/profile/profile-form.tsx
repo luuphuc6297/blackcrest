@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useActionState } from "react";
 import { useTranslations } from "next-intl";
-import { Button, Card, Input, Toast } from "@/components/ui";
+import { Button, Card, InlineAlert, Input, PasswordInput, Toast } from "@/components/ui";
 import { Icon } from "@/components/icon";
 import {
   updateProfile,
@@ -34,12 +34,13 @@ export function ProfileForm({
     <div className="flex flex-col gap-5">
       {/* Account info */}
       <Card padding={0}>
-        <div className="border-b border-line px-[18px] py-4">
-          <h2 className="text-[16px] font-semibold tracking-[-0.012em]">
+        <div className="flex items-center gap-[10px] border-b border-line px-[20px] py-[16px]">
+          <Icon name="user" size={17} className="flex-none text-ink-3" />
+          <h2 className="text-medium font-semibold tracking-tight">
             {t("accountInfo")}
           </h2>
         </div>
-        <form action={pAction} className="flex flex-col gap-[14px] p-[18px]">
+        <form action={pAction} className="flex flex-col gap-[14px] p-[20px]">
           <input type="hidden" name="locale" value={locale} />
           <div className="grid grid-cols-1 gap-[14px] sm:grid-cols-2">
             <Input label={t("email")} defaultValue={email} disabled />
@@ -63,40 +64,46 @@ export function ProfileForm({
             </Button>
           </div>
           {pState.status === "error" && pState.message && (
-            <FormError message={pState.message} />
+            <InlineAlert>{pState.message}</InlineAlert>
           )}
         </form>
       </Card>
 
       {/* Change password */}
       <Card padding={0}>
-        <div className="border-b border-line px-[18px] py-4">
-          <h2 className="text-[16px] font-semibold tracking-[-0.012em]">
-            {t("changePassword")}
-          </h2>
-          <p className="mt-1 text-[12px] text-ink-3">{t("changePasswordNote")}</p>
+        <div className="flex items-start gap-[10px] border-b border-line px-[20px] py-[16px]">
+          <Icon name="lock" size={17} className="mt-[2px] flex-none text-ink-3" />
+          <div className="min-w-0">
+            <h2 className="text-medium font-semibold tracking-tight">
+              {t("changePassword")}
+            </h2>
+            <p className="mt-1 text-mini text-ink-3">{t("changePasswordNote")}</p>
+          </div>
         </div>
-        <form action={wAction} className="flex flex-col gap-[14px] p-[18px]">
+        <form action={wAction} className="flex flex-col gap-[14px] p-[20px]">
           <input type="hidden" name="locale" value={locale} />
-          <Input
+          <PasswordInput
             label={t("currentPassword")}
             name="currentPassword"
-            type="password"
+            placeholder={t("currentPasswordPlaceholder")}
+            autoComplete="current-password"
             required
             error={wState.fieldErrors?.currentPassword}
           />
           <div className="grid grid-cols-1 gap-[14px] sm:grid-cols-2">
-            <Input
+            <PasswordInput
               label={t("newPassword")}
               name="newPassword"
-              type="password"
+              placeholder={t("newPasswordPlaceholder")}
+              autoComplete="new-password"
               required
               error={wState.fieldErrors?.newPassword}
             />
-            <Input
+            <PasswordInput
               label={t("confirmPassword")}
               name="confirmPassword"
-              type="password"
+              placeholder={t("confirmPasswordPlaceholder")}
+              autoComplete="new-password"
               required
               error={wState.fieldErrors?.confirmPassword}
             />
@@ -107,7 +114,7 @@ export function ProfileForm({
             </Button>
           </div>
           {wState.status === "error" && wState.message && (
-            <FormError message={wState.message} />
+            <InlineAlert>{wState.message}</InlineAlert>
           )}
         </form>
       </Card>
@@ -123,17 +130,5 @@ export function ProfileForm({
         </div>
       )}
     </div>
-  );
-}
-
-function FormError({ message }: { message: string }) {
-  return (
-    <p
-      role="alert"
-      className="flex items-center gap-[7px] rounded-control border border-danger/40 bg-danger-tint px-[10px] py-[8px] text-[13px] text-danger"
-    >
-      <Icon name="alert-circle" size={14} />
-      {message}
-    </p>
   );
 }

@@ -3,7 +3,7 @@
 import { useActionState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import { Button, Checkbox, Input } from "@/components/ui";
+import { Button, Checkbox, InlineAlert, Input, PasswordInput } from "@/components/ui";
 import { Icon } from "@/components/icon";
 import { loginAction, type AuthFormState } from "@/server/auth-actions";
 
@@ -30,7 +30,7 @@ export function LoginForm({
         <h1 className="text-[26px] font-semibold tracking-[-0.018em] text-ink">
           {t("loginTitle")}
         </h1>
-        <p className="mt-[6px] text-[15px] text-ink-3">{t("loginSubtitle")}</p>
+        <p className="mt-[6px] text-regular text-ink-3">{t("loginSubtitle")}</p>
       </div>
 
       <input type="hidden" name="locale" value={locale} />
@@ -42,19 +42,19 @@ export function LoginForm({
         label={t("email")}
         name="email"
         type="email"
+        size="lg"
+        autoFocus
         autoComplete="email"
         required
         placeholder={t("emailPlaceholder")}
         leadingIcon={<Icon name="mail" size={16} />}
       />
-      <Input
+      <PasswordInput
         label={t("password")}
         name="password"
-        type="password"
         autoComplete="current-password"
         required
         placeholder="••••••••"
-        leadingIcon={<Icon name="lock" size={16} />}
       />
 
       <div className="flex items-center justify-between">
@@ -62,20 +62,14 @@ export function LoginForm({
       </div>
 
       {state.status === "error" && state.message && (
-        <p
-          role="alert"
-          className="flex items-center gap-[7px] rounded-control border border-danger/40 bg-danger-tint px-[10px] py-[8px] text-[13px] text-danger"
-        >
-          <Icon name="alert-circle" size={14} />
-          {state.message}
-        </p>
+        <InlineAlert>{state.message}</InlineAlert>
       )}
 
       <Button type="submit" variant="primary" size="lg" fullWidth loading={pending}>
         {t("loginTitle")}
       </Button>
 
-      <p className="text-center text-[13px] text-ink-3">
+      <p className="text-center text-small text-ink-3">
         {t("noAccount")}{" "}
         <Link
           href="/register"

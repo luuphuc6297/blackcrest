@@ -1,7 +1,11 @@
-/* Blackcrest — Spacing & layout tokens. Base unit 8px. */
+/* Blackcrest — Spacing & layout tokens.
+ * IMPORTANT: --spacing is Tailwind's scale BASE and must stay at the 4px default
+ * (0.25rem). It multiplies EVERY numeric utility (h-9 = 9 * --spacing). Setting it
+ * to 8px previously doubled the whole scale (h-9 → 72px, h-12 header → 96px) — a bug.
+ * The 8px design rhythm is expressed by using even scale steps: gap-2 = 8px, p-4 = 16px. */
 
 :root {
-  --spacing: 8px;
+  --spacing: 0.25rem;
 
   /* 8px-based scale (with two sub-steps for dense UI) */
   --space-0: 0;
@@ -26,7 +30,7 @@
   --page-padding-block: 64px;
 
   /* Chrome heights */
-  --header-height: 64px;
+  --header-height: 48px;
   --header-height-marketing: 72px;
   --sidebar-width: 240px;
   --sidebar-width-collapsed: 56px;

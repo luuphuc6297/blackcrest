@@ -1,14 +1,15 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
-import { requireRole } from "@/lib/rbac";
+import { requireCapability } from "@/lib/rbac";
 import { categoryName } from "@/server/reports";
 
 /** Admin Accounts table (staff only) — full list; the client table does the
  * (instant, in-memory) search / status-filter / pagination. */
 export async function listAccounts() {
-  await requireRole("SUPER_ADMIN", "APPROVER");
+  await requireCapability("admin.viewData");
   const users = await prisma.user.findMany({
     orderBy: [{ status: "asc" }, { createdAt: "desc" }],
+    take: 500,
     include: {
       memberships: { include: { group: { select: { name: true } } } },
     },
@@ -27,9 +28,10 @@ export async function listAccounts() {
 
 /** Groups with their current entitlements + member count (staff only). */
 export async function listGroupsWithEntitlements(locale: string) {
-  await requireRole("SUPER_ADMIN", "APPROVER");
+  await requireCapability("admin.viewData");
   const groups = await prisma.group.findMany({
     orderBy: { name: "asc" },
+    take: 200,
     include: {
       _count: { select: { members: true } },
       entitlements: {
@@ -59,7 +61,7 @@ export async function listGroupsWithEntitlements(locale: string) {
 
 /** Recent audit events (staff only) — blueprint §6.5. */
 export async function listAuditLog(take = 50) {
-  await requireRole("SUPER_ADMIN", "APPROVER");
+  await requireCapability("admin.viewData");
   const events = await prisma.auditLog.findMany({
     orderBy: { createdAt: "desc" },
     take,

@@ -1,5 +1,5 @@
 import type { NextRequest } from "next/server";
-import { requireFreshRole } from "@/lib/rbac";
+import { requireCapability } from "@/lib/rbac";
 import {
   recordChunk,
   getSessionStatus,
@@ -12,7 +12,7 @@ export const runtime = "nodejs";
 async function actor(): Promise<string | null> {
   try {
     // Fresh DB re-check on every upload op (status + tokenVersion + role).
-    return (await requireFreshRole("SUPER_ADMIN", "EDITOR", "APPROVER")).id;
+    return (await requireCapability("report.upload")).id;
   } catch {
     return null;
   }

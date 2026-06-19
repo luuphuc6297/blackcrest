@@ -47,7 +47,7 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
             {...rest}
           />
           <span
-            className="absolute inset-0 rounded-control border-[1.5px] border-line-3 bg-surface transition-[background-color,border-color,box-shadow] duration-[180ms] peer-checked:border-accent peer-checked:bg-accent peer-focus-visible:shadow-[0_0_0_3px_var(--color-focus-ring)]"
+            className="absolute inset-0 rounded-control border-[1.5px] border-line-3 bg-surface-card transition-[background-color,border-color,box-shadow] duration-[180ms] peer-checked:border-accent peer-checked:bg-accent peer-focus-visible:shadow-[0_0_0_3px_var(--color-focus-ring)]"
             aria-hidden
           />
           <svg
@@ -67,7 +67,7 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
             />
           </svg>
         </span>
-        {label && <span className="text-[15px] text-ink">{label}</span>}
+        {label && <span className="text-regular text-ink">{label}</span>}
       </label>
     );
   },

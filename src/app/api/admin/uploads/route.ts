@@ -1,5 +1,5 @@
 import type { NextRequest } from "next/server";
-import { requireFreshRole } from "@/lib/rbac";
+import { requireCapability } from "@/lib/rbac";
 import { initUploadSession } from "@/lib/upload-session";
 
 // Chunked-upload control plane runs on Node (Prisma + pdf-lib at finalize).
@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
   try {
     // Fresh DB re-check (status + tokenVersion + role) — a suspended/revoked
     // user must not be able to keep uploading within the JWT window.
-    actorId = (await requireFreshRole("SUPER_ADMIN", "EDITOR", "APPROVER")).id;
+    actorId = (await requireCapability("report.upload")).id;
   } catch {
     return Response.json({ error: "Forbidden" }, { status: 403 });
   }

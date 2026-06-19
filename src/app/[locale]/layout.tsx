@@ -70,6 +70,15 @@ export default async function LocaleLayout({
         className="min-h-screen bg-surface text-ink antialiased"
         suppressHydrationWarning
       >
+        {/* Flash-free Appearance prefs: set <html data-theme/depth/density/
+            reading/radius/text/font> from the bc-appearance cookie BEFORE paint.
+            Each default needs no attribute, so SSR output matches → no FOUC. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "(function(){try{var m=document.cookie.match(/(?:^|; )bc-appearance=([^;]*)/);if(!m)return;var p=JSON.parse(decodeURIComponent(m[1]));var d=document.documentElement;var th=p.theme||'light';var eff=th==='system'?((window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light'):th;if(eff==='dark')d.setAttribute('data-theme','dark');if(p.depth&&p.depth!=='soft')d.setAttribute('data-depth',p.depth);if(p.density&&p.density!=='comfortable')d.setAttribute('data-density',p.density);if(p.reading&&p.reading!=='light')d.setAttribute('data-reading',p.reading);if(p.radius&&p.radius!=='sharp')d.setAttribute('data-radius',p.radius);if(p.text&&p.text!=='default')d.setAttribute('data-text',p.text);if(p.font&&p.font!=='sans')d.setAttribute('data-font',p.font);}catch(e){}})();",
+          }}
+        />
         <NextIntlClientProvider>
           <Providers>{children}</Providers>
         </NextIntlClientProvider>

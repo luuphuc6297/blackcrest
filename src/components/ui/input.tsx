@@ -42,6 +42,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
       trailingIcon,
       size = "md",
       disabled = false,
+      required = false,
       id,
       className,
       containerClassName,
@@ -52,6 +53,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     const reactId = React.useId();
     const inputId = id ?? reactId;
     const hasError = Boolean(error);
+    const msgId = `${inputId}-msg`;
 
     return (
       <div
@@ -60,9 +62,10 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         {label && (
           <label
             htmlFor={inputId}
-            className="text-[11px] font-semibold uppercase tracking-[0.07em] text-ink-3"
+            className="text-micro font-semibold uppercase tracking-[0.07em] text-ink-3"
           >
             {label}
+            {required && <span className="text-danger"> *</span>}
           </label>
         )}
         <div
@@ -71,10 +74,10 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             SIZES[size],
             hasError
               ? "border-danger focus-within:shadow-[0_0_0_3px_var(--color-danger-tint)]"
-              : "border-line-2 hover:border-line-3 focus-within:border-accent focus-within:shadow-[0_0_0_3px_var(--color-focus-ring)]",
+              : "border-line-3 shadow-well hover:border-line-3 focus-within:border-accent focus-within:bg-surface-card focus-within:shadow-[0_0_0_3px_var(--color-focus-ring)]",
             disabled
               ? "bg-surface-2 opacity-60"
-              : "bg-surface",
+              : "bg-surface-input",
           )}
         >
           {leadingIcon && (
@@ -84,8 +87,11 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             id={inputId}
             disabled={disabled}
+            required={required}
+            aria-invalid={hasError || undefined}
+            aria-describedby={hint || error ? msgId : undefined}
             className={cn(
-              "min-w-0 flex-1 border-none bg-transparent font-sans text-[15px] text-ink outline-none placeholder:text-ink-4",
+              "min-w-0 flex-1 border-none bg-transparent font-sans text-regular text-ink outline-none placeholder:text-ink-4",
               className,
             )}
             {...rest}
@@ -96,8 +102,10 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         </div>
         {(hint || error) && (
           <span
+            id={msgId}
+            role={hasError ? "alert" : undefined}
             className={cn(
-              "text-[12px]",
+              "text-mini",
               hasError ? "text-danger" : "text-ink-3",
             )}
           >

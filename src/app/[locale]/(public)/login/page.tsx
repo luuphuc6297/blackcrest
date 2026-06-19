@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { Link } from "@/i18n/navigation";
 import { Icon } from "@/components/icon";
 import { Logo } from "@/components/logo";
 import { LanguageSwitcher } from "@/components/language-switcher";
@@ -46,6 +47,13 @@ export default async function LoginPage({
     <main className="grid min-h-screen grid-cols-1 bg-surface lg:grid-cols-[minmax(380px,1fr)_1.05fr]">
       {/* Form column */}
       <div className="relative flex items-center justify-center px-6 py-10 sm:px-10">
+        <Link
+          href="/"
+          className="bc-link absolute left-6 top-6 inline-flex items-center gap-[6px] text-small font-medium text-ink-3 transition-colors hover:text-ink"
+        >
+          <Icon name="arrow-left" size={16} />
+          {t("backToHome")}
+        </Link>
         <div className="absolute right-6 top-6">
           <LanguageSwitcher />
         </div>
@@ -58,7 +66,7 @@ export default async function LoginPage({
       {/* Brand panel — dark, editorial */}
       <aside className="relative hidden flex-col justify-between bg-inverse px-11 pb-10 pt-11 text-on-accent lg:flex">
         <div className="flex items-center gap-[10px]">
-          <span className="flex h-8 w-8 items-center justify-center rounded-[8px] bg-white/10">
+          <span className="flex h-8 w-8 items-center justify-center rounded-card bg-white/10">
             <svg width="20" height="20" viewBox="0 0 64 64" fill="none" aria-hidden>
               <path
                 d="M16 39 L32 21 L48 39"
@@ -84,12 +92,12 @@ export default async function LoginPage({
           <p className="font-serif text-[27px] font-medium leading-[1.35] tracking-[-0.01em] text-[#f7f8f8]">
             &ldquo;{t("loginPledge")}&rdquo;
           </p>
-          <div className="mt-[22px] text-[13px] text-[#8a8f98]">
+          <div className="mt-[22px] text-small text-[#8a8f98]">
             {t("panelTagline")}
           </div>
         </div>
 
-        <div className="flex gap-[18px] text-[13px] text-[#8a8f98]">
+        <div className="flex gap-[18px] text-small text-[#8a8f98]">
           <span className="inline-flex items-center gap-[6px]">
             <Icon name="shield-check" size={14} />
             {t("badgeEncryption")}

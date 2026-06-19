@@ -13,14 +13,14 @@ export default async function NotFound() {
       <div className="flex flex-col items-center gap-3">
         <span
           data-numeric
-          className="font-mono text-[13px] tracking-[0.04em] text-ink-4"
+          className="font-mono text-small tracking-[0.04em] text-ink-4"
         >
           404
         </span>
-        <h1 className="font-serif text-[34px] font-semibold leading-[1.1] tracking-[-0.02em] text-ink">
+        <h1 className="font-serif text-[34px] font-semibold leading-tight tracking-[-0.02em] text-ink">
           {t("notFoundTitle")}
         </h1>
-        <p className="max-w-md text-[15px] text-ink-2">{t("notFoundDesc")}</p>
+        <p className="max-w-md text-regular text-ink-2">{t("notFoundDesc")}</p>
       </div>
       <a href="/" className="inline-flex">
         <Button

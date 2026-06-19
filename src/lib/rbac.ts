@@ -1,13 +1,12 @@
 import type { Role } from "@prisma/client";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { STAFF, PERMISSIONS, isStaffRole, type Capability } from "@/lib/permissions";
 
-/** Staff roles bypass entitlement EXPLICITLY (blueprint §4, §F2). */
-export const STAFF_ROLES: Role[] = ["SUPER_ADMIN", "EDITOR", "APPROVER"];
+/** Staff roles bypass entitlement EXPLICITLY (blueprint §4, §F2). Single source: permissions.ts. */
+export const STAFF_ROLES: Role[] = STAFF;
 
-export function isStaff(role: Role | undefined | null): boolean {
-  return !!role && STAFF_ROLES.includes(role);
-}
+export const isStaff = isStaffRole;
 
 export class AuthError extends Error {}
 export class ForbiddenError extends Error {}
@@ -62,4 +61,15 @@ export async function requireFreshRole(...roles: Role[]) {
   const dbUser = await requireFreshUser();
   if (!roles.includes(dbUser.role)) throw new ForbiddenError("Forbidden");
   return dbUser;
+}
+
+/**
+ * Gate a server action / route on a named capability from the central
+ * PERMISSIONS map (the SINGLE source the UI's `can()` reads too). Always uses
+ * the FRESH DB re-check (status + tokenVersion + role) so a suspended/demoted
+ * actor is blocked immediately — this is what hardened the account/entitlement
+ * mutations that previously trusted the 30-min JWT window.
+ */
+export async function requireCapability(cap: Capability) {
+  return requireFreshRole(...PERMISSIONS[cap]);
 }

@@ -24,7 +24,7 @@ export const Tag = React.forwardRef<HTMLSpanElement, TagProps>(function Tag(
     <span
       ref={ref}
       className={cn(
-        "inline-flex items-center gap-[6px] rounded-badge border border-line-2 bg-surface-1 py-[3px] pl-[9px] font-sans text-[12px] font-medium text-ink-2",
+        "inline-flex items-center gap-[6px] rounded-badge border border-line-2 bg-surface-1 py-[3px] pl-[9px] font-sans text-mini font-medium text-ink-2",
         onRemove ? "pr-[4px]" : "pr-[9px]",
         className,
       )}
@@ -37,9 +37,9 @@ export const Tag = React.forwardRef<HTMLSpanElement, TagProps>(function Tag(
           type="button"
           onClick={onRemove}
           aria-label="Remove"
-          className="inline-flex rounded-[4px] p-[2px] leading-none text-ink-3 hover:text-ink-2"
+          className="inline-flex size-[18px] items-center justify-center rounded-[4px] leading-none text-ink-3 hover:bg-surface-hover hover:text-ink"
         >
-          <svg width="11" height="11" viewBox="0 0 12 12" aria-hidden>
+          <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden>
             <path
               d="M3 3l6 6M9 3l-6 6"
               stroke="currentColor"

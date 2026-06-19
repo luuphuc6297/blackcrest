@@ -16,6 +16,8 @@ export const REPORT_STATUS: Record<ReportStatus, { tone: BadgeTone; key: string 
 };
 
 export const ACCOUNT_STATUS: Record<UserStatus, { tone: BadgeTone; key: string }> = {
+  INVITED: { tone: "info", key: "invited" },
+  UNVERIFIED: { tone: "neutral", key: "unverified" },
   PENDING: { tone: "review", key: "pending" },
   APPROVED: { tone: "approved", key: "active" },
   SUSPENDED: { tone: "danger", key: "suspended" },

@@ -63,14 +63,17 @@ export function LibraryGrid({
   return (
     <>
       {/* Header */}
-      <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h2 className="font-serif text-[24px] font-semibold tracking-[-0.015em] text-ink">
-            {t("title")}
-          </h2>
-          <p className="mt-[6px] text-[15px] text-ink-3">{t("description")}</p>
+      <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
+        <div className="min-w-0">
+          <h2 className="bc-display text-[28px] text-ink">{t("title")}</h2>
+          <p className="mt-[10px] max-w-[58ch] text-regular leading-relaxed text-ink-3">
+            {t("description")}
+          </p>
         </div>
-        <span data-numeric className="font-mono text-[13px] text-ink-3">
+        <span
+          data-numeric
+          className="flex-none rounded-control border border-line bg-surface-card px-[10px] py-[5px] font-mono text-mini text-ink-3 shadow-soft"
+        >
           {t("documentCount", { n: items.length })}
         </span>
       </div>
@@ -90,7 +93,7 @@ export function LibraryGrid({
             />
           ))}
         </div>
-        <div className="flex h-[32px] w-full items-center gap-[8px] rounded-control border border-line-2 bg-surface px-[10px] transition-[border-color,box-shadow] duration-[180ms] hover:border-line-3 focus-within:border-accent focus-within:shadow-[0_0_0_3px_var(--color-focus-ring)] sm:w-[240px]">
+        <div className="flex h-[32px] w-full items-center gap-[8px] rounded-control border border-line-2 bg-surface-input shadow-well px-[10px] transition-[border-color,box-shadow] duration-[180ms] hover:border-line-3 focus-within:border-accent focus-within:bg-surface-card focus-within:shadow-[0_0_0_3px_var(--color-focus-ring)] sm:w-[240px]">
           <Icon name="search" size={15} className="flex-none text-ink-3" />
           <input
             type="search"
@@ -122,7 +125,7 @@ export function LibraryGrid({
                 className="flex h-full flex-col transition-[box-shadow,transform] group-hover:-translate-y-px group-hover:shadow-card"
               >
                 <div className="mb-3 flex items-center justify-between gap-2">
-                  <span className="truncate text-[10px] font-medium uppercase tracking-[0.06em] text-ink-4">
+                  <span className="truncate text-[10px] font-medium uppercase tracking-caps text-ink-4">
                     {catLabel(d.category)}
                   </span>
                   <Badge tone={REPORT_STATUS[d.status].tone} dot size="sm">
@@ -130,24 +133,24 @@ export function LibraryGrid({
                   </Badge>
                 </div>
                 <div className="flex items-start gap-3">
-                  <span className="flex h-[52px] w-[42px] flex-none items-center justify-center rounded-card border border-line bg-surface-2">
+                  <span className="flex size-[44px] flex-none items-center justify-center rounded-card border border-line bg-surface-2">
                     <Icon name="file-text" size={20} className="text-ink-3" />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <div className="line-clamp-2 text-[15px] font-semibold leading-[1.3] tracking-[-0.01em] text-ink">
+                    <div className="line-clamp-2 text-regular font-semibold leading-[1.3] tracking-[-0.01em] text-ink">
                       {d.title}
                     </div>
                     {d.author && (
-                      <div className="mt-1 truncate text-[12px] text-ink-3">{d.author}</div>
+                      <div className="mt-1 truncate text-mini text-ink-3">{d.author}</div>
                     )}
                   </div>
                 </div>
                 {d.summary && (
-                  <p className="mt-3 line-clamp-2 text-[13px] leading-[1.5] text-ink-3">
+                  <p className="mt-3 line-clamp-2 text-small leading-normal text-ink-3">
                     {d.summary}
                   </p>
                 )}
-                <div className="mt-auto flex items-center justify-between gap-2 border-t border-line pt-3 text-[12px] text-ink-3">
+                <div className="mt-auto flex items-center justify-between gap-2 border-t border-line pt-3 text-mini text-ink-3">
                   <span data-numeric className="font-mono">
                     {formatDate(d.publishedAt, locale)}
                   </span>
@@ -192,14 +195,14 @@ function Chip({
       aria-pressed={active}
       className={
         active
-          ? "inline-flex items-center gap-[6px] rounded-control border border-accent bg-accent px-[11px] py-[5px] text-[12px] font-medium text-on-accent"
-          : "inline-flex items-center gap-[6px] rounded-control border border-line bg-surface px-[11px] py-[5px] text-[12px] font-medium text-ink-2 transition-colors hover:bg-surface-hover hover:text-ink"
+          ? "inline-flex items-center gap-[6px] rounded-control border border-accent bg-accent px-[11px] py-[5px] text-mini font-medium text-on-accent"
+          : "inline-flex items-center gap-[6px] rounded-control border border-line bg-surface px-[11px] py-[5px] text-mini font-medium text-ink-2 transition-colors hover:bg-surface-hover hover:text-ink"
       }
     >
       {label}
       <span
         data-numeric
-        className={active ? "font-mono text-[11px] text-on-accent/75" : "font-mono text-[11px] text-ink-4"}
+        className={active ? "font-mono text-micro text-on-accent/75" : "font-mono text-micro text-ink-4"}
       >
         {count}
       </span>

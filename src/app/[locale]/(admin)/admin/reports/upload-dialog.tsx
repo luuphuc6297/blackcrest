@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Button, Dialog, Input, Select, Toast } from "@/components/ui";
+import { Button, Dialog, InlineAlert, Input, Select, Toast } from "@/components/ui";
 import { Icon } from "@/components/icon";
 import {
   uploadFileChunked,
@@ -34,7 +34,13 @@ export function UploadReportDialog({
   const [phase, setPhase] = React.useState<UploadState | "idle">("idle");
   const [progress, setProgress] = React.useState(0);
   const [error, setError] = React.useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = React.useState<{
+    file?: string;
+    titleVi?: string;
+    categoryId?: string;
+  }>({});
   const [file, setFile] = React.useState<File | null>(null);
+  const [title, setTitle] = React.useState("");
   const [toast, setToast] = React.useState<{ title: string } | null>(null);
 
   const formRef = React.useRef<HTMLFormElement>(null);
@@ -45,6 +51,7 @@ export function UploadReportDialog({
     setPhase("idle");
     setProgress(0);
     setError(null);
+    setFieldErrors({});
     abortRef.current = null;
   }
 
@@ -52,6 +59,7 @@ export function UploadReportDialog({
     if (busy) return;
     setOpen(false);
     setFile(null);
+    setTitle("");
     reset();
   }
 
@@ -80,25 +88,24 @@ export function UploadReportDialog({
     const fd = new FormData(formEl);
     const picked = fd.get("file");
     const f = picked instanceof File && picked.size > 0 ? picked : file;
-    if (!f) {
-      setError(t("uploadFileRequired"));
-      return;
-    }
-    // Client-side validation (the server re-validates everything).
-    if (f.size > MAX_UPLOAD_BYTES) {
-      setError(t("uploadTooLarge"));
-      return;
-    }
-    if (f.type && f.type !== "application/pdf") {
-      setError(t("uploadNotPdf"));
-      return;
-    }
     const titleVi = String(fd.get("titleVi") ?? "").trim();
     const categoryId = String(fd.get("categoryId") ?? "");
-    if (!titleVi || !categoryId) {
-      setError(t("uploadInvalidData"));
+
+    // Client-side validation (the server re-validates everything). Collect
+    // per-field errors so each problem is shown next to its own field.
+    const fErrs: { file?: string; titleVi?: string; categoryId?: string } = {};
+    if (!f) fErrs.file = t("uploadFileRequired");
+    else if (f.size > MAX_UPLOAD_BYTES) fErrs.file = t("uploadTooLarge");
+    else if (f.type && f.type !== "application/pdf") fErrs.file = t("uploadNotPdf");
+    if (!titleVi) fErrs.titleVi = t("fieldRequired");
+    if (!categoryId) fErrs.categoryId = t("fieldRequired");
+    if (Object.keys(fErrs).length > 0) {
+      setFieldErrors(fErrs);
+      setError(null);
       return;
     }
+    setFieldErrors({});
+    if (!f) return; // narrowing for TS — unreachable after the check above
 
     const meta: UploadMeta = {
       categoryId,
@@ -106,8 +113,6 @@ export function UploadReportDialog({
       titleVi,
       summaryVi: String(fd.get("summaryVi") ?? "").trim() || undefined,
       authorVi: String(fd.get("authorVi") ?? "").trim() || undefined,
-      titleEn: String(fd.get("titleEn") ?? "").trim() || undefined,
-      titleZh: String(fd.get("titleZh") ?? "").trim() || undefined,
     };
 
     const controller = new AbortController();
@@ -201,38 +206,72 @@ export function UploadReportDialog({
           <div className="flex flex-col gap-[7px]">
             <label
               htmlFor="bc-upload-file"
-              className="text-[11px] font-semibold uppercase tracking-[0.07em] text-ink-3"
+              className="text-micro font-semibold uppercase tracking-[0.07em] text-ink-3"
             >
               {t("uploadFile")}
+              <span className="text-danger"> *</span>
             </label>
             <input
               id="bc-upload-file"
               type="file"
               name="file"
               accept="application/pdf,.pdf"
+              required
               disabled={busy}
               onChange={(e) => {
-                setFile(e.currentTarget.files?.[0] ?? null);
+                const picked = e.currentTarget.files?.[0] ?? null;
+                setFile(picked);
+                // Auto-fill the title from the file name (without extension) when
+                // the title is still empty, so the admin rarely has to retype it.
+                if (picked && !title.trim()) {
+                  setTitle(picked.name.replace(/\.[^.]+$/, ""));
+                  setFieldErrors((p) => ({ ...p, file: undefined, titleVi: undefined }));
+                } else {
+                  setFieldErrors((p) => ({ ...p, file: undefined }));
+                }
                 setError(null);
                 setPhase("idle");
               }}
-              className="rounded-control border border-line-2 bg-surface text-[13px] text-ink-2 file:mr-3 file:cursor-pointer file:border-0 file:border-r file:border-line file:bg-surface-1 file:px-3 file:py-2 file:text-[12px] file:font-medium file:text-ink hover:border-line-3 disabled:opacity-60"
+              className={
+                "rounded-control border bg-surface text-small text-ink-2 file:mr-3 file:cursor-pointer file:border-0 file:border-r file:border-line file:bg-surface-1 file:px-3 file:py-2 file:text-mini file:font-medium file:text-ink hover:border-line-3 disabled:opacity-60 " +
+                (fieldErrors.file ? "border-danger" : "border-line-2")
+              }
             />
-            <span className="text-[12px] text-ink-3">{t("uploadFileHint")}</span>
+            {fieldErrors.file ? (
+              <span className="text-mini text-danger">{fieldErrors.file}</span>
+            ) : (
+              <span className="text-mini text-ink-3">{t("uploadFileHint")}</span>
+            )}
           </div>
 
-          <Input label={t("fieldTitleVi")} name="titleVi" required disabled={busy} />
-
-          <div className="grid grid-cols-1 gap-[14px] sm:grid-cols-2">
-            <Input label={t("fieldTitleEn")} name="titleEn" disabled={busy} />
-            <Input label={t("fieldTitleZh")} name="titleZh" disabled={busy} />
-          </div>
+          <Input
+            label={t("fieldTitleVi")}
+            name="titleVi"
+            required
+            disabled={busy}
+            value={title}
+            error={fieldErrors.titleVi}
+            onChange={(e) => {
+              setTitle(e.target.value);
+              setFieldErrors((p) => ({ ...p, titleVi: undefined }));
+            }}
+          />
 
           <Input label={t("fieldSummary")} name="summaryVi" disabled={busy} />
           <Input label={t("fieldAuthor")} name="authorVi" disabled={busy} />
 
           <div className="grid grid-cols-1 gap-[14px] sm:grid-cols-2">
-            <Select label={t("fieldCategory")} name="categoryId" required defaultValue="" disabled={busy}>
+            <Select
+              label={t("fieldCategory")}
+              name="categoryId"
+              required
+              defaultValue=""
+              disabled={busy}
+              error={fieldErrors.categoryId}
+              onChange={() =>
+                setFieldErrors((p) => ({ ...p, categoryId: undefined }))
+              }
+            >
               <option value="" disabled>
                 {t("selectPlaceholder")}
               </option>
@@ -249,12 +288,12 @@ export function UploadReportDialog({
           </div>
 
           {/* Uploads always start as DRAFT — publishing is a separate APPROVER step. */}
-          <p className="text-[12px] text-ink-3">{t("uploadDraftNote")}</p>
+          <p className="text-mini text-ink-3">{t("uploadDraftNote")}</p>
 
           {/* Progress */}
           {busy && (
             <div className="flex flex-col gap-[7px]" aria-live="polite">
-              <div className="flex items-center justify-between text-[12px] text-ink-2">
+              <div className="flex items-center justify-between text-mini text-ink-2">
                 <span className="flex items-center gap-[7px]">
                   <Icon name="loader" size={14} className="animate-spin" />
                   {phaseLabel}
@@ -272,15 +311,7 @@ export function UploadReportDialog({
             </div>
           )}
 
-          {error && (
-            <p
-              role="alert"
-              className="flex items-center gap-[7px] rounded-control border border-danger/40 bg-danger-tint px-[10px] py-[8px] text-[13px] text-danger"
-            >
-              <Icon name="alert-circle" size={14} />
-              {error}
-            </p>
-          )}
+          {error && <InlineAlert>{error}</InlineAlert>}
         </form>
       </Dialog>
 

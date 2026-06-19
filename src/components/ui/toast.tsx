@@ -58,7 +58,7 @@ export function Toast({
       role="status"
       style={{ animation: "bc-toast var(--duration-slow) var(--ease-signature)" }}
       className={cn(
-        "flex w-[360px] max-w-full items-start gap-[10px] rounded-card border border-line bg-surface px-[14px] py-[12px] shadow-float",
+        "flex w-[360px] max-w-full items-start gap-[10px] rounded-card border border-line bg-surface-card px-[14px] py-[12px] shadow-float-lit",
         className,
       )}
     >
@@ -72,14 +72,14 @@ export function Toast({
       )}
       <div className="min-w-0 flex-1">
         {title && (
-          <div className="font-sans text-[15px] font-medium text-ink">
+          <div className="font-sans text-regular font-medium text-ink">
             {title}
           </div>
         )}
         {message && (
           <div
             className={cn(
-              "font-sans text-[13px] leading-[1.45] text-ink-3",
+              "font-sans text-small leading-[1.45] text-ink-3",
               title && "mt-[2px]",
             )}
           >
@@ -92,9 +92,9 @@ export function Toast({
           type="button"
           onClick={onClose}
           aria-label="Close"
-          className="flex flex-none p-[2px] leading-none text-ink-3 hover:text-ink-2"
+          className="flex size-[28px] flex-none items-center justify-center rounded-control leading-none text-ink-3 hover:bg-surface-hover hover:text-ink"
         >
-          <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
+          <svg width="16" height="16" viewBox="0 0 14 14" aria-hidden>
             <path
               d="M3.5 3.5l7 7M10.5 3.5l-7 7"
               stroke="currentColor"

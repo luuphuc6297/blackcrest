@@ -3,7 +3,7 @@
 import { useActionState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import { Button, Input } from "@/components/ui";
+import { Button, InlineAlert, Input, PasswordInput } from "@/components/ui";
 import { Icon } from "@/components/icon";
 import { registerAction, type AuthFormState } from "@/server/auth-actions";
 
@@ -26,11 +26,11 @@ export function RegisterForm({ locale }: { locale: string }) {
         <span className="mb-[18px] inline-flex h-[52px] w-[52px] items-center justify-center rounded-full bg-success-tint text-success">
           <Icon name="check-circle" size={26} />
         </span>
-        <h1 className="text-[24px] font-semibold tracking-[-0.018em] text-ink">
-          {t("requestSubmitted")}
+        <h1 className="text-title-2 font-semibold tracking-[-0.018em] text-ink">
+          {t("verifyEmailHeading")}
         </h1>
-        <p className="mt-[10px] text-[15px] leading-[1.5] text-ink-3">
-          {t("pendingNotice")}
+        <p className="mt-[10px] max-w-[360px] text-regular leading-normal text-ink-3">
+          {state.message ?? t("pendingNotice")}
         </p>
         <div className="mt-[22px]">
           <Link href="/login">
@@ -49,7 +49,7 @@ export function RegisterForm({ locale }: { locale: string }) {
         <h1 className="text-[26px] font-semibold tracking-[-0.018em] text-ink">
           {t("registerTitle")}
         </h1>
-        <p className="mt-[6px] text-[15px] text-ink-3">{t("registerSubtitle")}</p>
+        <p className="mt-[6px] text-regular text-ink-3">{t("registerSubtitle")}</p>
       </div>
 
       <input type="hidden" name="locale" value={locale} />
@@ -57,6 +57,8 @@ export function RegisterForm({ locale }: { locale: string }) {
       <Input
         label={t("name")}
         name="name"
+        size="lg"
+        autoFocus
         autoComplete="name"
         required
         placeholder={t("namePlaceholder")}
@@ -67,6 +69,7 @@ export function RegisterForm({ locale }: { locale: string }) {
         label={t("email")}
         name="email"
         type="email"
+        size="lg"
         autoComplete="email"
         required
         placeholder={t("emailPlaceholder")}
@@ -76,48 +79,39 @@ export function RegisterForm({ locale }: { locale: string }) {
       <Input
         label={t("organization")}
         name="organization"
+        size="lg"
         autoComplete="organization"
         placeholder={t("organizationPlaceholder")}
         leadingIcon={<Icon name="building-2" size={16} />}
         error={fieldErrors.organization}
       />
-      <Input
+      <PasswordInput
         label={t("password")}
         name="password"
-        type="password"
         autoComplete="new-password"
         required
         placeholder={t("passwordPlaceholder")}
-        leadingIcon={<Icon name="lock" size={16} />}
         hint={t("passwordHint")}
         error={fieldErrors.password}
       />
-      <Input
+      <PasswordInput
         label={t("confirmPassword")}
         name="confirmPassword"
-        type="password"
         autoComplete="new-password"
         required
         placeholder={t("confirmPasswordPlaceholder")}
-        leadingIcon={<Icon name="lock" size={16} />}
         error={fieldErrors.confirmPassword}
       />
 
       {state.status === "error" && state.message && (
-        <p
-          role="alert"
-          className="flex items-center gap-[7px] rounded-control border border-danger/40 bg-danger-tint px-[10px] py-[8px] text-[13px] text-danger"
-        >
-          <Icon name="alert-circle" size={14} />
-          {state.message}
-        </p>
+        <InlineAlert>{state.message}</InlineAlert>
       )}
 
       <Button type="submit" variant="primary" size="lg" fullWidth loading={pending}>
         {t("submitRequest")}
       </Button>
 
-      <p className="text-center text-[13px] text-ink-3">
+      <p className="text-center text-small text-ink-3">
         {t("hasAccount")}{" "}
         <Link
           href="/login"

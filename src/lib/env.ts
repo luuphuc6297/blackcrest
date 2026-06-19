@@ -41,6 +41,16 @@ export function getDownloadTokenSecret(): Uint8Array {
   return _downloadTokenSecret;
 }
 
+let _emailTokenSecret: Uint8Array | undefined;
+/** HMAC key for email-verification links (jose). Reuses AUTH_SECRET (already
+ * required + validated) — tokens are purpose-tagged so they can't be cross-used. */
+export function getEmailTokenSecret(): Uint8Array {
+  if (!_emailTokenSecret) {
+    _emailTokenSecret = new TextEncoder().encode(readSecret("AUTH_SECRET"));
+  }
+  return _emailTokenSecret;
+}
+
 /**
  * Fail-fast at process start (called from instrumentation). Validates every
  * required secret so a misconfigured production deploy crashes immediately

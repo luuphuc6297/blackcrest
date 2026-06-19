@@ -13,6 +13,9 @@ const credentialsSchema = z.object({
 });
 
 /** Typed sign-in errors so the login UI can show the right message. */
+class EmailNotVerified extends CredentialsSignin {
+  code = "EmailNotVerified";
+}
 class AccountNotApproved extends CredentialsSignin {
   code = "AccountNotApproved";
 }
@@ -52,7 +55,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return null;
         }
 
-        // Approval gate — enforced here AND re-checked at the data layer.
+        // Status gates — enforced here AND re-checked at the data layer.
+        if (user.status === "UNVERIFIED") throw new EmailNotVerified();
         if (user.status === "PENDING") throw new AccountNotApproved();
         if (user.status === "SUSPENDED") throw new AccountSuspended();
 

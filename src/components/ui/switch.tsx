@@ -55,7 +55,7 @@ export const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(
             aria-hidden
           />
         </span>
-        {label && <span className="text-[15px] text-ink">{label}</span>}
+        {label && <span className="text-regular text-ink">{label}</span>}
       </label>
     );
   },

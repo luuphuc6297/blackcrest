@@ -2,6 +2,7 @@
 export * from "./button";
 export * from "./icon-button";
 export * from "./input";
+export * from "./password-input";
 export * from "./select";
 export * from "./checkbox";
 export * from "./switch";
@@ -15,5 +16,6 @@ export * from "./card";
 export * from "./tabs";
 export * from "./stat-card";
 export * from "./empty-state";
+export * from "./inline-alert";
 export * from "./data-table";
 export * from "./client-table";

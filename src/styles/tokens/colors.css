@@ -15,7 +15,7 @@
   --color-bg-inverse: #0c0d10;      /* powerful near-black band (CTA, brand panels) */
   --color-link: #16181d;            /* links — near-black, underline on hover */
   --color-link-hover: #000000;
-  --color-focus-ring: rgba(20, 22, 27, 0.28);
+  --color-focus-ring: rgba(20, 22, 27, 0.12); /* soft halo — the 1px accent border carries the focus indicator */
   --color-selection-bg: rgba(20, 22, 27, 0.12);
 
   /* ---- Base palette ---- */
@@ -31,7 +31,11 @@
   --color-white: #ffffff;
 
   /* ---- Surfaces (light, primary) ---- */
-  --color-bg-primary: #ffffff;      /* app canvas */
+  /* App canvas = soft grey "desk" so white cards lift off it (depth baseline).
+   * data-depth on <html> retunes this (flat→near-white, elevated→darker). */
+  --color-bg-primary: #f6f6f8;      /* app canvas (z0 desk) */
+  --color-bg-card: #ffffff;         /* z2 white card — the lift surface (kept absolute white) */
+  --color-bg-canvas-reading: #eeeef1; /* PDF reading desk (data-reading=dark retunes) */
   --color-bg-marketing: #fbfbfd;    /* marketing pages */
   --color-bg-level-1: #f8f8f9;      /* raised surface / panel */
   --color-bg-level-2: #f4f4f6;      /* cards */
@@ -65,6 +69,8 @@
   --color-warning: #b8860b;
   --color-warning-tint: rgba(240, 191, 0, 0.14);
   --color-danger: #d6453f;
+  --color-danger-hover: #9c322d;
+  --color-danger-active: #8a2c28;
   --color-danger-tint: rgba(235, 87, 87, 0.10);
   --color-info: #2f7fd6;
   --color-info-tint: rgba(78, 167, 252, 0.12);
@@ -96,10 +102,12 @@
   --color-link: #f7f8f8;
   --color-link-hover: #ffffff;
   --color-text-on-accent: #08090a;
-  --color-focus-ring: rgba(255, 255, 255, 0.30);
+  --color-focus-ring: rgba(255, 255, 255, 0.16); /* soft halo (dark) */
   --color-selection-bg: rgba(255, 255, 255, 0.16);
 
   --color-bg-primary: #08090a;
+  --color-bg-card: #141516;          /* dark card = level-2 (lift surface) */
+  --color-bg-canvas-reading: #050506; /* PDF reading desk (dark) */
   --color-bg-marketing: #010102;
   --color-bg-level-1: #0f1011;
   --color-bg-level-2: #141516;
@@ -123,6 +131,8 @@
   --color-success: #27a644;
   --color-warning: #f0bf00;
   --color-danger: #eb5757;
+  --color-danger-hover: #c64a45;
+  --color-danger-active: #d6453f;
   --color-info: #4ea7fc;
 }
 

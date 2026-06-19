@@ -261,7 +261,7 @@ function Hero({
         {headline}
       </h1>
 
-      <p className="mx-auto mt-6 max-w-[600px] text-[18px] leading-[1.55] text-ink-3 lg:text-[19px]">
+      <p className="mx-auto mt-6 max-w-[600px] text-large leading-[1.55] text-ink-3 lg:text-[19px]">
         {subtitle}
       </p>
 
@@ -286,7 +286,7 @@ function Hero({
         </Link>
       </div>
 
-      <p className="mt-[18px] text-[13px] text-ink-4">{microcopy}</p>
+      <p className="mt-[18px] text-small text-ink-4">{microcopy}</p>
 
       <ProductPreview publishedLabel={publishedLabel} />
     </section>
@@ -304,13 +304,13 @@ function ProductPreview({ publishedLabel }: { publishedLabel: string }) {
   return (
     <div className="mt-14 overflow-hidden rounded-card-lg border border-line bg-surface-1 text-left shadow-stack">
       {/* Window chrome */}
-      <div className="flex h-10 items-center gap-2 border-b border-line bg-surface px-[14px]">
+      <div className="flex h-10 items-center gap-2 border-b border-line bg-surface-card px-[14px]">
         <span className="flex gap-[6px]">
           <span className="h-[10px] w-[10px] rounded-pill bg-line-2" />
           <span className="h-[10px] w-[10px] rounded-pill bg-line-2" />
           <span className="h-[10px] w-[10px] rounded-pill bg-line-2" />
         </span>
-        <span className="ml-3 truncate font-mono text-[11px] text-ink-3">
+        <span className="ml-3 truncate font-mono text-micro text-ink-3">
           blackcrest.app/portal/bao-cao/q3-2026.pdf
         </span>
         <span className="ml-auto shrink-0">
@@ -322,14 +322,14 @@ function ProductPreview({ publishedLabel }: { publishedLabel: string }) {
 
       <div className="grid min-h-[360px] grid-cols-1 sm:grid-cols-[200px_1fr]">
         {/* Outline rail */}
-        <aside className="hidden border-r border-line bg-surface p-[14px] sm:block">
+        <aside className="hidden border-r border-line-2 bg-surface-2 p-[14px] sm:block">
           {railItems.map((label, i) => {
             const active = i === 1;
             return (
               <div
                 key={label}
                 className={
-                  "mb-0.5 rounded-control px-[10px] py-2 text-[13px] " +
+                  "mb-0.5 rounded-control px-[10px] py-2 text-small " +
                   (active
                     ? "bg-accent-tint font-semibold text-accent"
                     : "font-medium text-ink-2")
@@ -347,7 +347,7 @@ function ProductPreview({ publishedLabel }: { publishedLabel: string }) {
             <div className="font-serif text-[19px] font-semibold text-[#0a0a0c]">
               Báo cáo Quý III 2026
             </div>
-            <div className="mt-1 font-mono text-[11px] uppercase tracking-[0.06em] text-[#9a9aa3]">
+            <div className="mt-1 font-mono text-micro uppercase tracking-caps text-[#9a9aa3]">
               Quỹ Cân Bằng Blackcrest
             </div>
             <div className="my-[18px] h-px bg-line" />
@@ -359,7 +359,7 @@ function ProductPreview({ publishedLabel }: { publishedLabel: string }) {
               <div className="flex-1 rounded-card border border-line bg-surface-1 p-3">
                 <div className="text-[10px] text-ink-3">NAV / đơn vị</div>
                 <div
-                  className="mt-[3px] font-mono text-[16px] font-medium text-ink"
+                  className="mt-[3px] font-mono text-medium font-medium text-ink"
                   data-numeric
                 >
                   12.847
@@ -368,7 +368,7 @@ function ProductPreview({ publishedLabel }: { publishedLabel: string }) {
               <div className="flex-1 rounded-card border border-line bg-surface-1 p-3">
                 <div className="text-[10px] text-ink-3">Lợi nhuận YTD</div>
                 <div
-                  className="mt-[3px] font-mono text-[16px] font-medium text-success"
+                  className="mt-[3px] font-mono text-medium font-medium text-success"
                   data-numeric
                 >
                   +8,42%
@@ -399,7 +399,7 @@ function Trust({ stats }: { stats: { value: string; label: string }[] }) {
             >
               {value}
             </div>
-            <div className="mt-1 text-[13px] text-ink-3">{label}</div>
+            <div className="mt-1 text-small text-ink-3">{label}</div>
           </div>
         ))}
       </div>
@@ -421,7 +421,7 @@ function Features({
   return (
     <section id="bao-mat" className="mx-auto max-w-[1080px] px-6 py-20 lg:px-8">
       <div className="mb-12 text-center">
-        <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-accent">
+        <div className="text-micro font-semibold uppercase tracking-[0.14em] text-accent">
           {eyebrow}
         </div>
         <h2 className="mt-3 font-serif text-[30px] font-semibold tracking-[-0.02em] text-ink lg:text-[38px]">
@@ -432,12 +432,12 @@ function Features({
         {items.map(({ icon, title, desc }) => (
           <div
             key={title}
-            className="rounded-card border border-line bg-surface p-7 shadow-soft"
+            className="rounded-card border border-line bg-surface-card p-7 shadow-soft-lit"
           >
             <div className="mb-[18px] flex h-10 w-10 items-center justify-center rounded-card bg-accent-tint">
               <Icon name={icon} size={20} className="text-accent" />
             </div>
-            <h3 className="text-[18px] font-semibold tracking-[-0.012em] text-ink">
+            <h3 className="text-large font-semibold tracking-tight text-ink">
               {title}
             </h3>
             <p className="mt-2 text-[14px] leading-[1.55] text-ink-3">{desc}</p>
@@ -477,20 +477,20 @@ function Workflow({
       <div className="mx-auto max-w-[1080px] px-6 py-20 lg:px-8">
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:items-center">
           <div>
-            <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-accent">
+            <div className="text-micro font-semibold uppercase tracking-[0.14em] text-accent">
               {eyebrow}
             </div>
-            <h2 className="mt-3 max-w-[460px] font-serif text-[30px] font-semibold tracking-[-0.02em] text-ink lg:text-[36px]">
+            <h2 className="mt-3 max-w-[460px] font-serif text-[30px] font-semibold tracking-[-0.02em] text-ink lg:text-title-1">
               {heading}
             </h2>
-            <p className="mt-5 max-w-[440px] text-[15px] leading-[1.6] text-ink-3">
+            <p className="mt-5 max-w-[440px] text-regular leading-relaxed text-ink-3">
               {intro}
             </p>
 
             {/* Decision strip — mirrors the report side-panel */}
-            <div className="mt-7 max-w-[440px] rounded-card border border-line bg-surface p-4 shadow-soft">
+            <div className="mt-7 max-w-[440px] rounded-card border border-line bg-surface-card p-4 shadow-soft-lit">
               <div className="flex items-center justify-between">
-                <div className="text-[13px] font-medium text-ink">
+                <div className="text-small font-medium text-ink">
                   Báo cáo Quý III 2026
                 </div>
                 <Badge tone="review" dot>
@@ -518,12 +518,12 @@ function Workflow({
                     className="absolute left-[15px] top-8 h-[calc(100%-1rem)] w-px bg-line"
                   />
                 )}
-                <span className="relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-pill border border-line bg-surface font-mono text-[12px] font-medium text-ink-2">
+                <span className="relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-pill border border-line bg-surface-card font-mono text-mini font-medium text-ink-2">
                   {i + 1}
                 </span>
                 <div className="pt-0.5">
                   <div className="flex items-center gap-2">
-                    <span className="text-[15px] font-semibold text-ink">
+                    <span className="text-regular font-semibold text-ink">
                       {step.title}
                     </span>
                     <Badge tone={step.tone} dot>
@@ -562,10 +562,10 @@ function Clients({
           size={28}
           className="mx-auto mb-6 text-ink-4"
         />
-        <blockquote className="font-serif text-[24px] font-medium leading-[1.4] tracking-[-0.012em] text-ink lg:text-[28px]">
+        <blockquote className="font-serif text-title-2 font-medium leading-[1.4] tracking-tight text-ink lg:text-[28px]">
           {quote}
         </blockquote>
-        <figcaption className="mt-7 text-[13px] text-ink-3">
+        <figcaption className="mt-7 text-small text-ink-3">
           <span className="font-medium text-ink-2">{attributionRole}</span> ·{" "}
           {attributionDetail}
         </figcaption>
@@ -588,10 +588,10 @@ function CTA({
   return (
     <section className="mx-auto mb-20 max-w-[1080px] px-6 lg:px-8">
       <div className="rounded-card-lg bg-inverse px-8 py-16 text-center lg:px-12 lg:py-20">
-        <h2 className="mx-auto max-w-[640px] font-serif text-[30px] font-semibold tracking-[-0.022em] text-on-accent lg:text-[40px]">
+        <h2 className="mx-auto max-w-[640px] font-serif text-[30px] font-semibold tracking-tighter text-on-accent lg:text-[40px]">
           {heading}
         </h2>
-        <p className="mx-auto mt-4 max-w-[520px] text-[16px] leading-[1.55] text-[#b4bcd0] lg:text-[18px]">
+        <p className="mx-auto mt-4 max-w-[520px] text-medium leading-[1.55] text-[#b4bcd0] lg:text-large">
           {body}
         </p>
         <div className="mt-8 flex justify-center">
@@ -627,13 +627,13 @@ function Footer({
       <div className="mx-auto flex max-w-[1080px] flex-col items-center justify-between gap-4 px-6 py-8 sm:flex-row lg:px-8">
         <Logo size={28} />
         <div className="flex items-center gap-5">
-          <a href="#bao-mat" className="text-[13px] text-ink-3 hover:text-ink">
+          <a href="#bao-mat" className="text-small text-ink-3 hover:text-ink">
             {securityLabel}
           </a>
-          <a href="#quy-trinh" className="text-[13px] text-ink-3 hover:text-ink">
+          <a href="#quy-trinh" className="text-small text-ink-3 hover:text-ink">
             {processLabel}
           </a>
-          <span className="text-[13px] text-ink-4">{copyright}</span>
+          <span className="text-small text-ink-4">{copyright}</span>
         </div>
       </div>
     </footer>

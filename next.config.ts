@@ -55,6 +55,8 @@ const nextConfig: NextConfig = {
     serverActions: {
       bodySizeLimit: "1mb",
     },
+    // Tree-shake lucide-react icon imports to barrel-import only what's used.
+    optimizePackageImports: ["lucide-react"],
   },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];

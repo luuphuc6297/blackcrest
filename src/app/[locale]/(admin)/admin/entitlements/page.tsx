@@ -50,9 +50,9 @@ export default async function AdminEntitlementsPage({
         </Badge>
       }
     >
-      <div className="mx-auto max-w-[1180px] p-7">
+      <div className="mx-auto max-w-[1180px] px-4 py-6 sm:px-7">
         <div className="mb-6">
-          <p className="max-w-[640px] text-[13px] leading-relaxed text-ink-3">
+          <p className="max-w-[640px] text-small leading-relaxed text-ink-3">
             {tAdmin("entitlementsIntro")}
           </p>
         </div>
@@ -77,14 +77,14 @@ export default async function AdminEntitlementsPage({
                     className="text-ink-3"
                   />
                   <div className="min-w-0">
-                    <div className="text-[16px] font-semibold tracking-[-0.012em]">
+                    <div className="text-medium font-semibold tracking-tight">
                       {g.name}
                     </div>
-                    <div className="font-mono text-[11px] text-ink-3">
+                    <div className="font-mono text-micro text-ink-3">
                       {g.slug}
                     </div>
                   </div>
-                  <div className="ml-auto flex items-center gap-2 text-[12px] text-ink-3">
+                  <div className="ml-auto flex items-center gap-2 text-mini text-ink-3">
                     <Icon name="user-plus" size={14} className="text-ink-4" />
                     <span data-numeric className="font-mono tabular-nums">
                       {g.memberCount}
@@ -95,7 +95,7 @@ export default async function AdminEntitlementsPage({
 
                 {/* Current entitlements */}
                 <div className="px-[18px] py-4">
-                  <div className="mb-[10px] text-[10px] font-medium uppercase tracking-[0.06em] text-ink-4">
+                  <div className="mb-[10px] text-[10px] font-medium uppercase tracking-caps text-ink-4">
                     {tAdmin("currentEntitlements")}
                   </div>
                   {g.entitlements.length === 0 ? (
@@ -150,7 +150,7 @@ export default async function AdminEntitlementsPage({
                     className="flex flex-col gap-[10px]"
                   >
                     <input type="hidden" name="groupId" value={g.id} />
-                    <div className="text-[10px] font-medium uppercase tracking-[0.06em] text-ink-4">
+                    <div className="text-[10px] font-medium uppercase tracking-caps text-ink-4">
                       {tAdmin("grantByCategory")}
                     </div>
                     <Select name="categoryId" defaultValue="" required>
@@ -179,7 +179,7 @@ export default async function AdminEntitlementsPage({
                     className="flex flex-col gap-[10px]"
                   >
                     <input type="hidden" name="groupId" value={g.id} />
-                    <div className="text-[10px] font-medium uppercase tracking-[0.06em] text-ink-4">
+                    <div className="text-[10px] font-medium uppercase tracking-caps text-ink-4">
                       {tAdmin("grantByReport")}
                     </div>
                     <Select name="reportId" defaultValue="" required>

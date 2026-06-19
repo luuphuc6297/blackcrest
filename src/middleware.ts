@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import createMiddleware from "next-intl/middleware";
 import { routing } from "@/i18n/routing";
 import { authConfig } from "@/auth.config";
+import { STAFF } from "@/lib/permissions";
 
 /**
  * Locale negotiation (next-intl) + a CONVENIENCE RBAC redirect layer. This is
@@ -13,8 +14,6 @@ import { authConfig } from "@/auth.config";
  */
 const { auth } = NextAuth(authConfig);
 const intlMiddleware = createMiddleware(routing);
-
-const STAFF = ["SUPER_ADMIN", "EDITOR", "APPROVER"];
 
 export default auth((req) => {
   const { nextUrl } = req;

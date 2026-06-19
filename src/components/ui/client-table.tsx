@@ -77,8 +77,8 @@ export function ClientTable<T>({
   const pageRows = filtered.slice((safePage - 1) * pageSize, safePage * pageSize);
 
   return (
-    <div className="overflow-hidden rounded-card border border-line bg-surface-1">
-      <div className="flex flex-col gap-3 px-[18px] py-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="overflow-hidden rounded-card border border-line bg-surface-card shadow-soft-lit">
+      <div className="flex flex-col gap-3 px-[18px] py-[14px] sm:flex-row sm:items-center sm:justify-between">
         <div className="flex min-w-0 items-center gap-3">{title}</div>
         <div className="flex items-center gap-2">
           <SearchField value={q} onChange={setQ} placeholder={tc("searchPlaceholder")} />
@@ -115,7 +115,7 @@ export function ClientTable<T>({
       />
 
       {totalPages > 1 && (
-        <div className="flex items-center justify-between gap-2 border-t border-line px-[18px] py-3 text-[13px]">
+        <div className="flex items-center justify-between gap-2 border-t border-line px-[18px] py-3 text-small">
           <span className="text-ink-4">
             {tc("pageOf", { page: safePage, total: totalPages })}
           </span>
@@ -149,7 +149,7 @@ function SearchField({
   placeholder: string;
 }) {
   return (
-    <div className="flex h-[32px] w-full items-center gap-[8px] rounded-control border border-line-2 bg-surface px-[10px] transition-[border-color,box-shadow] duration-[180ms] hover:border-line-3 focus-within:border-accent focus-within:shadow-[0_0_0_3px_var(--color-focus-ring)] sm:w-[230px]">
+    <div className="flex h-[32px] w-full items-center gap-[8px] rounded-control border border-line-2 bg-surface-input px-[10px] shadow-well transition-[border-color,box-shadow] duration-[180ms] hover:border-line-3 focus-within:border-accent focus-within:bg-surface-card focus-within:shadow-[0_0_0_3px_var(--color-focus-ring)] sm:w-[230px]">
       <Icon name="search" size={15} className="flex-none text-ink-3" />
       <input
         type="search"
@@ -180,8 +180,8 @@ function FilterChip({
       aria-pressed={active}
       className={
         active
-          ? "inline-flex items-center gap-[6px] rounded-control border border-accent bg-accent px-[10px] py-[5px] text-[12px] font-medium text-on-accent"
-          : "inline-flex items-center gap-[6px] rounded-control border border-line bg-surface px-[10px] py-[5px] text-[12px] font-medium text-ink-2 transition-colors hover:bg-surface-hover hover:text-ink"
+          ? "inline-flex items-center gap-[6px] rounded-control border border-accent bg-accent px-[10px] py-[5px] text-mini font-medium text-on-accent"
+          : "inline-flex items-center gap-[6px] rounded-control border border-line bg-surface-card px-[10px] py-[5px] text-mini font-medium text-ink-2 transition-colors hover:bg-surface-hover hover:text-ink"
       }
     >
       {label}
@@ -189,8 +189,8 @@ function FilterChip({
         data-numeric
         className={
           active
-            ? "font-mono text-[11px] text-on-accent/75"
-            : "font-mono text-[11px] text-ink-4"
+            ? "font-mono text-micro text-on-accent/75"
+            : "font-mono text-micro text-ink-4"
         }
       >
         {count}
@@ -216,7 +216,7 @@ function PagerButton({
       aria-label={label}
       disabled={disabled}
       onClick={onClick}
-      className="flex h-8 w-8 items-center justify-center rounded-control border border-line text-ink-2 transition-colors hover:bg-surface-hover hover:text-ink disabled:cursor-not-allowed disabled:opacity-40"
+      className="flex size-[28px] items-center justify-center rounded-control border border-line text-ink-3 transition-colors hover:bg-surface-hover hover:text-ink disabled:cursor-not-allowed disabled:opacity-40"
     >
       <Icon name={icon} size={16} />
     </button>

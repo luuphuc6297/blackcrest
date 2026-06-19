@@ -1,12 +1,43 @@
-/* Blackcrest — Elevation (shadows). Subtle, theme-aware.
- * Light theme leans on hairline borders + soft low-alpha drops, not heavy shadows. */
+/* Blackcrest — Elevation (shadows). One light source from ABOVE; hairline-first.
+ * Base values = the "soft" depth baseline (default). The Appearance setting on
+ * <html data-depth="flat|elevated"> retunes the raw tokens below; data-reading
+ * retunes the PDF desk. Monochrome ink only, alpha ceiling 0.20. */
 
 :root {
-  --shadow-low: 0 1px 4px -1px rgba(16, 17, 26, 0.09);
-  --shadow-medium: 0 3px 12px rgba(16, 17, 26, 0.09);
-  --shadow-high: 0 7px 24px rgba(16, 17, 26, 0.10), 0 2px 6px rgba(16, 17, 26, 0.06);
+  /* Two-layer soft drops (tight contact + wider ambient) so white cards lift off
+   * the soft-grey #f6f6f8 canvas. Present, not heavy. */
+  --shadow-low: 0 1px 2px rgba(16, 17, 26, 0.06), 0 4px 12px -3px rgba(16, 17, 26, 0.10);
+  --shadow-medium: 0 2px 4px -1px rgba(16, 17, 26, 0.07), 0 10px 26px -6px rgba(16, 17, 26, 0.14);
+  --shadow-high: 0 6px 14px -4px rgba(16, 17, 26, 0.12), 0 24px 52px -12px rgba(16, 17, 26, 0.20);
 
-  /* Layered stacks for floating menus / popovers */
+  /* Top key-light — 1px white catch on the upper edge. Reused inside *-lit. */
+  --shadow-highlight-raw: inset 0 1px 0 0 rgba(255, 255, 255, 0.8);
+
+  /* Recessed well (negative elevation) — inset hairline, NO drop. The flat half
+   * of the raised/recessed pair: inputs, search, code, PDF rail. */
+  --shadow-well-raw:
+    inset 0 1px 1px rgba(16, 17, 26, 0.04),
+    inset 0 0 0 1px var(--color-border-secondary);
+
+  /* "Lit" elevations = key-light + drop, so cards/toolbars read as paper. */
+  --shadow-low-lit: inset 0 1px 0 rgba(255, 255, 255, 0.8), var(--shadow-low);
+  --shadow-medium-lit: inset 0 1px 0 rgba(255, 255, 255, 0.8), var(--shadow-medium);
+  --shadow-high-lit: inset 0 1px 0 rgba(255, 255, 255, 0.85), var(--shadow-high);
+
+  /* PDF page — document-on-desk: pure lift (NO ring) + paper-edge key-light. */
+  --shadow-page-raw:
+    0 1px 2px rgba(16, 17, 26, 0.10),
+    0 12px 28px -8px rgba(16, 17, 26, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  --shadow-page-active-raw:
+    0 2px 4px rgba(16, 17, 26, 0.12),
+    0 18px 40px -8px rgba(16, 17, 26, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+
+  /* Scroll-aware chrome (header/toolbar) — flat at top, this when scrolled. */
+  --shadow-chrome-raw: 0 1px 0 var(--color-border-primary), 0 4px 12px -6px rgba(16, 17, 26, 0.10);
+
+  /* Layered stacks for floating menus / popovers (ring + drop). */
   --shadow-stack-low:
     0 0 0 1px var(--color-border-primary),
     0 1px 4px -1px rgba(16, 17, 26, 0.08);
@@ -23,18 +54,68 @@
   --ring-focus: 0 0 0 3px var(--color-focus-ring);
 }
 
+/* ── Appearance: Surface depth (data-depth on <html>) ───────────────────────
+ * "soft" is the :root default above. "flat" = hairline-first, key-light off.
+ * "elevated" = darker canvas + stronger drops + brighter key-light. */
+html[data-depth="flat"]:not([data-theme="dark"]) {
+  --color-bg-primary: #fafafb;            /* near-white desk — minimal tonal lift */
+  --color-bg-canvas-reading: #f1f1f4;     /* flatter reading desk */
+  --shadow-highlight-raw: none;           /* no key-light */
+  --shadow-low-lit: 0 1px 2px rgba(16, 17, 26, 0.05);
+  --shadow-medium-lit: var(--shadow-low);
+  --shadow-high-lit: var(--shadow-medium);
+  --shadow-page-raw: 0 1px 3px rgba(16, 17, 26, 0.08), inset 0 0 0 1px var(--color-border-secondary);
+  --shadow-page-active-raw: 0 2px 6px rgba(16, 17, 26, 0.12), inset 0 0 0 1px var(--color-border-secondary);
+}
+
+html[data-depth="elevated"]:not([data-theme="dark"]) {
+  --color-bg-primary: #f1f1f4;            /* darker desk → stronger lift */
+  --shadow-highlight-raw: inset 0 1px 0 0 rgba(255, 255, 255, 0.9);
+  --shadow-low-lit: inset 0 1px 0 rgba(255, 255, 255, 0.85), var(--shadow-medium);
+  --shadow-medium-lit: inset 0 1px 0 rgba(255, 255, 255, 0.85), var(--shadow-high);
+  --shadow-high-lit: inset 0 1px 0 rgba(255, 255, 255, 0.9), var(--shadow-high);
+  --shadow-page-active-raw:
+    0 3px 6px rgba(16, 17, 26, 0.14),
+    0 24px 52px -10px rgba(16, 17, 26, 0.26),
+    inset 0 1px 0 rgba(255, 255, 255, 0.75);
+}
+
+/* ── Appearance: Reading background (data-reading on <html>) ─────────────────
+ * Default light desk (#eeeef1). "dark" = deep neutral desk; the white page rides
+ * on ink-black shadows so it reads as paper on a dark table. */
+html[data-reading="dark"] {
+  --color-bg-canvas-reading: #2a2c31;
+  --shadow-page-raw:
+    0 2px 6px rgba(0, 0, 0, 0.34),
+    0 16px 40px -10px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  --shadow-page-active-raw:
+    0 3px 8px rgba(0, 0, 0, 0.4),
+    0 22px 50px -10px rgba(0, 0, 0, 0.62),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
 [data-theme="dark"] {
-  --shadow-low: 0 2px 4px rgba(0, 0, 0, 0.10);
-  --shadow-medium: 0 4px 24px rgba(0, 0, 0, 0.20);
-  --shadow-high: 0 7px 32px rgba(0, 0, 0, 0.35);
+  /* Two-layer to match light's physics (contact + ambient) + faint top key-light. */
+  --shadow-low: 0 1px 2px rgba(0, 0, 0, 0.30), 0 4px 12px -3px rgba(0, 0, 0, 0.40);
+  --shadow-medium: 0 2px 4px -1px rgba(0, 0, 0, 0.35), 0 10px 26px -6px rgba(0, 0, 0, 0.50);
+  --shadow-high: 0 6px 14px -4px rgba(0, 0, 0, 0.45), 0 24px 52px -12px rgba(0, 0, 0, 0.60);
+
+  --shadow-highlight-raw: inset 0 1px 0 0 rgba(255, 255, 255, 0.04);
+  --shadow-well-raw:
+    inset 0 1px 1px rgba(0, 0, 0, 0.25),
+    inset 0 0 0 1px var(--color-border-secondary);
+  --shadow-low-lit: inset 0 1px 0 rgba(255, 255, 255, 0.04), var(--shadow-low);
+  --shadow-medium-lit: inset 0 1px 0 rgba(255, 255, 255, 0.04), var(--shadow-medium);
+  --shadow-high-lit: inset 0 1px 0 rgba(255, 255, 255, 0.05), var(--shadow-high);
 
   --shadow-stack-low:
     0 0 0 1px var(--color-border-primary),
-    0 2px 4px rgba(0, 0, 0, 0.20);
+    0 2px 4px rgba(0, 0, 0, 0.40);
   --shadow-stack-medium:
     0 0 0 1px var(--color-border-primary),
-    0 4px 24px rgba(0, 0, 0, 0.35);
+    0 4px 24px rgba(0, 0, 0, 0.50);
   --shadow-stack-high:
     0 0 0 1px var(--color-border-primary),
-    0 8px 40px rgba(0, 0, 0, 0.50);
+    0 8px 40px rgba(0, 0, 0, 0.60);
 }

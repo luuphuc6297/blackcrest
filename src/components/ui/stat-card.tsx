@@ -43,7 +43,7 @@ export function StatCard({
   return (
     <div
       className={cn(
-        "rounded-card border border-line bg-surface-1 p-[18px]",
+        "rounded-card border border-line bg-surface-card p-[18px] shadow-card-lit",
         className,
       )}
     >
@@ -54,7 +54,7 @@ export function StatCard({
             className={cn("h-2 w-2 flex-none rounded-pill", DOT_BG[dot])}
           />
         )}
-        <div className="text-[13px] text-ink-3">{label}</div>
+        <div className="text-small text-ink-3">{label}</div>
       </div>
       <div
         data-numeric

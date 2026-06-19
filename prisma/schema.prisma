@@ -32,7 +32,9 @@ enum Role {
 }
 
 enum UserStatus {
-  PENDING // registered, awaiting manual approval — CANNOT log in
+  INVITED // admin-invited, NO password yet — must accept invite (set password) to activate
+  UNVERIFIED // self-registered, email NOT yet confirmed — CANNOT log in, not in approval queue
+  PENDING // email confirmed, awaiting manual approval — CANNOT log in
   APPROVED
   SUSPENDED
 }
@@ -64,11 +66,13 @@ enum AccessAction {
 }
 
 enum AuditAction {
+  ACCOUNT_INVITE
   ACCOUNT_APPROVE
   ACCOUNT_REJECT
   ACCOUNT_SUSPEND
   ACCOUNT_REINSTATE
   ACCOUNT_LOCKED
+  ACCOUNT_ROLE
   ENTITLEMENT_GRANT
   ENTITLEMENT_REVOKE
   REPORT_UPLOAD
@@ -77,6 +81,8 @@ enum AuditAction {
   REPORT_REJECT
   REPORT_PUBLISH
   REPORT_ARCHIVE
+  REPORT_ACCESS
+  REPORT_DELETE
   GROUP_CREATE
   GROUP_MEMBER_ADD
   GROUP_MEMBER_REMOVE
@@ -97,6 +103,8 @@ model User {
   // Login throttle / lockout (blueprint §F3) — reset on success.
   failedLoginCount Int       @default(0)
   lockedUntil      DateTime?
+  // Email-verification gate: null until the user confirms via the emailed link.
+  emailVerifiedAt  DateTime?
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
 

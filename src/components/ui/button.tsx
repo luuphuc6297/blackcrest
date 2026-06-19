@@ -30,7 +30,7 @@ const VARIANTS: Record<ButtonVariant, string> = {
   ghost:
     "bg-transparent text-ink-2 border-transparent hover:bg-surface-hover active:bg-surface-active",
   danger:
-    "bg-danger text-white border-danger hover:bg-[#9c322d] hover:border-[#9c322d] active:bg-[#8a2c28]",
+    "bg-danger text-white border-danger hover:bg-danger-hover hover:border-danger-hover active:bg-danger-active",
 };
 
 const SIZES: Record<ButtonSize, string> = {
@@ -99,14 +99,14 @@ function Spinner() {
         r="5.5"
         fill="none"
         stroke="currentColor"
-        strokeWidth="2"
+        strokeWidth="1.5"
         strokeOpacity="0.25"
       />
       <path
         d="M7 1.5 a5.5 5.5 0 0 1 5.5 5.5"
         fill="none"
         stroke="currentColor"
-        strokeWidth="2"
+        strokeWidth="1.5"
         strokeLinecap="round"
       />
     </svg>

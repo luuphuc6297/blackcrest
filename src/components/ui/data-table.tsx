@@ -59,7 +59,7 @@ export function DataTable<T>({
                 key={i}
                 scope="col"
                 className={cn(
-                  "px-[18px] py-[10px] text-[10px] font-medium uppercase tracking-[0.06em]",
+                  "px-[18px] py-[10px] text-[10px] font-medium uppercase tracking-caps",
                   alignClass(c.align),
                   c.srHeader && "sr-only",
                   c.headerClassName,
@@ -88,7 +88,7 @@ export function DataTable<T>({
                   <td
                     key={i}
                     className={cn(
-                      "px-[18px] py-[11px] align-middle",
+                      "px-[18px] py-[var(--density-cell-py)] align-middle",
                       alignClass(c.align),
                       c.cellClassName,
                     )}

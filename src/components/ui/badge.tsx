@@ -66,8 +66,8 @@ const DOT_TONES: Record<BadgeTone, string> = {
 };
 
 const SIZES: Record<BadgeSize, string> = {
-  sm: "px-[7px] py-[2px] text-[11px]",
-  md: "px-[9px] py-[3px] text-[12px]",
+  sm: "px-[7px] py-[2px] text-micro",
+  md: "px-[9px] py-[3px] text-mini",
 };
 
 export const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(

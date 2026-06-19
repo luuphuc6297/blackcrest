@@ -37,6 +37,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
       error,
       size = "md",
       disabled = false,
+      required = false,
       children,
       id,
       className,
@@ -48,15 +49,17 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
     const reactId = React.useId();
     const selectId = id ?? reactId;
     const hasError = Boolean(error);
+    const msgId = `${selectId}-msg`;
 
     return (
       <div className={cn("flex flex-col gap-[7px]", containerClassName)}>
         {label && (
           <label
             htmlFor={selectId}
-            className="text-[11px] font-semibold uppercase tracking-[0.07em] text-ink-3"
+            className="text-micro font-semibold uppercase tracking-[0.07em] text-ink-3"
           >
             {label}
+            {required && <span className="text-danger"> *</span>}
           </label>
         )}
         <div className="relative flex items-center">
@@ -64,15 +67,18 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
             ref={ref}
             id={selectId}
             disabled={disabled}
+            required={required}
+            aria-invalid={hasError || undefined}
+            aria-describedby={hint || error ? msgId : undefined}
             className={cn(
-              "h-[32px] w-full appearance-none rounded-control border py-0 pl-[10px] pr-[32px] font-sans text-[15px] text-ink outline-none transition-[border-color,box-shadow] duration-[180ms]",
+              "h-[32px] w-full appearance-none rounded-control border py-0 pl-[10px] pr-[32px] font-sans text-regular text-ink outline-none transition-[border-color,box-shadow] duration-[180ms]",
               SIZES[size],
               hasError
                 ? "border-danger focus:shadow-[0_0_0_3px_var(--color-danger-tint)]"
-                : "border-line-2 hover:border-line-3 focus:border-accent focus:shadow-[0_0_0_3px_var(--color-focus-ring)]",
+                : "border-line-3 shadow-well hover:border-line-3 focus:border-accent focus:bg-surface-card focus:shadow-[0_0_0_3px_var(--color-focus-ring)]",
               disabled
                 ? "cursor-not-allowed bg-surface-2 opacity-60"
-                : "cursor-pointer bg-surface",
+                : "cursor-pointer bg-surface-input",
               className,
             )}
             {...rest}
@@ -98,8 +104,10 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
         </div>
         {(hint || error) && (
           <span
+            id={msgId}
+            role={hasError ? "alert" : undefined}
             className={cn(
-              "text-[12px]",
+              "text-mini",
               hasError ? "text-danger" : "text-ink-3",
             )}
           >

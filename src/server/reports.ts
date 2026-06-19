@@ -42,28 +42,12 @@ export async function getReportBySlug(
   };
 }
 
-/** Lightweight portal stats (real counts + representative figures). */
-export async function getPortalSummary(user: { id: string; role: Role }) {
-  const memberGroups = await prisma.groupMembership.findMany({
-    where: { userId: user.id },
-    include: { group: true },
-  });
-  const latest = await prisma.report.findFirst({
-    where: { status: "PUBLISHED" },
-    orderBy: [{ publishedAt: "desc" }],
-    select: { publishedAt: true },
-  });
-  return {
-    groups: memberGroups.map((m) => m.group.name),
-    latestPublishedAt: latest?.publishedAt ?? null,
-  };
-}
-
 /** Admin Reports table (staff only) — full list; the client table does the
  * (instant, in-memory) search / status-filter / pagination. */
 export async function listAdminReports(locale: string) {
   const rows = await prisma.report.findMany({
     orderBy: [{ updatedAt: "desc" }],
+    take: 500,
     include: { translations: true, category: true },
   });
   return rows.map((r) => ({
@@ -83,6 +67,7 @@ export async function listAdminReports(locale: string) {
 export async function listReportOptions(locale: string) {
   const rows = await prisma.report.findMany({
     orderBy: [{ updatedAt: "desc" }],
+    take: 1000,
     include: { translations: true },
   });
   return rows.map((r) => ({

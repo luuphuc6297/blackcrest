@@ -1,5 +1,6 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { auth } from "@/auth";
+import { can } from "@/lib/permissions";
 import { AppShell } from "@/components/app-shell";
 import { adminNav } from "@/lib/nav";
 import { listAdminReports, listCategories, categoryName } from "@/server/reports";
@@ -19,6 +20,14 @@ export default async function AdminReportsPage({
 
   const session = await auth();
   const user = session!.user;
+
+  // Row-action permissions, derived from the central PERMISSIONS map so the UI
+  // and the server gates can never drift (the actions re-check the same caps).
+  const perms = {
+    advance: can(user.role, "report.review"),
+    access: can(user.role, "report.setAccess"),
+    del: can(user.role, "report.delete"),
+  };
 
   const [tNav, tRoles] = await Promise.all([
     getTranslations("Nav"),
@@ -43,7 +52,7 @@ export default async function AdminReportsPage({
       actions={<UploadReportDialog categories={categoryOptions} />}
     >
       <div className="mx-auto max-w-[1180px] px-4 py-6 sm:px-7">
-        <ReportsTable rows={reports} locale={locale} />
+        <ReportsTable rows={reports} locale={locale} perms={perms} />
       </div>
     </AppShell>
   );

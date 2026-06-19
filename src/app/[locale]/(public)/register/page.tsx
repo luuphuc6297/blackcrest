@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Icon } from "@/components/icon";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import { Logo } from "@/components/logo";
 import { RegisterForm } from "./register-form";
 
 export async function generateMetadata({
@@ -51,6 +52,7 @@ export default async function RegisterPage({
           <LanguageSwitcher />
         </div>
         <div className="w-full max-w-[380px]">
+          <Logo size={30} className="mb-10 lg:hidden" />
           <RegisterForm locale={locale} />
         </div>
       </div>
@@ -58,7 +60,7 @@ export default async function RegisterPage({
       {/* Brand panel — dark, editorial */}
       <aside className="relative hidden flex-col justify-between bg-inverse px-11 pb-10 pt-11 text-on-accent lg:flex">
         <div className="flex items-center gap-[10px]">
-          <span className="flex h-8 w-8 items-center justify-center rounded-[8px] bg-white/10">
+          <span className="flex h-8 w-8 items-center justify-center rounded-card bg-white/10">
             <svg width="20" height="20" viewBox="0 0 64 64" fill="none" aria-hidden>
               <path
                 d="M16 39 L32 21 L48 39"
@@ -84,12 +86,12 @@ export default async function RegisterPage({
           <p className="font-serif text-[27px] font-medium leading-[1.35] tracking-[-0.01em] text-[#f7f8f8]">
             &ldquo;{t("registerPledge")}&rdquo;
           </p>
-          <div className="mt-[22px] text-[13px] text-[#8a8f98]">
+          <div className="mt-[22px] text-small text-[#8a8f98]">
             {t("registerSubtitle")}
           </div>
         </div>
 
-        <div className="flex gap-[18px] text-[13px] text-[#8a8f98]">
+        <div className="flex gap-[18px] text-small text-[#8a8f98]">
           <span className="inline-flex items-center gap-[6px]">
             <Icon name="shield-check" size={14} />
             {t("badgeEncryption")}

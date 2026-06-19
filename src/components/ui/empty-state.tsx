@@ -32,9 +32,9 @@ export function EmptyState({
         <Icon name={icon} size={20} />
       </span>
       <div className="flex flex-col gap-1">
-        <p className="text-[15px] font-semibold text-ink">{title}</p>
+        <p className="text-regular font-semibold text-ink">{title}</p>
         {description && (
-          <p className="max-w-sm text-[13px] text-ink-3">{description}</p>
+          <p className="max-w-sm text-small text-ink-3">{description}</p>
         )}
       </div>
       {action && <div className="mt-1">{action}</div>}

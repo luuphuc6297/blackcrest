@@ -23,16 +23,17 @@
   --font-weight-semibold: 590;
   --font-weight-bold: 680;
 
-  /* ---- Size scale (rem) ---- */
-  --font-size-micro: 0.6875rem;   /* 11px */
-  --font-size-mini: 0.75rem;      /* 12px */
-  --font-size-small: 0.8125rem;   /* 13px */
-  --font-size-regular: 0.9375rem; /* 15px — default UI */
-  --font-size-medium: 1rem;       /* 16px — body */
-  --font-size-large: 1.125rem;    /* 18px */
-  --font-size-title-3: 1.25rem;   /* 20px */
-  --font-size-title-2: 1.5rem;    /* 24px */
-  --font-size-title-1: 2.25rem;   /* 36px */
+  /* ---- Size scale (rem) — × --font-scale (Appearance: text size) ---- */
+  --font-scale: 1;
+  --font-size-micro: calc(0.6875rem * var(--font-scale));   /* 11px */
+  --font-size-mini: calc(0.75rem * var(--font-scale));      /* 12px */
+  --font-size-small: calc(0.8125rem * var(--font-scale));   /* 13px */
+  --font-size-regular: calc(0.9375rem * var(--font-scale)); /* 15px — default UI */
+  --font-size-medium: calc(1rem * var(--font-scale));       /* 16px — body */
+  --font-size-large: calc(1.125rem * var(--font-scale));    /* 18px */
+  --font-size-title-3: calc(1.25rem * var(--font-scale));   /* 20px */
+  --font-size-title-2: calc(1.5rem * var(--font-scale));    /* 24px */
+  --font-size-title-1: calc(2.25rem * var(--font-scale));   /* 36px */
 
   /* ---- Line-heights ---- */
   --line-height-tight: 1.1;
@@ -63,3 +64,15 @@
 
 /* Overline / eyebrow label */
 .bc-overline { font-size: 0.75rem; font-weight: var(--font-weight-medium); letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--color-text-tertiary); }
+
+/* ── Appearance: Text size (data-text on <html>) — scales the rem type scale ── */
+html[data-text="small"] { --font-scale: 0.9; }
+html[data-text="large"] { --font-scale: 1.13; }
+
+/* ── Appearance: UI font (data-font on <html>) — retunes the default body/sans
+ * family; serif headings (font-serif) + mono figures (font-mono) keep their roles. */
+html[data-font="be-vietnam"] { --font-regular: var(--font-be-vietnam), "Be Vietnam Pro", system-ui, sans-serif; }
+html[data-font="jakarta"] { --font-regular: var(--font-jakarta), "Plus Jakarta Sans", system-ui, sans-serif; }
+html[data-font="lexend"] { --font-regular: var(--font-lexend), "Lexend", system-ui, sans-serif; }
+html[data-font="serif"] { --font-regular: var(--font-serif-display); }
+html[data-font="mono"] { --font-regular: var(--font-monospace); }

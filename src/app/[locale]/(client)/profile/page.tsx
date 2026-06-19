@@ -6,6 +6,7 @@ import { LanguageSwitcher } from "@/components/language-switcher";
 import { adminNav, portalNav } from "@/lib/nav";
 import { isStaff } from "@/lib/rbac";
 import { ProfileForm } from "./profile-form";
+import { AppearanceSettings } from "./appearance-settings";
 
 // Gated, per-user — never prerender/cache.
 export const dynamic = "force-dynamic";
@@ -42,7 +43,7 @@ export default async function ProfilePage({
       homeHref={isStaff(user.role) ? "/admin/reports" : "/portal"}
       actions={<LanguageSwitcher />}
     >
-      <div className="mx-auto max-w-[680px] px-4 py-7 sm:px-7">
+      <div className="mx-auto flex max-w-[680px] flex-col gap-5 px-4 py-7 sm:px-7">
         <ProfileForm
           locale={locale}
           email={dbUser?.email ?? user.email ?? ""}
@@ -50,6 +51,7 @@ export default async function ProfilePage({
           organization={dbUser?.organization ?? ""}
           role={tRoles(user.role)}
         />
+        <AppearanceSettings />
       </div>
     </AppShell>
   );

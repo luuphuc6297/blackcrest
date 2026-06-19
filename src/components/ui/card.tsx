@@ -42,9 +42,9 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(function Card(
     <div
       ref={ref}
       className={cn(
-        "overflow-hidden rounded-card border border-line bg-surface shadow-soft transition-[box-shadow,transform] duration-[180ms]",
+        "overflow-hidden rounded-card border border-line bg-surface-card shadow-soft-lit transition-[box-shadow,transform] duration-[180ms]",
         interactive &&
-          "cursor-pointer hover:-translate-y-px hover:shadow-card",
+          "cursor-pointer hover:-translate-y-px hover:shadow-card-lit",
         className,
       )}
       style={style}
@@ -57,12 +57,12 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(function Card(
         >
           <div className="flex flex-col gap-[3px]">
             {title && (
-              <div className="text-[18px] font-semibold tracking-[-0.012em] text-ink">
+              <div className="text-large font-semibold tracking-tight text-ink">
                 {title}
               </div>
             )}
             {subtitle && (
-              <div className="text-[13px] text-ink-3">{subtitle}</div>
+              <div className="text-small text-ink-3">{subtitle}</div>
             )}
           </div>
           {action}

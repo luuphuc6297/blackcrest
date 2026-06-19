@@ -1,11 +1,12 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { auth } from "@/auth";
+import { can } from "@/lib/permissions";
 import { AppShell } from "@/components/app-shell";
-import { Badge, Button } from "@/components/ui";
-import { Icon } from "@/components/icon";
+import { Badge } from "@/components/ui";
 import { adminNav } from "@/lib/nav";
 import { listAccounts } from "@/server/admin-data";
 import { AccountsTable } from "./accounts-table";
+import { InviteMemberDialog } from "./invite-dialog";
 
 // Gated, per-user data — never prerender/cache.
 export const dynamic = "force-dynamic";
@@ -21,8 +22,7 @@ export default async function AdminAccountsPage({
   const session = await auth();
   const user = session!.user;
 
-  const [t, tNav, tRoles] = await Promise.all([
-    getTranslations("Actions"),
+  const [tNav, tRoles] = await Promise.all([
     getTranslations("Nav"),
     getTranslations("Roles"),
   ]);
@@ -45,14 +45,12 @@ export default async function AdminAccountsPage({
         <AccountsTable
           rows={accounts}
           locale={locale}
+          canEditRole={can(user.role, "account.setRole")}
+          currentUserId={user.id}
           actions={
-            <Button
-              variant="primary"
-              size="sm"
-              leadingIcon={<Icon name="user-plus" size={15} />}
-            >
-              {t("invite")}
-            </Button>
+            can(user.role, "account.invite") ? (
+              <InviteMemberDialog locale={locale} />
+            ) : null
           }
         />
       </div>

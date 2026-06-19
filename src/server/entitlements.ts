@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { requireRole } from "@/lib/rbac";
+import { requireCapability } from "@/lib/rbac";
 import { logAudit } from "@/lib/audit";
 
 /**
@@ -21,7 +21,7 @@ const grantSchema = z
   });
 
 export async function grantEntitlement(formData: FormData) {
-  const actor = await requireRole("SUPER_ADMIN", "APPROVER");
+  const actor = await requireCapability("entitlement.manage");
   const parsed = grantSchema.parse({
     groupId: formData.get("groupId"),
     reportId: formData.get("reportId") || undefined,
@@ -55,7 +55,7 @@ export async function grantEntitlement(formData: FormData) {
 }
 
 export async function revokeEntitlement(formData: FormData) {
-  const actor = await requireRole("SUPER_ADMIN", "APPROVER");
+  const actor = await requireCapability("entitlement.manage");
   const { entitlementId } = z
     .object({ entitlementId: z.string().cuid() })
     .parse({ entitlementId: formData.get("entitlementId") });

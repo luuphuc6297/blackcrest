@@ -60,7 +60,7 @@ export function Tabs({
             type="button"
             onClick={() => select(it.value)}
             className={cn(
-              "-mb-px inline-flex cursor-pointer items-center gap-[7px] whitespace-nowrap border-b-2 bg-transparent px-3 py-[9px] font-sans text-[15px] font-medium transition-[color,border-color] duration-[180ms]",
+              "-mb-px inline-flex cursor-pointer items-center gap-[7px] whitespace-nowrap border-b-2 bg-transparent px-3 py-[9px] font-sans text-regular font-medium transition-[color,border-color] duration-[180ms]",
               on
                 ? "border-accent text-ink"
                 : "border-transparent text-ink-3",
@@ -71,7 +71,7 @@ export function Tabs({
             {it.badge != null && (
               <span
                 className={cn(
-                  "rounded-pill px-[6px] py-px text-[11px] font-medium",
+                  "rounded-pill px-[6px] py-px text-micro font-medium",
                   on
                     ? "bg-accent-tint text-accent"
                     : "bg-surface-2 text-ink-4",

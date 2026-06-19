@@ -33,9 +33,9 @@ export function MobileMenu({
         aria-expanded={open}
         aria-label={menuLabel}
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex h-9 w-9 items-center justify-center rounded-control border border-line text-ink-2 transition-colors hover:bg-surface-hover"
+        className="inline-flex size-[28px] items-center justify-center rounded-control border border-line text-ink-3 transition-colors hover:bg-surface-hover hover:text-ink"
       >
-        <Icon name={open ? "x" : "menu"} size={18} />
+        <Icon name={open ? "x" : "menu"} size={16} />
       </button>
 
       <div

@@ -98,13 +98,13 @@ export default async function PortalPage({
       actions={<LanguageSwitcher />}
       footerNav={footerNav}
     >
-      <div className="mx-auto max-w-[1180px] px-7 py-7">
+      <div className="mx-auto max-w-[1180px] px-4 py-6 sm:px-7">
         {/* Greeting */}
-        <div className="mb-[22px]">
-          <h2 className="font-serif text-[27px] font-semibold tracking-[-0.015em] text-ink">
+        <div className="mb-[26px]">
+          <h2 className="bc-display text-[28px] text-ink">
             {t("greeting", { name: userName })}
           </h2>
-          <p className="mt-[6px] text-[15px] text-ink-3">
+          <p className="mt-[10px] max-w-[58ch] text-regular leading-relaxed text-ink-3">
             {t.rich("recentSummary", {
               count: newCount,
               b: (chunks) => (
@@ -130,20 +130,20 @@ export default async function PortalPage({
         {/* Recent documents */}
         <Card padding={0}>
           <div className="flex items-center justify-between px-[18px] pb-3 pt-4">
-            <div className="text-[18px] font-semibold tracking-[-0.012em] text-ink">
+            <div className="text-large font-semibold tracking-tight text-ink">
               {t("recentDocuments")}
             </div>
             <Link
               href="/reports"
-              className="inline-flex items-center gap-[6px] text-[13px] font-medium text-ink-3 transition-colors hover:text-accent"
+              className="inline-flex items-center gap-[6px] text-small font-medium text-ink-3 transition-colors hover:text-accent"
             >
               {t("viewAll")}
               <Icon name="arrow-right" size={15} />
             </Link>
           </div>
 
-          {/* Column header */}
-          <div className="grid grid-cols-[2fr_1.1fr_1fr_0.9fr_36px] gap-3 border-b border-line px-[18px] pb-[8px] pt-[2px] text-[11px] font-medium uppercase tracking-[0.04em] text-ink-4">
+          {/* Column header — hidden on phones where rows collapse to a title list */}
+          <div className="hidden grid-cols-[2fr_1.1fr_1fr_0.9fr_36px] gap-3 border-b border-line px-[18px] pb-[8px] pt-[2px] text-micro font-medium uppercase tracking-[0.04em] text-ink-4 sm:grid">
             <span>{t("colDocument")}</span>
             <span>{t("colType")}</span>
             <span>{t("colStatus")}</span>
@@ -161,38 +161,38 @@ export default async function PortalPage({
               <Link
                 key={d.id}
                 href={`/reports/${d.slug}`}
-                className="group grid grid-cols-[2fr_1.1fr_1fr_0.9fr_36px] items-center gap-3 border-b border-line px-[16px] py-3 transition-colors last:border-b-0 hover:bg-surface-hover"
+                className="group grid grid-cols-[1fr_auto] items-center gap-3 border-b border-line px-[16px] py-3 transition-colors last:border-b-0 hover:bg-surface-hover sm:grid-cols-[2fr_1.1fr_1fr_0.9fr_36px]"
               >
                 <div className="flex min-w-0 items-center gap-[11px]">
-                  <span className="flex h-[38px] w-[32px] flex-none items-center justify-center rounded-card border border-line bg-surface-2">
+                  <span className="flex size-[34px] flex-none items-center justify-center rounded-card border border-line bg-surface-2">
                     <Icon
                       name="file-text"
-                      size={16}
+                      size={18}
                       className="text-ink-3"
                     />
                   </span>
                   <div className="min-w-0">
-                    <div className="truncate text-[15px] font-medium text-ink">
+                    <div className="truncate text-regular font-medium text-ink">
                       {d.title}
                     </div>
                     {d.author && (
-                      <div className="truncate text-[12px] text-ink-3">
+                      <div className="truncate text-mini text-ink-3">
                         {d.author}
                       </div>
                     )}
                   </div>
                 </div>
-                <span className="truncate text-[13px] text-ink-2">
+                <span className="hidden truncate text-small text-ink-2 sm:block">
                   {categoryName(d.category, locale)}
                 </span>
-                <span>
-                  <Badge tone={REPORT_STATUS[d.status].tone} dot>
+                <span className="hidden sm:block">
+                  <Badge tone={REPORT_STATUS[d.status].tone} dot size="sm">
                     {tStatus(REPORT_STATUS[d.status].key)}
                   </Badge>
                 </span>
                 <span
                   data-numeric
-                  className="font-mono text-[13px] text-ink-3"
+                  className="hidden font-mono text-small text-ink-3 sm:block"
                 >
                   {formatDate(d.publishedAt, locale)}
                 </span>
