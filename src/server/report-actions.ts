@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { requireCapability } from "@/lib/rbac";
 import { logAudit } from "@/lib/audit";
 import { getStorage } from "@/lib/storage";
+import { getNotifier } from "@/lib/notifier";
 import { REVIEW_TRANSITIONS, resolveReportTransition } from "@/lib/report-transitions";
 
 const schema = z.object({
@@ -86,6 +87,17 @@ export async function reviewReport(input: {
     targetId: reportId,
     metadata: note ? { note } : undefined,
   });
+
+  // F2: fan out watchlist alerts on publish. Fully guarded — a notify failure
+  // must NEVER fail the publish that already committed above. (Synchronous for
+  // now; a queue is the scale path once fan-out grows.)
+  if (decision === "publish") {
+    try {
+      await getNotifier().notifyReportPublished(reportId);
+    } catch (err) {
+      console.error("[reviewReport] watchlist notify failed:", err);
+    }
+  }
 
   revalidatePath("/[locale]/reports/[slug]", "page");
   revalidatePath("/[locale]/admin/reports", "page");

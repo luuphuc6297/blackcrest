@@ -33,7 +33,8 @@
     "audit": "Nhật ký",
     "settings": "Cài đặt",
     "signOut": "Đăng xuất",
-    "admin": "Quản trị"
+    "admin": "Quản trị",
+    "watchlist": "Theo dõi"
   },
   "Actions": {
     "signIn": "Đăng nhập",
@@ -229,7 +230,13 @@
     "documentCount": "{n, number} tài liệu",
     "filterAll": "Tất cả",
     "emptyFiltered": "Không có tài liệu nào phù hợp với bộ lọc này.",
-    "pageCount": "{n, number} trang"
+    "pageCount": "{n, number} trang",
+    "facetType": "Loại báo cáo",
+    "facetRec": "Khuyến nghị",
+    "facetTier": "Định dạng",
+    "loadMore": "Xem thêm",
+    "emptyAll": "Chưa có tài liệu nào được phát hành.",
+    "documentCountCapped": "{n, number}+ tài liệu"
   },
   "Viewer": {
     "backToLibrary": "Quay lại thư viện",
@@ -437,6 +444,10 @@
     "actionError": "Không thể thực hiện thao tác. Vui lòng thử lại.",
     "auditActionReportAccess": "Đổi quyền truy cập",
     "auditActionReportDelete": "Xoá báo cáo",
+    "auditActionReportTagAdd": "Gắn mã/loại",
+    "auditActionReportTagRemove": "Gỡ mã/loại",
+    "auditActionReportIngest": "Nạp báo cáo (ingest)",
+    "auditActionReportNotify": "Gửi thông báo theo dõi",
     "toastApproved": "Đã phê duyệt tài khoản.",
     "toastSuspended": "Đã tạm ngưng tài khoản.",
     "toastReinstated": "Đã khôi phục tài khoản.",
@@ -523,5 +534,35 @@
     "fontSans": "Sans",
     "fontSerif": "Serif",
     "fontMono": "Mono"
+  },
+  "Watchlist": {
+    "title": "Danh mục theo dõi",
+    "description": "Theo dõi các mã chứng khoán; nhận email khi có báo cáo mới được phát hành.",
+    "addLabel": "Thêm mã theo dõi",
+    "addPlaceholder": "Tìm theo mã hoặc tên công ty…",
+    "empty": "Bạn chưa theo dõi mã nào.",
+    "emptyHint": "Thêm một mã ở trên để nhận thông báo khi có báo cáo mới.",
+    "reportCount": "{n, number} báo cáo",
+    "addToWatchlist": "Thêm vào danh mục theo dõi",
+    "removeFromWatchlist": "Bỏ theo dõi",
+    "noMatches": "Không tìm thấy mã phù hợp."
+  },
+  "WatchlistEmail": {
+    "subject": "Báo cáo mới: {tickers}",
+    "heading": "Có báo cáo mới cho mã bạn theo dõi",
+    "intro": "Chào {name}, một báo cáo vừa được phát hành cho mã bạn đang theo dõi:",
+    "button": "Xem báo cáo",
+    "unsubscribeNote": "Không muốn nhận email này nữa?",
+    "unsubscribeLabel": "Huỷ nhận thông báo"
+  },
+  "Unsubscribe": {
+    "invalidTitle": "Liên kết không hợp lệ",
+    "invalidBody": "Liên kết huỷ nhận thông báo không hợp lệ hoặc đã hết hạn.",
+    "confirmTitle": "Huỷ nhận email theo dõi?",
+    "confirmBody": "Bạn sẽ không còn nhận email thông báo báo cáo mới cho {email}.",
+    "confirmButton": "Xác nhận huỷ",
+    "doneTitle": "Đã huỷ nhận thông báo",
+    "doneBody": "{email} sẽ không còn nhận email thông báo báo cáo mới.",
+    "backHome": "Về trang đăng nhập"
   }
 }

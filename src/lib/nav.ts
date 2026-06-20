@@ -7,6 +7,7 @@ export function portalNav(t: Translator): NavEntry[] {
   return [
     { key: "overview", label: t("overview"), icon: "layout-grid", href: "/portal" },
     { key: "documents", label: t("documents"), icon: "file-stack", href: "/reports" },
+    { key: "watchlist", label: t("watchlist"), icon: "bell", href: "/watchlist" },
   ];
 }
 

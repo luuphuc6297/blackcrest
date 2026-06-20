@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { Icon } from "@/components/icon";
+import { WatchButton } from "@/components/watch-button";
 import { requestDownloadUrl } from "@/server/download-actions";
 import { reviewReport } from "@/server/report-actions";
 import { REPORT_STATUS } from "@/lib/status";
@@ -61,6 +62,8 @@ export interface PdfViewerProps {
   /** Where the back button returns to — /admin/reports for staff, /reports for
    * clients — so staff keep their admin route instead of landing in the library. */
   backHref: string;
+  /** Per-ticker watch toggles (F2) — clients only; empty for staff. */
+  watchTickers?: { id: string; ticker: string; watching: boolean }[];
   /** Inline view/print endpoint (download uses the one-time token flow). */
   viewUrl: string;
   reviewerName: string;
@@ -180,6 +183,7 @@ export function PdfViewer({
   canViewWorkflow,
   canReview,
   backHref,
+  watchTickers = [],
   viewUrl,
   reviewerName,
 }: PdfViewerProps) {
@@ -411,6 +415,19 @@ export function PdfViewer({
         </div>
 
         <div className="ml-auto flex items-center gap-[6px]">
+          {watchTickers.length > 0 && (
+            <div className="mr-1 hidden items-center gap-[6px] sm:flex">
+              {watchTickers.map((s) => (
+                <WatchButton
+                  key={s.id}
+                  symbolId={s.id}
+                  ticker={s.ticker}
+                  initialWatching={s.watching}
+                />
+              ))}
+              <span className="h-6 w-px bg-line" />
+            </div>
+          )}
           <Tooltip content={t("download")} side="bottom">
             <IconButton
               label={t("download")}

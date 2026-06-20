@@ -2,210 +2,250 @@
 
 import * as React from "react";
 import { useTranslations } from "next-intl";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Link } from "@/i18n/navigation";
 import { Badge, Card, EmptyState } from "@/components/ui";
 import { Icon } from "@/components/icon";
-import { REPORT_STATUS } from "@/lib/status";
 import { formatDate } from "@/lib/format";
+import type { SearchedReport, ReportFacets } from "@/lib/authz";
 
-type LibReport = {
-  id: string;
-  slug: string;
-  status: keyof typeof REPORT_STATUS;
-  publishedAt: Date | string | null;
-  pageCount: number | null;
-  category: { id: string; nameVi: string; nameEn: string; nameZh: string; slug: string };
-  title: string;
-  summary: string | null;
-  author: string | null;
+// MVP display labels (Vietnamese-first; EN/zh keys are a fast-follow).
+const TYPE_VI: Record<string, string> = {
+  EARNINGS: "Kết quả KD", RESULT: "Kết quả", AGM: "ĐHCĐ", AGM_EXTRA: "ĐHCĐ bất thường",
+  INVESTOR_MEETING: "Gặp gỡ NĐT", COMPANY: "Báo cáo công ty", COMPANY_VISIT: "Thăm DN",
+  INITIATION: "Lần đầu", LISTING: "Niêm yết", IPO: "IPO", BOND: "Trái phiếu",
+  DROP_COVERAGE: "Ngưng theo dõi", VIEW: "Quan điểm", PHTT: "PHTT",
+};
+const REC_VI: Record<string, string> = { BUY: "MUA", HOLD: "GIỮ", SELL: "BÁN", REDUCE: "GIẢM", ADD: "THÊM" };
+const TIER_VI: Record<string, string> = { FULL: "Báo cáo", FLASH: "Nhận định nhanh" };
+const recTone = (r: string | null) =>
+  r === "BUY" || r === "ADD" ? "success" : r === "SELL" || r === "REDUCE" ? "danger" : "neutral";
+
+type Params = {
+  q?: string; type?: string; rec?: string; tier?: string; symbol?: string;
 };
 
-/** Investor library — instant in-memory category filter + search over the
- * already entitlement-filtered set the server provided. No server round-trips. */
 export function LibraryGrid({
-  reports,
-  categories,
-  locale,
+  items, facets, total, capped, nextCursor, params, locale,
 }: {
-  reports: LibReport[];
-  categories: { id: string; slug: string; label: string }[];
+  items: SearchedReport[];
+  facets: ReportFacets;
+  total: number;
+  capped: boolean;
+  nextCursor: string | null;
+  params: Params;
   locale: string;
 }) {
   const t = useTranslations("Library");
   const tc = useTranslations("Common");
-  const tStatus = useTranslations("Status");
+  const router = useRouter();
+  const pathname = usePathname();
+  const sp = useSearchParams();
+  const [pending, start] = React.useTransition();
 
-  const [q, setQ] = React.useState("");
-  const [cat, setCat] = React.useState<string | null>(null);
-
-  const searched = React.useMemo(() => {
-    const term = q.trim().toLowerCase();
-    if (!term) return reports;
-    return reports.filter((r) =>
-      `${r.title} ${r.summary ?? ""} ${r.author ?? ""}`.toLowerCase().includes(term),
-    );
-  }, [reports, q]);
-
-  const counts = React.useMemo(() => {
-    const c: Record<string, number> = {};
-    for (const r of searched) c[r.category.slug] = (c[r.category.slug] ?? 0) + 1;
-    return c;
-  }, [searched]);
-
-  const items = React.useMemo(
-    () => (cat ? searched.filter((r) => r.category.slug === cat) : searched),
-    [searched, cat],
+  // Build a new URL from the current query string + a patch (null deletes).
+  const apply = React.useCallback(
+    (patch: Record<string, string | null>) => {
+      const next = new URLSearchParams(sp.toString());
+      for (const [k, v] of Object.entries(patch)) {
+        if (v == null || v === "") next.delete(k);
+        else next.set(k, v);
+      }
+      next.delete("cursor"); // any filter change resets pagination
+      start(() => router.replace(`${pathname}?${next.toString()}`, { scroll: false }));
+    },
+    [sp, pathname, router],
   );
 
-  const catLabel = (c: LibReport["category"]) =>
-    locale === "en" ? c.nameEn : locale === "zh" ? c.nameZh : c.nameVi;
+  const toggleCsv = (key: keyof Params, value: string) => {
+    const cur = (params[key] ?? "").split(",").filter(Boolean);
+    const has = cur.includes(value);
+    const nextVals = has ? cur.filter((x) => x !== value) : [...cur, value];
+    apply({ [key]: nextVals.join(",") || null });
+  };
+
+  // Debounced free-text search.
+  const [text, setText] = React.useState(params.q ?? "");
+  React.useEffect(() => setText(params.q ?? ""), [params.q]);
+  React.useEffect(() => {
+    const id = setTimeout(() => {
+      if ((text.trim() || null) !== (params.q?.trim() || null)) apply({ q: text.trim() || null });
+    }, 350);
+    return () => clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [text]);
+
+  const activeType = (params.type ?? "").split(",").filter(Boolean);
+  const activeRec = (params.rec ?? "").split(",").filter(Boolean);
+  const anyFilter = !!(params.q || params.type || params.rec || params.tier || params.symbol);
 
   return (
-    <>
-      {/* Header */}
-      <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
-        <div className="min-w-0">
-          <h2 className="bc-display text-[28px] text-ink">{t("title")}</h2>
-          <p className="mt-[10px] max-w-[58ch] text-regular leading-relaxed text-ink-3">
-            {t("description")}
-          </p>
-        </div>
-        <span
-          data-numeric
-          className="flex-none rounded-control border border-line bg-surface-card px-[10px] py-[5px] font-mono text-mini text-ink-3 shadow-soft"
-        >
-          {t("documentCount", { n: items.length })}
-        </span>
-      </div>
-
-      {/* Filter + search */}
-      <div className="mb-6 flex flex-col gap-3 border-b border-line pb-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-wrap items-center gap-[6px]">
-          <Icon name="filter" size={15} className="mr-1 flex-none text-ink-4" />
-          <Chip active={!cat} onClick={() => setCat(null)} label={t("filterAll")} count={searched.length} />
-          {categories.map((c) => (
-            <Chip
-              key={c.id}
-              active={cat === c.slug}
-              onClick={() => setCat(c.slug)}
-              label={c.label}
-              count={counts[c.slug] ?? 0}
-            />
-          ))}
-        </div>
-        <div className="flex h-[32px] w-full items-center gap-[8px] rounded-control border border-line-2 bg-surface-input shadow-well px-[10px] transition-[border-color,box-shadow] duration-[180ms] hover:border-line-3 focus-within:border-accent focus-within:bg-surface-card focus-within:shadow-[0_0_0_3px_var(--color-focus-ring)] sm:w-[240px]">
+    <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:gap-8">
+      {/* ── Facet rail ── */}
+      <aside className="flex-none lg:w-[210px]">
+        <div className="flex items-center gap-[6px] rounded-control border border-line-2 bg-surface-input px-[10px] shadow-well focus-within:border-accent focus-within:bg-surface-card focus-within:shadow-[0_0_0_3px_var(--color-focus-ring)]">
           <Icon name="search" size={15} className="flex-none text-ink-3" />
           <input
             type="search"
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
+            value={text}
+            onChange={(e) => setText(e.target.value)}
             placeholder={tc("searchPlaceholder")}
             aria-label={tc("search")}
-            className="min-w-0 flex-1 border-none bg-transparent font-sans text-[14px] text-ink outline-none placeholder:text-ink-4"
+            className="min-w-0 flex-1 border-none bg-transparent py-[7px] font-sans text-[14px] text-ink outline-none placeholder:text-ink-4"
           />
         </div>
-      </div>
 
-      {/* Grid */}
-      {items.length === 0 ? (
-        <Card padding={0}>
-          <EmptyState icon="file-text" title={t("emptyFiltered")} />
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 gap-[14px] sm:grid-cols-2 lg:grid-cols-3">
-          {items.map((d, i) => (
-            <Link
-              key={d.id}
-              href={`/reports/${d.slug}`}
-              className="group bc-rise"
-              style={{ animationDelay: `${Math.min(i, 8) * 45}ms` }}
-            >
-              <Card
-                padding={18}
-                className="flex h-full flex-col transition-[box-shadow,transform] group-hover:-translate-y-px group-hover:shadow-card"
-              >
+        {params.symbol && (
+          <button
+            type="button"
+            onClick={() => apply({ symbol: null })}
+            className="mt-3 inline-flex items-center gap-[6px] rounded-control border border-accent bg-accent px-[10px] py-[5px] text-mini font-medium text-on-accent"
+          >
+            <Icon name="x" size={12} /> {params.symbol}
+          </button>
+        )}
+
+        <FacetGroup title={t("facetType")} values={facets.reportType} active={activeType} labels={TYPE_VI} onToggle={(v) => toggleCsv("type", v)} />
+        <FacetGroup title={t("facetRec")} values={facets.recommendation} active={activeRec} labels={REC_VI} onToggle={(v) => toggleCsv("rec", v)} />
+        <FacetGroup
+          title={t("facetTier")}
+          values={facets.tier}
+          active={params.tier ? [params.tier] : []}
+          labels={TIER_VI}
+          onToggle={(v) => apply({ tier: params.tier === v ? null : v })}
+        />
+      </aside>
+
+      {/* ── Results ── */}
+      <div className="min-w-0 flex-1">
+        <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+          <div className="min-w-0">
+            <h2 className="bc-display text-[26px] text-ink">{t("title")}</h2>
+            <p className="mt-[6px] text-small text-ink-3">{t("description")}</p>
+          </div>
+          <span data-numeric className="flex-none rounded-control border border-line bg-surface-card px-[10px] py-[5px] font-mono text-mini text-ink-3 shadow-soft">
+            {pending ? "…" : capped ? t("documentCountCapped", { n: total }) : t("documentCount", { n: total })}
+          </span>
+        </div>
+
+        {items.length === 0 ? (
+          <Card padding={0}>
+            <EmptyState icon="file-text" title={anyFilter ? t("emptyFiltered") : t("emptyAll")} />
+          </Card>
+        ) : (
+          <div className="grid grid-cols-1 gap-[14px] sm:grid-cols-2 xl:grid-cols-3">
+            {items.map((d) => (
+              <Card key={d.id} padding={18} className="flex h-full flex-col">
                 <div className="mb-3 flex items-center justify-between gap-2">
-                  <span className="truncate text-[10px] font-medium uppercase tracking-caps text-ink-4">
-                    {catLabel(d.category)}
-                  </span>
-                  <Badge tone={REPORT_STATUS[d.status].tone} dot size="sm">
-                    {tStatus(REPORT_STATUS[d.status].key)}
-                  </Badge>
-                </div>
-                <div className="flex items-start gap-3">
-                  <span className="flex size-[44px] flex-none items-center justify-center rounded-card border border-line bg-surface-2">
-                    <Icon name="file-text" size={20} className="text-ink-3" />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <div className="line-clamp-2 text-regular font-semibold leading-[1.3] tracking-[-0.01em] text-ink">
-                      {d.title}
-                    </div>
-                    {d.author && (
-                      <div className="mt-1 truncate text-mini text-ink-3">{d.author}</div>
+                  <div className="flex flex-wrap items-center gap-[5px]">
+                    {d.tickers.slice(0, 2).map((tk) => (
+                      <button
+                        key={tk}
+                        type="button"
+                        onClick={() => apply({ symbol: tk })}
+                        className="rounded-control border border-line bg-surface-2 px-[7px] py-[2px] font-mono text-micro font-medium text-ink-2 transition-colors hover:border-accent hover:text-accent"
+                      >
+                        {tk}
+                      </button>
+                    ))}
+                    {d.tier && (
+                      <span className="text-[10px] font-medium uppercase tracking-caps text-ink-4">
+                        {TIER_VI[d.tier]}
+                      </span>
                     )}
                   </div>
+                  {d.recommendation && (
+                    <Badge tone={recTone(d.recommendation)} size="sm">
+                      {REC_VI[d.recommendation] ?? d.recommendation}
+                    </Badge>
+                  )}
                 </div>
-                {d.summary && (
-                  <p className="mt-3 line-clamp-2 text-small leading-normal text-ink-3">
-                    {d.summary}
-                  </p>
-                )}
-                <div className="mt-auto flex items-center justify-between gap-2 border-t border-line pt-3 text-mini text-ink-3">
-                  <span data-numeric className="font-mono">
-                    {formatDate(d.publishedAt, locale)}
-                  </span>
-                  <span className="flex items-center gap-3">
+
+                <Link href={`/reports/${d.slug}`} className="group flex flex-1 flex-col">
+                  <div className="flex items-start gap-3">
+                    <span className="flex size-[42px] flex-none items-center justify-center rounded-card border border-line bg-surface-2">
+                      <Icon name="file-text" size={19} className="text-ink-3" />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      {d.reportType && (
+                        <span className="text-[10px] font-medium uppercase tracking-caps text-ink-4">
+                          {TYPE_VI[d.reportType] ?? d.reportType}
+                        </span>
+                      )}
+                      <div className="line-clamp-2 text-regular font-semibold leading-[1.3] tracking-[-0.01em] text-ink transition-colors group-hover:text-accent">
+                        {d.title}
+                      </div>
+                    </div>
+                  </div>
+                  {d.summary && (
+                    <p className="mt-3 line-clamp-2 text-small leading-normal text-ink-3">{d.summary}</p>
+                  )}
+                  <div className="mt-auto flex items-center justify-between gap-2 border-t border-line pt-3 text-mini text-ink-3">
+                    <span data-numeric className="font-mono">{formatDate(d.reportDate ?? d.publishedAt, locale)}</span>
                     {d.pageCount != null && (
                       <span data-numeric className="inline-flex items-center gap-[5px] font-mono">
                         <Icon name="files" size={13} className="text-ink-4" />
                         {t("pageCount", { n: d.pageCount })}
                       </span>
                     )}
-                    <Icon
-                      name="arrow-up-right"
-                      size={15}
-                      className="text-ink-4 transition-colors group-hover:text-accent"
-                    />
-                  </span>
-                </div>
+                  </div>
+                </Link>
               </Card>
-            </Link>
-          ))}
-        </div>
-      )}
-    </>
+            ))}
+          </div>
+        )}
+
+        {nextCursor && !params.q && (
+          <div className="mt-7 flex justify-center">
+            <button
+              type="button"
+              onClick={() => apply({ cursor: nextCursor })}
+              className="rounded-control border border-line-2 bg-surface-card px-4 py-2 text-small font-medium text-ink-2 shadow-soft transition-colors hover:border-line-3 hover:text-ink"
+            >
+              {t("loadMore")}
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
 
-function Chip({
-  active,
-  onClick,
-  label,
-  count,
+function FacetGroup({
+  title, values, active, labels, onToggle,
 }: {
-  active: boolean;
-  onClick: () => void;
-  label: string;
-  count: number;
+  title: string;
+  values: { value: string; count: number }[];
+  active: string[];
+  labels: Record<string, string>;
+  onToggle: (v: string) => void;
 }) {
+  if (values.length === 0) return null;
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={
-        active
-          ? "inline-flex items-center gap-[6px] rounded-control border border-accent bg-accent px-[11px] py-[5px] text-mini font-medium text-on-accent"
-          : "inline-flex items-center gap-[6px] rounded-control border border-line bg-surface px-[11px] py-[5px] text-mini font-medium text-ink-2 transition-colors hover:bg-surface-hover hover:text-ink"
-      }
-    >
-      {label}
-      <span
-        data-numeric
-        className={active ? "font-mono text-micro text-on-accent/75" : "font-mono text-micro text-ink-4"}
-      >
-        {count}
-      </span>
-    </button>
+    <div className="mt-5">
+      <div className="mb-[6px] text-[10px] font-semibold uppercase tracking-caps text-ink-4">{title}</div>
+      <div className="flex flex-col gap-[3px]">
+        {values.map((f) => {
+          const on = active.includes(f.value);
+          return (
+            <button
+              key={f.value}
+              type="button"
+              aria-pressed={on}
+              onClick={() => onToggle(f.value)}
+              className={
+                "flex items-center justify-between gap-2 rounded-control px-[9px] py-[5px] text-mini transition-colors " +
+                (on ? "bg-accent font-medium text-on-accent" : "text-ink-2 hover:bg-surface-hover hover:text-ink")
+              }
+            >
+              <span className="truncate">{labels[f.value] ?? f.value}</span>
+              <span data-numeric className={on ? "font-mono text-micro text-on-accent/75" : "font-mono text-micro text-ink-4"}>
+                {f.count}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
   );
 }

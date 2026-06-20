@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { canViewReport } from "@/lib/authz";
 import { consumeDownloadToken } from "@/lib/download-token";
-import { getWatermarkedKey } from "@/lib/watermark";
+import { resolveStreamKey } from "@/lib/watermark";
 import { getStorage } from "@/lib/storage";
 import { logReportAccess } from "@/lib/audit";
 
@@ -53,7 +53,7 @@ export async function GET(
     return new Response("Forbidden", { status: 403 });
   }
 
-  const key = await getWatermarkedKey(
+  const key = await resolveStreamKey(
     report,
     { id: user.id, email: user.email },
     clientIp(req),

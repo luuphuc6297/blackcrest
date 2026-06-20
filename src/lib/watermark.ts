@@ -5,6 +5,7 @@ import { createHash } from "node:crypto";
 import { PDFDocument, degrees, rgb } from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
 import { getStorage } from "@/lib/storage";
+import { watermarkEnabled } from "@/lib/flags";
 
 /**
  * Per-user PDF watermark (blueprint §F1, §6.6) — NOT DRM, a leak-tracing stamp.
@@ -105,4 +106,23 @@ export async function getWatermarkedKey(
   });
   await storage.put(key, stamped);
   return key;
+}
+
+/**
+ * Resolve the storage key to stream for a report's PDF, honoring the watermark
+ * feature flag. Flag ON → a per-user watermarked copy (cached). Flag OFF
+ * (default) → the base file streamed as-is. Returns null if there is no file.
+ * Both the view and download routes go through this so behavior stays uniform.
+ */
+export async function resolveStreamKey(
+  report: { id: string; fileKey: string | null },
+  user: { id: string; email: string },
+  ip: string,
+): Promise<string | null> {
+  if (!report.fileKey) return null;
+  if (!watermarkEnabled()) {
+    const base = await getStorage().stat(report.fileKey);
+    return base.exists ? report.fileKey : null;
+  }
+  return getWatermarkedKey(report, user, ip);
 }

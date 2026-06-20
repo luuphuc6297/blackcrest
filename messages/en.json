@@ -33,7 +33,8 @@
     "audit": "Audit log",
     "settings": "Settings",
     "signOut": "Sign out",
-    "admin": "Admin"
+    "admin": "Admin",
+    "watchlist": "Watchlist"
   },
   "Actions": {
     "signIn": "Sign in",
@@ -229,7 +230,13 @@
     "documentCount": "{n, number} documents",
     "filterAll": "All",
     "emptyFiltered": "No documents match this filter.",
-    "pageCount": "{n, number} pages"
+    "pageCount": "{n, number} pages",
+    "facetType": "Report type",
+    "facetRec": "Recommendation",
+    "facetTier": "Format",
+    "loadMore": "Load more",
+    "emptyAll": "No documents have been published yet.",
+    "documentCountCapped": "{n, number}+ documents"
   },
   "Viewer": {
     "backToLibrary": "Back to library",
@@ -437,6 +444,10 @@
     "actionError": "Couldn't complete the action. Please try again.",
     "auditActionReportAccess": "Changed access level",
     "auditActionReportDelete": "Deleted report",
+    "auditActionReportTagAdd": "Tagged symbol/type",
+    "auditActionReportTagRemove": "Removed symbol/type",
+    "auditActionReportIngest": "Ingested report",
+    "auditActionReportNotify": "Notified watchers",
     "toastApproved": "Account approved.",
     "toastSuspended": "Account suspended.",
     "toastReinstated": "Account reinstated.",
@@ -523,5 +534,35 @@
     "fontSans": "Sans",
     "fontSerif": "Serif",
     "fontMono": "Mono"
+  },
+  "Watchlist": {
+    "title": "Watchlist",
+    "description": "Follow tickers and get an email when a new report is published.",
+    "addLabel": "Add a ticker",
+    "addPlaceholder": "Search by ticker or company…",
+    "empty": "You are not watching any tickers yet.",
+    "emptyHint": "Add a ticker above to get notified about new reports.",
+    "reportCount": "{n, plural, one {# report} other {# reports}}",
+    "addToWatchlist": "Add to watchlist",
+    "removeFromWatchlist": "Remove from watchlist",
+    "noMatches": "No matching tickers."
+  },
+  "WatchlistEmail": {
+    "subject": "New report: {tickers}",
+    "heading": "A new report for a ticker you follow",
+    "intro": "Hi {name}, a report was just published for a ticker on your watchlist:",
+    "button": "View report",
+    "unsubscribeNote": "No longer want these emails?",
+    "unsubscribeLabel": "Unsubscribe"
+  },
+  "Unsubscribe": {
+    "invalidTitle": "Invalid link",
+    "invalidBody": "This unsubscribe link is invalid or has expired.",
+    "confirmTitle": "Unsubscribe from watchlist emails?",
+    "confirmBody": "You will stop receiving new-report emails at {email}.",
+    "confirmButton": "Confirm unsubscribe",
+    "doneTitle": "Unsubscribed",
+    "doneBody": "{email} will no longer receive new-report emails.",
+    "backHome": "Back to sign in"
   }
 }

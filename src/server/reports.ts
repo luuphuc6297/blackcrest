@@ -21,6 +21,10 @@ export async function getReportBySlug(
       translations: true,
       category: true,
       uploadedBy: { select: { name: true } },
+      symbols: {
+        orderBy: { isPrimary: "desc" },
+        select: { symbol: { select: { id: true, ticker: true } } },
+      },
     },
   });
   if (!report) return null;
@@ -38,6 +42,7 @@ export async function getReportBySlug(
     category: report.category,
     categoryLabel: categoryName(report.category, locale),
     uploadedBy: report.uploadedBy?.name ?? null,
+    symbols: report.symbols.map((s) => ({ id: s.symbol.id, ticker: s.symbol.ticker })),
     ...resolveTranslation(report.translations, locale),
   };
 }

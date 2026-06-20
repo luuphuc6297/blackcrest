@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 import { auth } from "@/auth";
 import { getReportBySlug } from "@/server/reports";
+import { getWatchedSymbolIds } from "@/server/watchlist";
 import { isStaff } from "@/lib/rbac";
 import { can } from "@/lib/permissions";
 import { PdfViewer } from "./pdf-viewer";
@@ -47,6 +48,15 @@ export default async function ReportViewerPage({
   // table (their "route quản trị") instead of being dropped on the client library.
   const backHref = isStaff(user.role) ? "/admin/reports" : "/reports";
 
+  // Watch toggles are a client (portal) feature — staff have no watchlist nav, so
+  // only clients get the per-ticker toggle. Mark each ticker with its watch state.
+  const watched = isStaff(user.role)
+    ? new Set<string>()
+    : new Set(await getWatchedSymbolIds(user.id));
+  const watchTickers = isStaff(user.role)
+    ? []
+    : report.symbols.map((s) => ({ id: s.id, ticker: s.ticker, watching: watched.has(s.id) }));
+
   // Plain, serializable props for the client island.
   const viewerReport = {
     id: report.id,
@@ -69,6 +79,7 @@ export default async function ReportViewerPage({
       locale={locale}
       canViewWorkflow={canViewWorkflow}
       canReview={canReview}
+      watchTickers={watchTickers}
       backHref={backHref}
       viewUrl={`/api/reports/${report.id}/view`}
       reviewerName={user.name ?? "Người duyệt"}

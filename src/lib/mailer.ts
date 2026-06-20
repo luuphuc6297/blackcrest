@@ -151,3 +151,40 @@ export function buildVerificationEmail(opts: {
   const text = `${heading}\n\n${intro}\n\n${buttonLabel}: ${url}\n\n${expiryNote}`;
   return { subject, html, text };
 }
+
+/** Watchlist alert — a published report matched a watched symbol (F2). Same
+ * monochrome shell as the verification email, plus a one-click unsubscribe footer. */
+export function buildWatchlistEmail(opts: {
+  subject: string;
+  heading: string;
+  intro: string;
+  tickers: string; // e.g. "VTP · HPG"
+  reportTitle: string;
+  buttonLabel: string;
+  url: string;
+  unsubscribeNote: string;
+  unsubscribeLabel: string;
+  unsubscribeUrl: string;
+}): { subject: string; html: string; text: string } {
+  const {
+    subject, heading, intro, tickers, reportTitle, buttonLabel, url,
+    unsubscribeNote, unsubscribeLabel, unsubscribeUrl,
+  } = opts;
+  const html = `<!doctype html><html><body style="margin:0;background:#f4f4f6;padding:32px 0;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#1c1d21">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
+<table role="presentation" width="480" cellpadding="0" cellspacing="0" style="background:#fff;border:1px solid #e8e8ec;border-radius:4px;overflow:hidden">
+<tr><td style="background:#0c0d10;padding:18px 24px;color:#fff;font-weight:600;letter-spacing:.04em">BLACKCREST</td></tr>
+<tr><td style="padding:28px 24px">
+<h1 style="margin:0 0 12px;font-size:20px;font-weight:600">${heading}</h1>
+<p style="margin:0 0 18px;font-size:15px;line-height:1.6;color:#3c4149">${intro}</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;border:1px solid #e8e8ec;border-radius:3px">
+<tr><td style="padding:14px 16px">
+<div style="font-size:12px;font-weight:600;letter-spacing:.06em;color:#16181d;text-transform:uppercase">${tickers}</div>
+<div style="margin-top:6px;font-size:15px;line-height:1.45;color:#1c1d21">${reportTitle}</div>
+</td></tr></table>
+<a href="${url}" style="display:inline-block;background:#16181d;color:#fff;text-decoration:none;padding:11px 22px;border-radius:2px;font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase">${buttonLabel}</a>
+<p style="margin:24px 0 0;font-size:12px;color:#9aa0a8">${unsubscribeNote} <a href="${unsubscribeUrl}" style="color:#686e76">${unsubscribeLabel}</a></p>
+</td></tr></table></td></tr></table></body></html>`;
+  const text = `${heading}\n\n${intro}\n\n${tickers} — ${reportTitle}\n\n${buttonLabel}: ${url}\n\n${unsubscribeNote} ${unsubscribeUrl}`;
+  return { subject, html, text };
+}

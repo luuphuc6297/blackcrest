@@ -60,6 +60,44 @@ enum CategoryKind {
   THEMATIC
 }
 
+// ─── Research taxonomy (derived from the real Vietcap corpus) ────────────────
+// reportType = WHAT the note is; recommendation = the rating (orthogonal axis);
+// tier = full report vs flash note; audience = client-facing vs internal-only.
+enum ReportType {
+  EARNINGS // KQKD — kết quả kinh doanh
+  RESULT // KQ / KQLN — kết quả
+  AGM // DHCD — đại hội cổ đông
+  AGM_EXTRA // ĐHCĐ bất thường
+  INVESTOR_MEETING // NDT — gặp gỡ nhà đầu tư
+  COMPANY // BCCONGTY — báo cáo công ty
+  COMPANY_VISIT // THAMDN — thăm doanh nghiệp
+  INITIATION // BCLANDAU — báo cáo lần đầu
+  LISTING // BCNIEMYET — niêm yết
+  IPO
+  BOND // PHTRAIPHIEU — phát hành trái phiếu
+  DROP_COVERAGE // ngưng theo dõi
+  VIEW // QUANDIEM — quan điểm
+  PHTT // (cần Vietcap xác nhận nghĩa)
+}
+
+enum Recommendation {
+  BUY // MUA
+  HOLD // GIU / NAMGIU
+  SELL // BAN
+  REDUCE // GIAM
+  ADD // THEM / THEMVAO
+}
+
+enum ReportTier {
+  FULL // "Báo cáo"
+  FLASH // "Nhận định nhanh"
+}
+
+enum Audience {
+  CLIENT // visible to entitled clients via the publish pipeline
+  INTERNAL // staff-only forever — never published to clients
+}
+
 enum AccessAction {
   VIEW
   DOWNLOAD
@@ -83,6 +121,10 @@ enum AuditAction {
   REPORT_ARCHIVE
   REPORT_ACCESS
   REPORT_DELETE
+  REPORT_TAG_ADD
+  REPORT_TAG_REMOVE
+  REPORT_INGEST
+  REPORT_NOTIFY
   GROUP_CREATE
   GROUP_MEMBER_ADD
   GROUP_MEMBER_REMOVE
@@ -105,6 +147,11 @@ model User {
   lockedUntil      DateTime?
   // Email-verification gate: null until the user confirms via the emailed link.
   emailVerifiedAt  DateTime?
+  // Watchlist notifications (F2): opt-out flag + one-click unsubscribe token.
+  // Token is nullable so adding this UNIQUE column to existing rows is
+  // db-push-safe (cuid() is app-side); it is lazily filled on first alert.
+  watchlistEmails  Boolean   @default(true)
+  unsubscribeToken String?   @unique
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
 
@@ -114,6 +161,8 @@ model User {
   grantedEntitle  Entitlement[]     @relation("EntitlementGrantedBy")
   uploadedReports Report[]          @relation("ReportUploadedBy")
   uploadSessions  UploadSession[]
+  watchlistItems  WatchlistItem[]
+  notifications   ReportNotification[]
 
   // Auth.js adapter relations (kept for future OAuth/magic-link; JWT is primary).
   accounts Account[]
@@ -212,6 +261,15 @@ model Report {
   fileSha256  String?
   pageCount   Int?
   coverLabel  String? // short label shown on the document tile
+  // ── Research taxonomy (orthogonal axes; nullable until tagged/ingested) ──
+  reportType     ReportType?
+  recommendation Recommendation?
+  tier           ReportTier?
+  audience       Audience        @default(CLIENT) // INTERNAL = staff-only forever
+  reportDate     DateTime? // the report's own date (≠ publishedAt = when shown)
+  // Extracted PDF plain text for full-text search — SERVER-ONLY, never sent to
+  // the client (like fileKey). Populated at ingest/finalize.
+  contentText    String?         @db.Text
   uploadedById String?
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
@@ -221,10 +279,14 @@ model Report {
   translations ReportTranslation[]
   entitlements Entitlement[]
   accessLogs   ReportAccessLog[]
+  symbols      ReportSymbol[]
+  notifications ReportNotification[]
 
   // Keyset pagination index (publishedAt, id) — blueprint §F2.
   @@index([status, publishedAt, id])
   @@index([categoryId])
+  @@index([reportType, publishedAt])
+  @@index([recommendation])
   // Content dedup (Upload Flow). UNIQUE closes the app-level TOCTOU race —
   // Postgres allows multiple NULLs, so file-less drafts are unaffected; the
   // create path catches P2002 and returns the existing report.
@@ -352,4 +414,97 @@ model DownloadToken {
   createdAt  DateTime  @default(now())
 
   @@index([expiresAt])
+}
+
+// ─── Symbol axis (stock tickers) — the primary research navigation axis ──────
+// Shared by full-text search (F1) and the watchlist (F2, future WatchlistItem).
+model Symbol {
+  id        String   @id @default(cuid())
+  ticker    String   @unique // canonical UPPERCASE, e.g. "MWG", "HPG"
+  exchange  String? // "HOSE" | "HNX" | "UPCOM"
+  nameVi    String
+  nameEn    String?
+  nameZh    String?
+  sector    String? // optional grouping (future "sector folders")
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  reports  ReportSymbol[]
+  watchers WatchlistItem[]
+}
+
+// Report ↔ Symbol (a report can cover several tickers; e.g. sector notes).
+model ReportSymbol {
+  reportId  String
+  symbolId  String
+  isPrimary Boolean @default(false) // the headline ticker for the report
+
+  report Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  symbol Symbol @relation(fields: [symbolId], references: [id], onDelete: Cascade)
+
+  @@id([reportId, symbolId])
+  @@index([symbolId]) // ticker → reports lookup
+}
+
+// ─── Ingestion provenance (bulk import quality control) ──────────────────────
+// One IngestBatch per run; files that can't be auto-classified become
+// IngestIssue rows (a review queue) instead of silently corrupting the catalog.
+model IngestBatch {
+  id          String    @id @default(cuid())
+  source      String // e.g. "vietcap-2026-06"
+  startedById String?
+  startedAt   DateTime  @default(now())
+  finishedAt  DateTime?
+  filesSeen   Int       @default(0)
+  imported    Int       @default(0)
+  skipped     Int       @default(0)
+  needsReview Int       @default(0)
+
+  issues IngestIssue[]
+}
+
+model IngestIssue {
+  id        String   @id @default(cuid())
+  batchId   String
+  filePath  String
+  rawCode   String?
+  reason    String // UNKNOWN_TYPE | NO_DATE | NO_TITLE | BAD_TICKER | DUPLICATE
+  resolved  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  batch IngestBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+
+  @@index([batchId, resolved])
+}
+
+// ─── Watchlist (F2) — a client watches a Symbol; reports tagged with a watched
+// symbol trigger a publish notification (the notify hook reuses authz.visibleWhere).
+model WatchlistItem {
+  id        String   @id @default(cuid())
+  userId    String
+  symbolId  String
+  createdAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  symbol Symbol @relation(fields: [symbolId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, symbolId])
+  @@index([symbolId]) // symbol → watchers (fan-out on publish)
+  @@index([userId])
+}
+
+// Idempotency ledger: one row per (report, user, channel) ever notified, so a
+// republish / retry / re-run can NEVER double-send. The @@unique IS the guard.
+model ReportNotification {
+  id       String   @id @default(cuid())
+  reportId String
+  userId   String
+  channel  String   @default("EMAIL") // EMAIL | INAPP (future)
+  sentAt   DateTime @default(now())
+
+  report Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([reportId, userId, channel])
+  @@index([userId])
 }
