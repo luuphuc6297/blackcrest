@@ -189,7 +189,7 @@ export async function getSessionStatus(
 }
 
 export type FinalizeResult =
-  | { ok: true; slug: string; duplicate: boolean }
+  | { ok: true; reportId: string; slug: string; duplicate: boolean }
   | { ok: false; status: number; error: string; missing?: number[] };
 
 export async function finalizeUpload(opts: {
@@ -206,7 +206,7 @@ export async function finalizeUpload(opts: {
       where: { id: session.reportId },
       select: { slug: true },
     });
-    if (r) return { ok: true, slug: r.slug, duplicate: true };
+    if (r) return { ok: true, reportId: session.reportId, slug: r.slug, duplicate: true };
   }
   if (session.status === "ABORTED")
     return { ok: false, status: 409, error: "aborted" };
@@ -239,7 +239,7 @@ export async function finalizeUpload(opts: {
         where: { id: again.reportId },
         select: { slug: true },
       });
-      if (r) return { ok: true, slug: r.slug, duplicate: true };
+      if (r) return { ok: true, reportId: again.reportId, slug: r.slug, duplicate: true };
     }
     return { ok: false, status: 409, error: "finalizing" };
   }
@@ -303,7 +303,7 @@ export async function finalizeUpload(opts: {
       data: { status: "COMPLETED", reportId: created.reportId },
     });
     await storage.removePrefix(`uploads/${sessionId}`);
-    return { ok: true, slug: created.slug, duplicate: created.duplicate };
+    return { ok: true, reportId: created.reportId, slug: created.slug, duplicate: created.duplicate };
   } catch (err) {
     await releaseToOpen(sessionId);
     console.error("[upload] finalize failed", err);

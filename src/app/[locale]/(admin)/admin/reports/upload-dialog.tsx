@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Button, Dialog, InlineAlert, Input, Select, Toast } from "@/components/ui";
 import { Icon } from "@/components/icon";
+import { setReportSymbols } from "@/server/report-actions";
 import {
   uploadFileChunked,
   UploadCanceledError,
@@ -127,6 +128,20 @@ export function UploadReportDialog({
         onState: setPhase,
         onProgress: setProgress,
       });
+      // Tag tickers (optional) on the freshly-created report so it's findable by
+      // ticker + can trigger watchlist alerts. Best-effort: a tag failure must not
+      // fail the upload that already succeeded.
+      const tickers = String(fd.get("tickers") ?? "")
+        .split(/[,\s]+/)
+        .map((s) => s.trim())
+        .filter(Boolean);
+      if (tickers.length && result.reportId) {
+        try {
+          await setReportSymbols({ reportId: result.reportId, tickers });
+        } catch {
+          /* non-fatal — staff can re-tag from the reports table */
+        }
+      }
       setOpen(false);
       setFile(null);
       reset();
@@ -259,6 +274,12 @@ export function UploadReportDialog({
 
           <Input label={t("fieldSummary")} name="summaryVi" disabled={busy} />
           <Input label={t("fieldAuthor")} name="authorVi" disabled={busy} />
+          <Input
+            label={t("fieldTickers")}
+            name="tickers"
+            placeholder="VCB, FPT, HPG"
+            disabled={busy}
+          />
 
           <div className="grid grid-cols-1 gap-[14px] sm:grid-cols-2">
             <Select

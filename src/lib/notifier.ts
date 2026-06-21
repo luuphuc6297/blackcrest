@@ -33,6 +33,7 @@ const emailNotifier: Notifier = {
         slug: true,
         categoryId: true,
         accessLevel: true,
+        audience: true,
         status: true,
         translations: true,
         symbols: { select: { symbolId: true, symbol: { select: { ticker: true } } } },

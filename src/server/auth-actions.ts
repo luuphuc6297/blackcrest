@@ -1,6 +1,7 @@
 "use server";
 
 import { AuthError } from "next-auth";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { z } from "zod";
@@ -248,17 +249,16 @@ export async function loginAction(
   }
   const { email, password, callbackUrl } = parsed.data;
   const redirectTo = safeInternalPath(callbackUrl) ?? `/${locale}/portal`;
+  // The checkbox is absent from the form data when unticked (native checkbox
+  // behaviour). Ticked → persistent ~3-day cookie; unticked → session cookie.
+  const remember = formData.get("remember") != null;
 
   try {
-    await signIn("credentials", {
-      email,
-      password,
-      redirectTo,
-    });
-    return { status: "success" };
+    // redirect:false keeps control AFTER Auth.js sets the session cookie, so we
+    // can adjust its persistence below and then redirect ourselves. (A redirecting
+    // sign-in would throw before we could touch the cookie.)
+    await signIn("credentials", { email, password, redirect: false });
   } catch (error) {
-    // A successful sign-in throws a redirect (NOT an AuthError) — it falls
-    // through to the final `throw` below and propagates correctly.
     if (error instanceof AuthError) {
       const code = (error as AuthError & { code?: string }).code;
       // Persistent ACCOUNT-STATE conditions are not form errors — show them on a
@@ -281,4 +281,29 @@ export async function loginAction(
     }
     throw error;
   }
+
+  // Sign-in succeeded; Auth.js has just written the session cookie with the
+  // global 3-day Expires. If the user did NOT tick "remember me", rewrite that
+  // cookie WITHOUT Max-Age/Expires so the browser drops it on close. (Mid-life
+  // JWT rotation is disabled via updateAge==maxAge, so this choice is not undone
+  // on a later request — see auth.config.ts.)
+  const jar = await cookies();
+  // authjs.session-token (http) / __Secure-authjs.session-token (https),
+  // possibly chunked (.0/.1) when the JWT is large.
+  const sessionCookies = jar
+    .getAll()
+    .filter((c) => /^(?:__Secure-)?authjs\.session-token(?:\.\d+)?$/.test(c.name));
+  if (!remember) {
+    for (const c of sessionCookies) {
+      jar.set(c.name, c.value, {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: c.name.startsWith("__Secure-"),
+        // no maxAge / expires → session cookie, cleared on browser close
+      });
+    }
+  }
+
+  redirect(redirectTo);
 }

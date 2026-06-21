@@ -13,6 +13,7 @@ import {
   Dialog,
   EmptyState,
   IconButton,
+  Input,
   Toast,
   Tooltip,
   type Column,
@@ -23,6 +24,7 @@ import { nextForwardDecision } from "@/lib/report-transitions";
 import {
   reviewReport,
   setReportAccess,
+  setReportSymbols,
   deleteReport,
 } from "@/server/report-actions";
 import type { listAdminReports } from "@/server/reports";
@@ -30,7 +32,7 @@ import type { listAdminReports } from "@/server/reports";
 type ReportRow = Awaited<ReturnType<typeof listAdminReports>>[number];
 
 /** Which row actions the current user may perform (computed from role server-side). */
-export type ReportPerms = { advance: boolean; access: boolean; del: boolean };
+export type ReportPerms = { advance: boolean; access: boolean; tag: boolean; del: boolean };
 
 export function ReportsTable({
   rows,
@@ -93,6 +95,21 @@ export function ReportsTable({
       ),
     },
     {
+      header: tAdmin("colTickers"),
+      cell: (r) =>
+        r.tickers.length ? (
+          <span className="flex flex-wrap gap-[3px]">
+            {r.tickers.slice(0, 4).map((tk) => (
+              <span key={tk} data-numeric className="rounded-control border border-line bg-surface-2 px-[6px] py-[1px] font-mono text-micro font-medium text-ink-2">
+                {tk}
+              </span>
+            ))}
+          </span>
+        ) : (
+          <span className="text-ink-4">—</span>
+        ),
+    },
+    {
       header: tAdmin("colPageCount"),
       align: "right",
       cellClassName: "font-mono text-small tabular-nums text-ink-2",
@@ -103,7 +120,7 @@ export function ReportsTable({
       cellClassName: "font-mono text-small tabular-nums text-ink-3",
       cell: (r) => formatDate(r.publishedAt ?? r.updatedAt, locale),
     },
-    ...(perms.advance || perms.access || perms.del
+    ...(perms.advance || perms.access || perms.tag || perms.del
       ? [
           {
             header: tAdmin("colAction"),
@@ -116,6 +133,7 @@ export function ReportsTable({
                   title: r.title,
                   status: r.status,
                   accessLevel: r.accessLevel,
+                  tickers: r.tickers,
                 }}
                 perms={perms}
               />
@@ -182,6 +200,7 @@ function ReportRowActions({
     title: string;
     status: ReportStatus;
     accessLevel: AccessLevel;
+    tickers: string[];
   };
   perms: ReportPerms;
 }) {
@@ -191,7 +210,8 @@ function ReportRowActions({
   const tActions = useTranslations("Actions");
 
   const [busy, setBusy] = React.useState(false);
-  const [confirm, setConfirm] = React.useState<null | "advance" | "delete">(null);
+  const [confirm, setConfirm] = React.useState<null | "advance" | "delete" | "tags">(null);
+  const [tagsInput, setTagsInput] = React.useState(report.tickers.join(", "));
   const [toast, setToast] = React.useState<{
     tone: "success" | "danger";
     msg: string;
@@ -244,6 +264,15 @@ function ReportRowActions({
     );
   const doDelete = () =>
     run(() => deleteReport({ reportId: report.id }), tAdmin("toastDeleted"));
+  const doSaveTags = () =>
+    run(
+      () =>
+        setReportSymbols({
+          reportId: report.id,
+          tickers: tagsInput.split(/[,\s]+/).map((t) => t.trim()).filter(Boolean),
+        }),
+      tAdmin("toastUpdated"),
+    );
 
   const isPublic = report.accessLevel === "PUBLIC";
 
@@ -273,6 +302,21 @@ function ReportRowActions({
             onClick={doToggleAccess}
           >
             <Icon name={isPublic ? "eye" : "lock"} size={16} />
+          </IconButton>
+        </Tooltip>
+      )}
+      {perms.tag && (
+        <Tooltip content={tAdmin("actionTags")} side="left">
+          <IconButton
+            label={tAdmin("actionTags")}
+            size="sm"
+            disabled={busy}
+            onClick={() => {
+              setTagsInput(report.tickers.join(", "));
+              setConfirm("tags");
+            }}
+          >
+            <Icon name="building-2" size={16} />
           </IconButton>
         </Tooltip>
       )}
@@ -323,6 +367,32 @@ function ReportRowActions({
           </>
         }
       />
+
+      <Dialog
+        open={confirm === "tags"}
+        onClose={() => !busy && setConfirm(null)}
+        title={tAdmin("actionTagsTitle")}
+        description={tAdmin("actionTagsBody")}
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setConfirm(null)} disabled={busy}>
+              {tActions("cancel")}
+            </Button>
+            <Button variant="primary" loading={busy} onClick={doSaveTags}>
+              {tActions("save")}
+            </Button>
+          </>
+        }
+      >
+        <Input
+          label={tAdmin("colTickers")}
+          value={tagsInput}
+          onChange={(e) => setTagsInput(e.target.value)}
+          placeholder="VCB, FPT, HPG"
+          disabled={busy}
+          autoFocus
+        />
+      </Dialog>
 
       {toast && (
         <div className="fixed bottom-6 right-6 z-[200]">

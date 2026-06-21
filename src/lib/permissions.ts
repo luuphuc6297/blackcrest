@@ -19,6 +19,7 @@ export const PERMISSIONS = {
   // Reports
   "report.upload": STAFF, // create a DRAFT from an uploaded PDF
   "report.setAccess": STAFF, // toggle PUBLIC ↔ RESTRICTED
+  "report.tag": STAFF, // tag tickers (symbols) on a report
   "report.review": ["SUPER_ADMIN", "APPROVER"], // submit/approve/reject/publish
   "report.delete": ["SUPER_ADMIN"], // destructive
   // Accounts

@@ -32,3 +32,19 @@ CREATE INDEX IF NOT EXISTS report_contenttsv_gin ON "Report" USING GIN ("content
 
 -- Superseded by the stored-column index above.
 DROP INDEX IF EXISTS report_contenttext_fts;
+
+-- "Small search vector": title + summary + author per ReportTranslation. The
+-- library search box ranks against THIS (tiny) vector, not the full-PDF-body
+-- "contentTsv" (ranking that seq-scanned ~200MB for frequent terms → ~15s). Also
+-- a STORED generated column → auto-maintained, never stale. See migration
+-- 20260621101400_search_tsv_translation.
+ALTER TABLE "ReportTranslation"
+  ADD COLUMN IF NOT EXISTS "searchTsv" tsvector
+  GENERATED ALWAYS AS (
+    to_tsvector('simple',
+      f_unaccent(coalesce(title, '') || ' ' || coalesce(summary, '') || ' ' || coalesce(author, ''))
+    )
+  ) STORED;
+
+CREATE INDEX IF NOT EXISTS reporttranslation_searchtsv_gin
+  ON "ReportTranslation" USING GIN ("searchTsv");

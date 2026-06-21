@@ -457,7 +457,12 @@
     "editRoleTitle": "Đổi vai trò tài khoản",
     "editRoleBody": "Chọn vai trò mới cho {name}. Tài khoản sẽ bị đăng xuất và áp dụng quyền mới ở lần đăng nhập kế tiếp.",
     "toastRoleChanged": "Đã đổi vai trò.",
-    "auditActionAccountRole": "Đổi vai trò"
+    "auditActionAccountRole": "Đổi vai trò",
+    "colTickers": "Mã CK",
+    "actionTags": "Gắn mã chứng khoán",
+    "actionTagsTitle": "Gắn mã chứng khoán",
+    "actionTagsBody": "Nhập các mã, cách nhau bằng dấu phẩy hoặc khoảng trắng. Mã đầu tiên là mã chính.",
+    "fieldTickers": "Mã chứng khoán (không bắt buộc)"
   },
   "Errors": {
     "systemError": "Lỗi hệ thống",

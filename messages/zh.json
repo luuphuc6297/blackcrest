@@ -457,7 +457,12 @@
     "editRoleTitle": "更改账户角色",
     "editRoleBody": "为 {name} 选择新角色。该账户将被登出，新权限在下次登录时生效。",
     "toastRoleChanged": "角色已更改。",
-    "auditActionAccountRole": "更改角色"
+    "auditActionAccountRole": "更改角色",
+    "colTickers": "代码",
+    "actionTags": "标记代码",
+    "actionTagsTitle": "标记证券代码",
+    "actionTagsBody": "输入证券代码，用逗号或空格分隔。第一个为主要代码。",
+    "fieldTickers": "证券代码（可选）"
   },
   "Errors": {
     "systemError": "系统错误",

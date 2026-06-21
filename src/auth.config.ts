@@ -11,9 +11,16 @@ export const authConfig = {
   },
   session: {
     strategy: "jwt",
-    // Short window so suspend / role changes take effect quickly; sensitive
-    // actions additionally re-check status + tokenVersion against the DB.
-    maxAge: 60 * 30,
+    // "Remember me" window. Ticked (default) → the session cookie persists up to
+    // this long across browser restarts; unticked → loginAction rewrites it to a
+    // session cookie (cleared on browser close). `updateAge == maxAge` disables
+    // mid-life JWT rotation, so cookie persistence is decided ONCE at login and is
+    // never silently re-persisted on a later request.
+    // Revocation does NOT rely on this window: suspend / role / password changes
+    // bump tokenVersion, and every sensitive action re-checks status + tokenVersion
+    // against the DB (see requireFreshUser), forcing re-login regardless of maxAge.
+    maxAge: 60 * 60 * 24 * 3, // 3 days
+    updateAge: 60 * 60 * 24 * 3,
   },
   trustHost: true,
   providers: [],

@@ -1,6 +1,7 @@
 "use server";
 
 import { z } from "zod";
+import { after } from "next/server";
 import { revalidatePath } from "next/cache";
 import type { ReportStatus, AccessLevel } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
@@ -88,15 +89,19 @@ export async function reviewReport(input: {
     metadata: note ? { note } : undefined,
   });
 
-  // F2: fan out watchlist alerts on publish. Fully guarded — a notify failure
-  // must NEVER fail the publish that already committed above. (Synchronous for
-  // now; a queue is the scale path once fan-out grows.)
+  // F2: fan out watchlist alerts on publish — deferred via after() so a slow SMTP
+  // send never delays the publish response (the row already committed above).
+  // Fully guarded: a notify failure must NEVER surface to the publisher. (after()
+  // keeps the request context next-intl getTranslations needs; a queue is the
+  // scale path once fan-out grows.)
   if (decision === "publish") {
-    try {
-      await getNotifier().notifyReportPublished(reportId);
-    } catch (err) {
-      console.error("[reviewReport] watchlist notify failed:", err);
-    }
+    after(async () => {
+      try {
+        await getNotifier().notifyReportPublished(reportId);
+      } catch (err) {
+        console.error("[reviewReport] watchlist notify failed:", err);
+      }
+    });
   }
 
   revalidatePath("/[locale]/reports/[slug]", "page");
@@ -150,6 +155,68 @@ export async function setReportAccess(input: {
     targetType: "Report",
     targetId: reportId,
     metadata: { accessLevel },
+  });
+
+  revalidatePath("/[locale]/reports/[slug]", "page");
+  revalidatePath("/[locale]/admin/reports", "page");
+  return { ok: true };
+}
+
+const symbolsSchema = z.object({
+  reportId: z.string().cuid(),
+  tickers: z.array(z.string().trim().min(1).max(12)).max(12),
+});
+
+/**
+ * Set the tickers (symbols) tagged on a report — staff only, audited. Replaces the
+ * link set wholesale; the first ticker is primary (headline). A new ticker
+ * auto-creates a Symbol (nameVi defaults to the ticker — refine later). This is
+ * what makes a manually-uploaded report findable by ticker AND able to trigger
+ * watchlist alerts (F2); ingest was previously the only path that set symbols.
+ */
+export async function setReportSymbols(input: {
+  reportId: string;
+  tickers: string[];
+}): Promise<ActionResult> {
+  let actor;
+  try {
+    actor = await requireCapability("report.tag");
+  } catch {
+    return { ok: false, error: "Bạn không có quyền gắn mã chứng khoán." };
+  }
+
+  const parsed = symbolsSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "Mã chứng khoán không hợp lệ." };
+  // Canonical UPPERCASE, deduped, A–Z/0–9 only.
+  const tickers = [...new Set(parsed.data.tickers.map((t) => t.toUpperCase()))].filter((t) =>
+    /^[A-Z0-9]{1,12}$/.test(t),
+  );
+
+  const existing = await prisma.report.findUnique({ where: { id: parsed.data.reportId }, select: { id: true } });
+  if (!existing) return { ok: false, error: "Không tìm thấy báo cáo." };
+  const reportId = existing.id;
+
+  // Ensure a Symbol per ticker (nameVi defaults to the ticker for manual tags).
+  const symbols = await Promise.all(
+    tickers.map((ticker) =>
+      prisma.symbol.upsert({ where: { ticker }, create: { ticker, nameVi: ticker }, update: {}, select: { id: true } }),
+    ),
+  );
+
+  // Replace the link set atomically; first ticker = primary headline.
+  await prisma.$transaction([
+    prisma.reportSymbol.deleteMany({ where: { reportId } }),
+    ...(symbols.length
+      ? [prisma.reportSymbol.createMany({ data: symbols.map((s, i) => ({ reportId, symbolId: s.id, isPrimary: i === 0 })) })]
+      : []),
+  ]);
+
+  await logAudit({
+    actorId: actor.id,
+    action: "REPORT_TAG_ADD",
+    targetType: "Report",
+    targetId: reportId,
+    metadata: { tickers },
   });
 
   revalidatePath("/[locale]/reports/[slug]", "page");

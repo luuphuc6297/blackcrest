@@ -30,7 +30,7 @@ export type UploadMeta = {
   titleZh?: string;
 };
 
-export type UploadResult = { slug: string; duplicate: boolean };
+export type UploadResult = { reportId: string; slug: string; duplicate: boolean };
 
 export class UploadCanceledError extends Error {}
 
@@ -211,6 +211,7 @@ export async function uploadFileChunked(
     }
     cb.onState?.("done");
     return {
+      reportId: String(fin.json.reportId),
       slug: String(fin.json.slug),
       duplicate: Boolean(fin.json.duplicate),
     };

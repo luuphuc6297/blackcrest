@@ -26,6 +26,7 @@ export default async function AdminReportsPage({
   const perms = {
     advance: can(user.role, "report.review"),
     access: can(user.role, "report.setAccess"),
+    tag: can(user.role, "report.tag"),
     del: can(user.role, "report.delete"),
   };
 

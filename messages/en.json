@@ -457,7 +457,12 @@
     "editRoleTitle": "Change account role",
     "editRoleBody": "Pick a new role for {name}. The account will be signed out and the new permissions apply at their next sign-in.",
     "toastRoleChanged": "Role changed.",
-    "auditActionAccountRole": "Changed role"
+    "auditActionAccountRole": "Changed role",
+    "colTickers": "Tickers",
+    "actionTags": "Tag tickers",
+    "actionTagsTitle": "Tag tickers",
+    "actionTagsBody": "Enter tickers separated by commas or spaces. The first is the primary one.",
+    "fieldTickers": "Tickers (optional)"
   },
   "Errors": {
     "systemError": "System error",

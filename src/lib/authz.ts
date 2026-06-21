@@ -6,6 +6,7 @@ import type {
   Recommendation,
   ReportTier,
   AccessLevel,
+  Audience,
 } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { isStaff, STAFF_ROLES } from "@/lib/rbac";
@@ -35,13 +36,17 @@ export async function canViewReport(
 }
 
 /** The reusable WHERE fragment for "reports this client may see".
- * LOCKSTEP: listWatchersToNotify() below mirrors this exact entitlement predicate
- * as a USER filter — any change here (new entitlement path, an audience filter…)
- * MUST be reflected there, or the watchlist fan-out diverges from visibility. */
+ * LOCKSTEP: listWatchersToNotify() below mirrors this exact predicate (audience +
+ * entitlement) as a USER/report filter — any change here (new entitlement path,
+ * the audience gate…) MUST be reflected there, or the watchlist fan-out diverges
+ * from visibility. */
 function visibleWhere(userId: string): Prisma.ReportWhereInput {
   const memberOf = { group: { members: { some: { userId } } } };
   return {
     status: "PUBLISHED",
+    // INTERNAL = staff-only forever (schema §Audience). Clients NEVER see it, even
+    // if it is PUBLIC or carries an entitlement — staff bypass visibleWhere entirely.
+    audience: "CLIENT",
     OR: [
       { accessLevel: "PUBLIC" },
       { entitlements: { some: memberOf } }, // group → report
@@ -67,11 +72,14 @@ export type WatcherToNotify = {
  * LOCKSTEP: keep the entitlement branches identical to visibleWhere() above.
  */
 export async function listWatchersToNotify(
-  report: { id: string; categoryId: string; accessLevel: AccessLevel },
+  report: { id: string; categoryId: string; accessLevel: AccessLevel; audience: Audience },
   symbolIds: string[],
   channel = "EMAIL",
 ): Promise<WatcherToNotify[]> {
   if (symbolIds.length === 0) return [];
+  // LOCKSTEP with visibleWhere: an INTERNAL report is staff-only — never fan out
+  // client notifications for it (clients could not open it anyway).
+  if (report.audience === "INTERNAL") return [];
 
   const entitled: Prisma.UserWhereInput =
     report.accessLevel === "PUBLIC"
@@ -262,30 +270,10 @@ export async function searchReports(opts: {
   const where: Prisma.ReportWhereInput = { AND: and };
   const include = { translations: true, symbols: { include: { symbol: true } } };
 
-  const [byType, byRec, byTier, total, rows] = await Promise.all([
-    prisma.report.groupBy({ by: ["reportType"], where, _count: { _all: true } }),
-    prisma.report.groupBy({ by: ["recommendation"], where, _count: { _all: true } }),
-    prisma.report.groupBy({ by: ["tier"], where, _count: { _all: true } }),
-    prisma.report.count({ where }),
-    term
-      ? prisma.report.findMany({ where, include })
-      : prisma.report.findMany({
-          where,
-          orderBy: [{ publishedAt: "desc" }, { id: "desc" }],
-          take, // grow-on-"load more" (accumulate from the top), no cursor
-          include,
-        }),
-  ]);
-
-  // Browse: rows is already the first `take`. Search: rank-sort then slice to take.
-  let page = rows;
-  if (term && rankOrder) {
-    const rank = new Map(rankOrder.map((id, i) => [id, i]));
-    page = [...rows].sort((a, b) => (rank.get(a.id) ?? 1e9) - (rank.get(b.id) ?? 1e9)).slice(0, take);
-  }
-  const hasMore = page.length < total;
-
-  const items: SearchedReport[] = page.map((r) => ({
+  type RowWithRel = Prisma.ReportGetPayload<{
+    include: { translations: true; symbols: { include: { symbol: true } } };
+  }>;
+  const mapRow = (r: RowWithRel): SearchedReport => ({
     id: r.id,
     slug: r.slug,
     status: r.status,
@@ -299,16 +287,71 @@ export async function searchReports(opts: {
     coverLabel: r.coverLabel,
     tickers: r.symbols.map((s) => s.symbol.ticker),
     ...resolveTranslation(r.translations, locale),
-  }));
+  });
+  // Tally a facet from rows already in memory (search path).
+  const tally = (
+    rows: { reportType: ReportType | null; recommendation: Recommendation | null; tier: ReportTier | null }[],
+    key: "reportType" | "recommendation" | "tier",
+  ) => {
+    const m = new Map<string, number>();
+    for (const r of rows) {
+      const v = r[key];
+      if (v) m.set(v, (m.get(v) ?? 0) + 1);
+    }
+    return [...m.entries()].map(([value, count]) => ({ value, count })).sort((a, b) => b.count - a.count);
+  };
 
-  return {
-    items,
-    hasMore,
-    total,
-    // The FTS pre-filter is capped at FTS_LIMIT ranked ids; if it filled, more
-    // matches exist beyond what we ranked, so the count is a floor ("400+").
-    capped: !!term && (rankOrder?.length ?? 0) >= FTS_LIMIT,
-    facets: {
+  let items: SearchedReport[];
+  let total: number;
+  let facets: ReportFacets;
+
+  if (term && rankOrder) {
+    // SEARCH PATH: one light scan of the surviving candidates (≤ FTS_LIMIT rows,
+    // scalar columns only) yields facets + total + page selection in JS — no
+    // separate groupBy/count round-trips. Then fetch the heavy includes for ONLY
+    // the `take` page rows. (Previously: 3 groupBy + count + a 400-row findMany
+    // WITH includes per keystroke = the ~15s search.)
+    const rank = new Map(rankOrder.map((id, i) => [id, i]));
+    const survivors = await prisma.report.findMany({
+      where,
+      select: { id: true, reportType: true, recommendation: true, tier: true },
+    });
+    total = survivors.length;
+    facets = {
+      reportType: tally(survivors, "reportType"),
+      recommendation: tally(survivors, "recommendation"),
+      tier: tally(survivors, "tier"),
+    };
+    const pageIds = survivors
+      .map((s) => s.id)
+      .sort((a, b) => (rank.get(a) ?? 1e9) - (rank.get(b) ?? 1e9))
+      .slice(0, take);
+    // Re-apply the FULL gate (not just id ∈ pageIds) so this read literally
+    // satisfies the visibleWhere invariant instead of relying on pageIds being a
+    // pre-vetted subset — defence in depth, negligible cost (≤ take ids).
+    const rows = await prisma.report.findMany({
+      where: { AND: [where, { id: { in: pageIds } }] },
+      include,
+    });
+    rows.sort((a, b) => (rank.get(a.id) ?? 1e9) - (rank.get(b.id) ?? 1e9));
+    items = rows.map(mapRow);
+  } else {
+    // BROWSE PATH: facets span the whole visible set (too large to pull into JS),
+    // so count them with DB groupBy; the page is the first `take` by recency.
+    const [byType, byRec, byTier, count, rows] = await Promise.all([
+      prisma.report.groupBy({ by: ["reportType"], where, _count: { _all: true } }),
+      prisma.report.groupBy({ by: ["recommendation"], where, _count: { _all: true } }),
+      prisma.report.groupBy({ by: ["tier"], where, _count: { _all: true } }),
+      prisma.report.count({ where }),
+      prisma.report.findMany({
+        where,
+        orderBy: [{ publishedAt: "desc" }, { id: "desc" }],
+        take, // grow-on-"load more" (accumulate from the top), no cursor
+        include,
+      }),
+    ]);
+    total = count;
+    facets = {
       reportType: byType
         .filter((x) => x.reportType)
         .map((x) => ({ value: x.reportType as string, count: x._count._all }))
@@ -321,7 +364,18 @@ export async function searchReports(opts: {
         .filter((x) => x.tier)
         .map((x) => ({ value: x.tier as string, count: x._count._all }))
         .sort((a, b) => b.count - a.count),
-    },
+    };
+    items = rows.map(mapRow);
+  }
+
+  return {
+    items,
+    hasMore: items.length < total,
+    total,
+    // The FTS pre-filter is capped at FTS_LIMIT ranked ids; if it filled, more
+    // matches likely exist beyond what we ranked, so the count is a floor ("400+").
+    capped: !!term && (rankOrder?.length ?? 0) >= FTS_LIMIT,
+    facets,
   };
 }
 

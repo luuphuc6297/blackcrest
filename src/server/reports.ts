@@ -53,7 +53,11 @@ export async function listAdminReports(locale: string) {
   const rows = await prisma.report.findMany({
     orderBy: [{ updatedAt: "desc" }],
     take: 500,
-    include: { translations: true, category: true },
+    include: {
+      translations: true,
+      category: true,
+      symbols: { orderBy: { isPrimary: "desc" }, select: { symbol: { select: { ticker: true } } } },
+    },
   });
   return rows.map((r) => ({
     id: r.id,
@@ -63,6 +67,7 @@ export async function listAdminReports(locale: string) {
     publishedAt: r.publishedAt,
     updatedAt: r.updatedAt,
     pageCount: r.pageCount,
+    tickers: r.symbols.map((s) => s.symbol.ticker),
     categoryLabel: categoryName(r.category, locale),
     ...resolveTranslation(r.translations, locale),
   }));

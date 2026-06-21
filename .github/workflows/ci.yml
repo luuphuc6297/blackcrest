@@ -33,6 +33,9 @@ jobs:
       AUTH_SECRET: ci-auth-secret-which-is-long-enough
       DOWNLOAD_TOKEN_SECRET: ci-download-secret-long-enough-32
       AUTH_TRUST_HOST: "true"
+      # Enables the real-Postgres integration tests (src/**/*.integration.test.ts);
+      # they run against the ephemeral service above, after migrate deploy.
+      INTEGRATION: "1"
 
     steps:
       # Action majors pinned to current node24 runtimes (older node20-runtime

@@ -17,6 +17,7 @@ describe("permission registry", () => {
     const matrix: Record<Capability, Role[]> = {
       "report.upload": ["SUPER_ADMIN", "EDITOR", "APPROVER"],
       "report.setAccess": ["SUPER_ADMIN", "EDITOR", "APPROVER"],
+      "report.tag": ["SUPER_ADMIN", "EDITOR", "APPROVER"],
       "report.review": ["SUPER_ADMIN", "APPROVER"],
       "report.delete": ["SUPER_ADMIN"],
       "account.manage": ["SUPER_ADMIN", "APPROVER"],

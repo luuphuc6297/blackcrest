@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui";
 import { Icon } from "@/components/icon";
@@ -19,9 +20,21 @@ export function SectionError({
   reset: () => void;
 }) {
   const t = useTranslations("Errors");
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
   useEffect(() => {
     console.error(error);
   }, [error]);
+
+  // For an error thrown in a Server Component, reset() alone re-renders the same
+  // failed RSC payload → the error repeats and "try again" looks dead. Refresh the
+  // server tree FIRST (fetches a fresh payload), then clear the boundary.
+  const retry = () => {
+    startTransition(() => {
+      router.refresh();
+      reset();
+    });
+  };
 
   return (
     <div className="flex min-h-[70dvh] items-center justify-center px-6 py-12">
@@ -38,7 +51,8 @@ export function SectionError({
         <div className="mt-[22px] flex justify-center">
           <Button
             variant="primary"
-            onClick={reset}
+            onClick={retry}
+            loading={pending}
             leadingIcon={<Icon name="refresh-cw" size={16} />}
           >
             {t("retry")}
