@@ -34,7 +34,7 @@
     "settings": "Cài đặt",
     "signOut": "Đăng xuất",
     "admin": "Quản trị",
-    "watchlist": "Theo dõi"
+    "watchlist": "Danh mục theo dõi"
   },
   "Actions": {
     "signIn": "Đăng nhập",
@@ -587,5 +587,32 @@
     "infoDuplicate": "Tệp này đã được đính kèm.",
     "confirmYes": "Xoá",
     "confirmNo": "Huỷ"
+  },
+  "ReportType": {
+    "EARNINGS": "Kết quả kinh doanh",
+    "RESULT": "Kết quả lợi nhuận",
+    "AGM": "Đại hội cổ đông",
+    "AGM_EXTRA": "Đại hội cổ đông bất thường",
+    "INVESTOR_MEETING": "Gặp gỡ nhà đầu tư",
+    "COMPANY": "Báo cáo công ty",
+    "COMPANY_VISIT": "Thăm doanh nghiệp",
+    "INITIATION": "Báo cáo lần đầu",
+    "LISTING": "Niêm yết",
+    "IPO": "IPO",
+    "BOND": "Trái phiếu",
+    "DROP_COVERAGE": "Ngưng theo dõi",
+    "VIEW": "Quan điểm",
+    "PHTT": "Phù hợp thị trường"
+  },
+  "Recommendation": {
+    "BUY": "Mua",
+    "HOLD": "Giữ",
+    "SELL": "Bán",
+    "REDUCE": "Giảm",
+    "ADD": "Thêm"
+  },
+  "ReportTier": {
+    "FULL": "Báo cáo đầy đủ",
+    "FLASH": "Nhận định nhanh"
   }
 }

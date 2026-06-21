@@ -234,15 +234,14 @@ export async function searchReports(opts: {
   tier?: string | null;
   symbol?: string | null;
   take?: number;
-  cursor?: string | null;
 }): Promise<{
   items: SearchedReport[];
-  nextCursor: string | null;
+  hasMore: boolean;
   total: number;
   capped: boolean;
   facets: ReportFacets;
 }> {
-  const { userId, role, locale, q, reportType, recommendation, tier, symbol, take = 24, cursor } = opts;
+  const { userId, role, locale, q, reportType, recommendation, tier, symbol, take = 24 } = opts;
   const FTS_LIMIT = 400;
 
   const and: Prisma.ReportWhereInput[] = [
@@ -273,22 +272,18 @@ export async function searchReports(opts: {
       : prisma.report.findMany({
           where,
           orderBy: [{ publishedAt: "desc" }, { id: "desc" }],
-          take: take + 1,
-          ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+          take, // grow-on-"load more" (accumulate from the top), no cursor
           include,
         }),
   ]);
 
+  // Browse: rows is already the first `take`. Search: rank-sort then slice to take.
   let page = rows;
-  let nextCursor: string | null = null;
   if (term && rankOrder) {
     const rank = new Map(rankOrder.map((id, i) => [id, i]));
     page = [...rows].sort((a, b) => (rank.get(a.id) ?? 1e9) - (rank.get(b.id) ?? 1e9)).slice(0, take);
-  } else {
-    const hasMore = rows.length > take;
-    page = hasMore ? rows.slice(0, take) : rows;
-    nextCursor = hasMore ? (page[page.length - 1]?.id ?? null) : null;
   }
+  const hasMore = page.length < total;
 
   const items: SearchedReport[] = page.map((r) => ({
     id: r.id,
@@ -308,7 +303,7 @@ export async function searchReports(opts: {
 
   return {
     items,
-    nextCursor,
+    hasMore,
     total,
     // The FTS pre-filter is capped at FTS_LIMIT ranked ids; if it filled, more
     // matches exist beyond what we ranked, so the count is a floor ("400+").

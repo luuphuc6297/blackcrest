@@ -34,7 +34,7 @@
     "settings": "设置",
     "signOut": "退出登录",
     "admin": "管理",
-    "watchlist": "关注"
+    "watchlist": "关注列表"
   },
   "Actions": {
     "signIn": "登录",
@@ -587,5 +587,32 @@
     "infoDuplicate": "该文件已存在附件中。",
     "confirmYes": "删除",
     "confirmNo": "取消"
+  },
+  "ReportType": {
+    "EARNINGS": "经营业绩",
+    "RESULT": "利润结果",
+    "AGM": "股东大会",
+    "AGM_EXTRA": "临时股东大会",
+    "INVESTOR_MEETING": "投资者会议",
+    "COMPANY": "公司报告",
+    "COMPANY_VISIT": "公司调研",
+    "INITIATION": "首次报告",
+    "LISTING": "上市",
+    "IPO": "IPO",
+    "BOND": "债券",
+    "DROP_COVERAGE": "停止覆盖",
+    "VIEW": "观点",
+    "PHTT": "与大盘持平"
+  },
+  "Recommendation": {
+    "BUY": "买入",
+    "HOLD": "持有",
+    "SELL": "卖出",
+    "REDUCE": "减持",
+    "ADD": "增持"
+  },
+  "ReportTier": {
+    "FULL": "完整报告",
+    "FLASH": "快讯"
   }
 }

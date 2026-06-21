@@ -587,5 +587,32 @@
     "infoDuplicate": "This file is already attached.",
     "confirmYes": "Delete",
     "confirmNo": "Cancel"
+  },
+  "ReportType": {
+    "EARNINGS": "Earnings results",
+    "RESULT": "Profit results",
+    "AGM": "Annual general meeting",
+    "AGM_EXTRA": "Extraordinary GM",
+    "INVESTOR_MEETING": "Investor meeting",
+    "COMPANY": "Company report",
+    "COMPANY_VISIT": "Company visit",
+    "INITIATION": "Initiation",
+    "LISTING": "Listing",
+    "IPO": "IPO",
+    "BOND": "Bond",
+    "DROP_COVERAGE": "Drop coverage",
+    "VIEW": "View",
+    "PHTT": "Market perform"
+  },
+  "Recommendation": {
+    "BUY": "Buy",
+    "HOLD": "Hold",
+    "SELL": "Sell",
+    "REDUCE": "Reduce",
+    "ADD": "Add"
+  },
+  "ReportTier": {
+    "FULL": "Full report",
+    "FLASH": "Flash note"
   }
 }

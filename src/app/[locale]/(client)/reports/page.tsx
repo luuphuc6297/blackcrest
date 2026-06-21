@@ -41,7 +41,10 @@ export default async function ReportsPage({
     symbol: one("symbol"),
   };
 
-  const { items, facets, total, nextCursor, capped } = await searchReports({
+  // "Load more" grows ?take (accumulate from the top). Clamp to a sane ceiling.
+  const take = Math.min(Math.max(Number(one("take")) || 24, 24), 480);
+
+  const { items, facets, total, hasMore, capped } = await searchReports({
     userId: user.id,
     role: user.role,
     locale,
@@ -50,8 +53,7 @@ export default async function ReportsPage({
     recommendation: csv(filters.rec),
     tier: filters.tier,
     symbol: filters.symbol,
-    cursor: one("cursor"),
-    take: 24,
+    take,
   });
 
   return (
@@ -62,13 +64,14 @@ export default async function ReportsPage({
       title={tNav("documents")}
       actions={<LanguageSwitcher />}
     >
-      <div className="mx-auto max-w-[1180px] px-4 py-6 sm:px-7">
+      <div className="mx-auto max-w-[1440px] px-4 py-6 sm:px-7">
         <LibraryGrid
           items={items}
           facets={facets}
           total={total}
           capped={capped}
-          nextCursor={nextCursor}
+          hasMore={hasMore}
+          shown={items.length}
           params={filters}
           locale={locale}
         />

@@ -9,41 +9,43 @@ import { Icon } from "@/components/icon";
 import { formatDate } from "@/lib/format";
 import type { SearchedReport, ReportFacets } from "@/lib/authz";
 
-// MVP display labels (Vietnamese-first; EN/zh keys are a fast-follow).
-const TYPE_VI: Record<string, string> = {
-  EARNINGS: "Kết quả KD", RESULT: "Kết quả", AGM: "ĐHCĐ", AGM_EXTRA: "ĐHCĐ bất thường",
-  INVESTOR_MEETING: "Gặp gỡ NĐT", COMPANY: "Báo cáo công ty", COMPANY_VISIT: "Thăm DN",
-  INITIATION: "Lần đầu", LISTING: "Niêm yết", IPO: "IPO", BOND: "Trái phiếu",
-  DROP_COVERAGE: "Ngưng theo dõi", VIEW: "Quan điểm", PHTT: "PHTT",
-};
-const REC_VI: Record<string, string> = { BUY: "MUA", HOLD: "GIỮ", SELL: "BÁN", REDUCE: "GIẢM", ADD: "THÊM" };
-const TIER_VI: Record<string, string> = { FULL: "Báo cáo", FLASH: "Nhận định nhanh" };
+const PAGE = 24;
 const recTone = (r: string | null) =>
   r === "BUY" || r === "ADD" ? "success" : r === "SELL" || r === "REDUCE" ? "danger" : "neutral";
 
-type Params = {
-  q?: string; type?: string; rec?: string; tier?: string; symbol?: string;
-};
+type Params = { q?: string; type?: string; rec?: string; tier?: string; symbol?: string };
 
 export function LibraryGrid({
-  items, facets, total, capped, nextCursor, params, locale,
+  items, facets, total, capped, hasMore, shown, params, locale,
 }: {
   items: SearchedReport[];
   facets: ReportFacets;
   total: number;
   capped: boolean;
-  nextCursor: string | null;
+  hasMore: boolean;
+  shown: number;
   params: Params;
   locale: string;
 }) {
   const t = useTranslations("Library");
   const tc = useTranslations("Common");
+  const tType = useTranslations("ReportType");
+  const tRec = useTranslations("Recommendation");
+  const tTier = useTranslations("ReportTier");
+  // next-intl throws on a missing key; fall back to the raw enum value.
+  const safe = (tr: (k: string) => string) => (v: string) => {
+    try { return tr(v); } catch { return v; }
+  };
+  const typeLabel = safe(tType);
+  const recLabel = safe(tRec);
+  const tierLabel = safe(tTier);
+
   const router = useRouter();
   const pathname = usePathname();
   const sp = useSearchParams();
   const [pending, start] = React.useTransition();
 
-  // Build a new URL from the current query string + a patch (null deletes).
+  // Apply a filter patch. Any filter change resets pagination back to the first page.
   const apply = React.useCallback(
     (patch: Record<string, string | null>) => {
       const next = new URLSearchParams(sp.toString());
@@ -51,17 +53,23 @@ export function LibraryGrid({
         if (v == null || v === "") next.delete(k);
         else next.set(k, v);
       }
-      next.delete("cursor"); // any filter change resets pagination
+      next.delete("take");
       start(() => router.replace(`${pathname}?${next.toString()}`, { scroll: false }));
     },
     [sp, pathname, router],
   );
 
+  // "Load more" grows ?take WITHOUT resetting it (accumulate).
+  const loadMore = () => {
+    const next = new URLSearchParams(sp.toString());
+    next.set("take", String(shown + PAGE));
+    start(() => router.replace(`${pathname}?${next.toString()}`, { scroll: false }));
+  };
+
   const toggleCsv = (key: keyof Params, value: string) => {
     const cur = (params[key] ?? "").split(",").filter(Boolean);
     const has = cur.includes(value);
-    const nextVals = has ? cur.filter((x) => x !== value) : [...cur, value];
-    apply({ [key]: nextVals.join(",") || null });
+    apply({ [key]: (has ? cur.filter((x) => x !== value) : [...cur, value]).join(",") || null });
   };
 
   // Debounced free-text search.
@@ -80,9 +88,9 @@ export function LibraryGrid({
   const anyFilter = !!(params.q || params.type || params.rec || params.tier || params.symbol);
 
   return (
-    <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:gap-8">
+    <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:gap-10">
       {/* ── Facet rail ── */}
-      <aside className="flex-none lg:w-[210px]">
+      <aside className="flex-none lg:w-[230px]">
         <div className="flex items-center gap-[6px] rounded-control border border-line-2 bg-surface-input px-[10px] shadow-well focus-within:border-accent focus-within:bg-surface-card focus-within:shadow-[0_0_0_3px_var(--color-focus-ring)]">
           <Icon name="search" size={15} className="flex-none text-ink-3" />
           <input
@@ -105,20 +113,20 @@ export function LibraryGrid({
           </button>
         )}
 
-        <FacetGroup title={t("facetType")} values={facets.reportType} active={activeType} labels={TYPE_VI} onToggle={(v) => toggleCsv("type", v)} />
-        <FacetGroup title={t("facetRec")} values={facets.recommendation} active={activeRec} labels={REC_VI} onToggle={(v) => toggleCsv("rec", v)} />
+        <FacetGroup title={t("facetType")} values={facets.reportType} active={activeType} label={typeLabel} onToggle={(v) => toggleCsv("type", v)} />
+        <FacetGroup title={t("facetRec")} values={facets.recommendation} active={activeRec} label={recLabel} onToggle={(v) => toggleCsv("rec", v)} />
         <FacetGroup
           title={t("facetTier")}
           values={facets.tier}
           active={params.tier ? [params.tier] : []}
-          labels={TIER_VI}
+          label={tierLabel}
           onToggle={(v) => apply({ tier: params.tier === v ? null : v })}
         />
       </aside>
 
       {/* ── Results ── */}
       <div className="min-w-0 flex-1">
-        <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+        <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
           <div className="min-w-0">
             <h2 className="bc-display text-[26px] text-ink">{t("title")}</h2>
             <p className="mt-[6px] text-small text-ink-3">{t("description")}</p>
@@ -133,76 +141,73 @@ export function LibraryGrid({
             <EmptyState icon="file-text" title={anyFilter ? t("emptyFiltered") : t("emptyAll")} />
           </Card>
         ) : (
-          <div className="grid grid-cols-1 gap-[14px] sm:grid-cols-2 xl:grid-cols-3">
-            {items.map((d) => (
-              <Card key={d.id} padding={18} className="flex h-full flex-col">
-                <div className="mb-3 flex items-center justify-between gap-2">
-                  <div className="flex flex-wrap items-center gap-[5px]">
-                    {d.tickers.slice(0, 2).map((tk) => (
-                      <button
-                        key={tk}
-                        type="button"
-                        onClick={() => apply({ symbol: tk })}
-                        className="rounded-control border border-line bg-surface-2 px-[7px] py-[2px] font-mono text-micro font-medium text-ink-2 transition-colors hover:border-accent hover:text-accent"
-                      >
-                        {tk}
-                      </button>
-                    ))}
-                    {d.tier && (
-                      <span className="text-[10px] font-medium uppercase tracking-caps text-ink-4">
-                        {TIER_VI[d.tier]}
-                      </span>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {items.map((d) => {
+              const kicker = d.reportType ? typeLabel(d.reportType) : d.tier ? tierLabel(d.tier) : "";
+              return (
+                <Card key={d.id} padding={18} className="flex h-full min-h-[148px] flex-col">
+                  {/* top: tickers + recommendation */}
+                  <div className="mb-3 flex items-start justify-between gap-2">
+                    <div className="flex min-w-0 flex-wrap items-center gap-[5px]">
+                      {d.tickers.slice(0, 3).map((tk) => (
+                        <button
+                          key={tk}
+                          type="button"
+                          onClick={() => apply({ symbol: tk })}
+                          className="rounded-control border border-line bg-surface-2 px-[7px] py-[2px] font-mono text-micro font-medium text-ink-2 transition-colors hover:border-accent hover:text-accent"
+                        >
+                          {tk}
+                        </button>
+                      ))}
+                    </div>
+                    {d.recommendation && (
+                      <Badge tone={recTone(d.recommendation)} size="sm">
+                        {recLabel(d.recommendation)}
+                      </Badge>
                     )}
                   </div>
-                  {d.recommendation && (
-                    <Badge tone={recTone(d.recommendation)} size="sm">
-                      {REC_VI[d.recommendation] ?? d.recommendation}
-                    </Badge>
-                  )}
-                </div>
 
-                <Link href={`/reports/${d.slug}`} className="group flex flex-1 flex-col">
-                  <div className="flex items-start gap-3">
-                    <span className="flex size-[42px] flex-none items-center justify-center rounded-card border border-line bg-surface-2">
-                      <Icon name="file-text" size={19} className="text-ink-3" />
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      {d.reportType && (
-                        <span className="text-[10px] font-medium uppercase tracking-caps text-ink-4">
-                          {TYPE_VI[d.reportType] ?? d.reportType}
-                        </span>
-                      )}
-                      <div className="line-clamp-2 text-regular font-semibold leading-[1.3] tracking-[-0.01em] text-ink transition-colors group-hover:text-accent">
-                        {d.title}
+                  <Link href={`/reports/${d.slug}`} className="group flex flex-1 flex-col">
+                    <div className="flex items-start gap-3">
+                      <span className="flex size-[42px] flex-none items-center justify-center rounded-card border border-line bg-surface-2">
+                        <Icon name="file-text" size={19} className="text-ink-3" />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        {/* kicker: always one reserved line so cards stay aligned */}
+                        <div className="h-[15px] truncate text-mini font-medium text-ink-4">{kicker}</div>
+                        <div className="mt-[3px] line-clamp-2 min-h-[2.5em] text-regular font-semibold leading-[1.25] tracking-[-0.01em] text-ink transition-colors group-hover:text-accent">
+                          {d.title}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  {d.summary && (
-                    <p className="mt-3 line-clamp-2 text-small leading-normal text-ink-3">{d.summary}</p>
-                  )}
-                  <div className="mt-auto flex items-center justify-between gap-2 border-t border-line pt-3 text-mini text-ink-3">
-                    <span data-numeric className="font-mono">{formatDate(d.reportDate ?? d.publishedAt, locale)}</span>
-                    {d.pageCount != null && (
-                      <span data-numeric className="inline-flex items-center gap-[5px] font-mono">
-                        <Icon name="files" size={13} className="text-ink-4" />
-                        {t("pageCount", { n: d.pageCount })}
-                      </span>
+                    {d.summary && (
+                      <p className="mt-3 line-clamp-2 text-small leading-normal text-ink-3">{d.summary}</p>
                     )}
-                  </div>
-                </Link>
-              </Card>
-            ))}
+                    <div className="mt-auto flex items-center justify-between gap-2 border-t border-line pt-3 text-mini text-ink-3">
+                      <span data-numeric className="font-mono">{formatDate(d.reportDate ?? d.publishedAt, locale)}</span>
+                      {d.pageCount != null && (
+                        <span data-numeric className="inline-flex items-center gap-[5px] font-mono">
+                          <Icon name="files" size={13} className="text-ink-4" />
+                          {t("pageCount", { n: d.pageCount })}
+                        </span>
+                      )}
+                    </div>
+                  </Link>
+                </Card>
+              );
+            })}
           </div>
         )}
 
-        {nextCursor && !params.q && (
-          <div className="mt-7 flex justify-center">
+        {hasMore && (
+          <div className="mt-8 flex justify-center">
             <button
               type="button"
-              onClick={() => apply({ cursor: nextCursor })}
-              className="rounded-control border border-line-2 bg-surface-card px-4 py-2 text-small font-medium text-ink-2 shadow-soft transition-colors hover:border-line-3 hover:text-ink"
+              onClick={loadMore}
+              disabled={pending}
+              className="rounded-control border border-line-2 bg-surface-card px-5 py-2 text-small font-medium text-ink-2 shadow-soft transition-colors hover:border-line-3 hover:text-ink disabled:opacity-60"
             >
-              {t("loadMore")}
+              {pending ? "…" : t("loadMore")}
             </button>
           </div>
         )}
@@ -212,12 +217,12 @@ export function LibraryGrid({
 }
 
 function FacetGroup({
-  title, values, active, labels, onToggle,
+  title, values, active, label, onToggle,
 }: {
   title: string;
   values: { value: string; count: number }[];
   active: string[];
-  labels: Record<string, string>;
+  label: (v: string) => string;
   onToggle: (v: string) => void;
 }) {
   if (values.length === 0) return null;
@@ -234,11 +239,11 @@ function FacetGroup({
               aria-pressed={on}
               onClick={() => onToggle(f.value)}
               className={
-                "flex items-center justify-between gap-2 rounded-control px-[9px] py-[5px] text-mini transition-colors " +
+                "flex items-center justify-between gap-2 rounded-control px-[9px] py-[6px] text-mini transition-colors " +
                 (on ? "bg-accent font-medium text-on-accent" : "text-ink-2 hover:bg-surface-hover hover:text-ink")
               }
             >
-              <span className="truncate">{labels[f.value] ?? f.value}</span>
+              <span className="truncate text-left">{label(f.value)}</span>
               <span data-numeric className={on ? "font-mono text-micro text-on-accent/75" : "font-mono text-micro text-ink-4"}>
                 {f.count}
               </span>
