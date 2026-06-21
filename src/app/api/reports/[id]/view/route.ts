@@ -1,10 +1,9 @@
-import { Readable } from "node:stream";
 import type { NextRequest } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { canViewReport } from "@/lib/authz";
 import { resolveStreamKey } from "@/lib/watermark";
-import { getStorage } from "@/lib/storage";
+import { getStorage, webStream } from "@/lib/storage";
 import { logReportAccess } from "@/lib/audit";
 
 // SDK storage + pdf-lib need Node streams (blueprint §F1, §9).
@@ -100,7 +99,7 @@ export async function GET(
       });
     }
     const stream = storage.getStream(key, { start, end });
-    return new Response(Readable.toWeb(stream) as ReadableStream, {
+    return new Response(webStream(stream, req.signal), {
       status: 206,
       headers: {
         ...baseHeaders,
@@ -111,7 +110,7 @@ export async function GET(
   }
 
   const stream = storage.getStream(key);
-  return new Response(Readable.toWeb(stream) as ReadableStream, {
+  return new Response(webStream(stream, req.signal), {
     status: 200,
     headers: { ...baseHeaders, "Content-Length": String(size) },
   });

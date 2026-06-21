@@ -564,5 +564,28 @@
     "doneTitle": "Đã huỷ nhận thông báo",
     "doneBody": "{email} sẽ không còn nhận email thông báo báo cáo mới.",
     "backHome": "Về trang đăng nhập"
+  },
+  "Attachments": {
+    "title": "Tài liệu đính kèm",
+    "empty": "Chưa có tệp đính kèm.",
+    "internal": "Nội bộ",
+    "download": "Tải xuống",
+    "delete": "Xoá tệp",
+    "audienceLabel": "Phạm vi",
+    "audienceClient": "Khách hàng",
+    "audienceInternal": "Nội bộ",
+    "uploading": "Đang tải lên…",
+    "hint": "Excel hoặc Word, tối đa 25MB.",
+    "errMacro": "Tệp chứa macro không được phép.",
+    "errType": "Chỉ chấp nhận Excel hoặc Word.",
+    "errSize": "Tệp vượt quá 25MB.",
+    "errMagic": "Tệp không hợp lệ hoặc sai định dạng.",
+    "errEmpty": "Tệp rỗng.",
+    "errGeneric": "Tải lên thất bại. Vui lòng thử lại.",
+    "errDeleteFailed": "Xoá tệp thất bại. Vui lòng thử lại.",
+    "errForbidden": "Phiên đăng nhập đã hết hạn hoặc bạn không có quyền. Hãy đăng nhập lại.",
+    "infoDuplicate": "Tệp này đã được đính kèm.",
+    "confirmYes": "Xoá",
+    "confirmNo": "Huỷ"
   }
 }

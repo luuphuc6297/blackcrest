@@ -564,5 +564,28 @@
     "doneTitle": "Unsubscribed",
     "doneBody": "{email} will no longer receive new-report emails.",
     "backHome": "Back to sign in"
+  },
+  "Attachments": {
+    "title": "Attachments",
+    "empty": "No attachments yet.",
+    "internal": "Internal",
+    "download": "Download",
+    "delete": "Delete file",
+    "audienceLabel": "Visibility",
+    "audienceClient": "Clients",
+    "audienceInternal": "Internal",
+    "uploading": "Uploading…",
+    "hint": "Excel or Word, up to 25MB.",
+    "errMacro": "Macro-enabled files are not allowed.",
+    "errType": "Only Excel or Word files are accepted.",
+    "errSize": "File exceeds 25MB.",
+    "errMagic": "Invalid or mismatched file.",
+    "errEmpty": "The file is empty.",
+    "errGeneric": "Upload failed. Please try again.",
+    "errDeleteFailed": "Failed to delete. Please try again.",
+    "errForbidden": "Your session expired or you lack permission. Please sign in again.",
+    "infoDuplicate": "This file is already attached.",
+    "confirmYes": "Delete",
+    "confirmNo": "Cancel"
   }
 }

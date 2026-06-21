@@ -3,6 +3,7 @@ import { setRequestLocale } from "next-intl/server";
 import { auth } from "@/auth";
 import { getReportBySlug } from "@/server/reports";
 import { getWatchedSymbolIds } from "@/server/watchlist";
+import { listReportAttachments } from "@/server/attachments";
 import { isStaff } from "@/lib/rbac";
 import { can } from "@/lib/permissions";
 import { PdfViewer } from "./pdf-viewer";
@@ -57,6 +58,14 @@ export default async function ReportViewerPage({
     ? []
     : report.symbols.map((s) => ({ id: s.id, ticker: s.ticker, watching: watched.has(s.id) }));
 
+  // F3 attachments — the read helper applies the per-file audience gate (INTERNAL
+  // → staff only); all staff may manage (report.upload capability).
+  const attachments = (await listReportAttachments(report.id, user.role)).map((a) => ({
+    ...a,
+    createdAt: a.createdAt.toISOString(),
+  }));
+  const canManageAttachments = isStaff(user.role);
+
   // Plain, serializable props for the client island.
   const viewerReport = {
     id: report.id,
@@ -80,6 +89,8 @@ export default async function ReportViewerPage({
       canViewWorkflow={canViewWorkflow}
       canReview={canReview}
       watchTickers={watchTickers}
+      attachments={attachments}
+      canManageAttachments={canManageAttachments}
       backHref={backHref}
       viewUrl={`/api/reports/${report.id}/view`}
       reviewerName={user.name ?? "Người duyệt"}

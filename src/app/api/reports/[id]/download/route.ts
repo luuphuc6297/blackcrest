@@ -1,10 +1,9 @@
-import { Readable } from "node:stream";
 import type { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { canViewReport } from "@/lib/authz";
 import { consumeDownloadToken } from "@/lib/download-token";
 import { resolveStreamKey } from "@/lib/watermark";
-import { getStorage } from "@/lib/storage";
+import { getStorage, webStream } from "@/lib/storage";
 import { logReportAccess } from "@/lib/audit";
 
 export const runtime = "nodejs";
@@ -72,7 +71,7 @@ export async function GET(
   });
 
   const stream = storage.getStream(key);
-  return new Response(Readable.toWeb(stream) as ReadableStream, {
+  return new Response(webStream(stream, req.signal), {
     status: 200,
     headers: {
       "Content-Type": "application/pdf",

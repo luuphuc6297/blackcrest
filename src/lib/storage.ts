@@ -3,6 +3,7 @@ import { createReadStream } from "node:fs";
 import { mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { Readable } from "node:stream";
+import { s3Adapter } from "./storage-s3";
 
 /**
  * Storage adapter (blueprint §1). Default driver = filesystem volume; the
@@ -74,8 +75,21 @@ const filesystemAdapter: StorageAdapter = {
 };
 
 export function getStorage(): StorageAdapter {
-  // Only the filesystem driver is implemented in the MVP.
+  // STORAGE_DRIVER=supabase|s3 → S3-compatible (Supabase Storage); else local fs.
+  const driver = process.env.STORAGE_DRIVER;
+  if (driver === "supabase" || driver === "s3") return s3Adapter;
   return filesystemAdapter;
+}
+
+/**
+ * Wrap a Node Readable as a web ReadableStream with error + client-abort teardown.
+ * A cancelled response (pdf.js range cancel / client disconnect) destroys the
+ * stream — which, for the S3 adapter, also releases the upstream HTTP socket.
+ */
+export function webStream(stream: Readable, signal?: AbortSignal): ReadableStream {
+  stream.on("error", () => stream.destroy());
+  if (signal) signal.addEventListener("abort", () => stream.destroy(), { once: true });
+  return Readable.toWeb(stream) as ReadableStream;
 }
 
 export { STORAGE_ROOT };

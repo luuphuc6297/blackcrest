@@ -15,7 +15,6 @@ CREATE EXTENSION IF NOT EXISTS unaccent;
 -- index/generated expression directly. Wrap it IMMUTABLE — the dictionary is fixed in prod.
 CREATE OR REPLACE FUNCTION f_unaccent(text) RETURNS text
   LANGUAGE sql IMMUTABLE PARALLEL SAFE STRICT
-  SET search_path = public, pg_catalog
   AS $func$ SELECT public.unaccent('public.unaccent', $1) $func$;
 
 -- Precompute the diacritic-folded tsvector ONCE per row and store it. Without

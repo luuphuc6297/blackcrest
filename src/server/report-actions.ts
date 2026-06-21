@@ -203,16 +203,18 @@ export async function deleteReport(input: {
   });
 
   // Best-effort blob cleanup after the row is gone. An orphaned blob is harmless
-  // (nothing points to it); a missing blob for a deleted row is also fine.
-  if (existing.fileKey) {
-    try {
-      await getStorage().del(existing.fileKey);
-    } catch (err) {
-      console.error(
-        "[deleteReport] blob cleanup failed:",
-        err instanceof Error ? err.message : err,
-      );
-    }
+  // (nothing points to it); a missing blob for a deleted row is also fine. The
+  // attachment ROWS cascade-delete at the DB level (which runs no app code), so
+  // their blobs must be purged here too (F3) — removePrefix clears the whole
+  // attachments/<reportId>/ directory in one call.
+  try {
+    if (existing.fileKey) await getStorage().del(existing.fileKey);
+    await getStorage().removePrefix(`attachments/${reportId}`);
+  } catch (err) {
+    console.error(
+      "[deleteReport] blob cleanup failed:",
+      err instanceof Error ? err.message : err,
+    );
   }
 
   revalidatePath("/[locale]/admin/reports", "page");

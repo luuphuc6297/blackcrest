@@ -564,5 +564,28 @@
     "doneTitle": "已取消订阅",
     "doneBody": "{email} 将不再收到新报告邮件。",
     "backHome": "返回登录"
+  },
+  "Attachments": {
+    "title": "附件",
+    "empty": "暂无附件。",
+    "internal": "内部",
+    "download": "下载",
+    "delete": "删除文件",
+    "audienceLabel": "可见范围",
+    "audienceClient": "客户",
+    "audienceInternal": "内部",
+    "uploading": "上传中…",
+    "hint": "Excel 或 Word，最大 25MB。",
+    "errMacro": "不允许包含宏的文件。",
+    "errType": "仅接受 Excel 或 Word 文件。",
+    "errSize": "文件超过 25MB。",
+    "errMagic": "文件无效或格式不符。",
+    "errEmpty": "文件为空。",
+    "errGeneric": "上传失败，请重试。",
+    "errDeleteFailed": "删除失败，请重试。",
+    "errForbidden": "会话已过期或您没有权限，请重新登录。",
+    "infoDuplicate": "该文件已存在附件中。",
+    "confirmYes": "删除",
+    "confirmNo": "取消"
   }
 }

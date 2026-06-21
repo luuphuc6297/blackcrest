@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { Icon } from "@/components/icon";
 import { WatchButton } from "@/components/watch-button";
+import { AttachmentsPanel } from "./attachments-panel";
 import { requestDownloadUrl } from "@/server/download-actions";
 import { reviewReport } from "@/server/report-actions";
 import { REPORT_STATUS } from "@/lib/status";
@@ -64,10 +65,23 @@ export interface PdfViewerProps {
   backHref: string;
   /** Per-ticker watch toggles (F2) — clients only; empty for staff. */
   watchTickers?: { id: string; ticker: string; watching: boolean }[];
+  /** F3 attachments visible to this viewer (CLIENT to all; INTERNAL staff-only). */
+  attachments?: AttachmentItem[];
+  /** Staff may upload/delete attachments (report.upload capability). */
+  canManageAttachments?: boolean;
   /** Inline view/print endpoint (download uses the one-time token flow). */
   viewUrl: string;
   reviewerName: string;
 }
+
+export type AttachmentItem = {
+  id: string;
+  fileName: string;
+  mimeType: string;
+  fileSize: number;
+  audience: "CLIENT" | "INTERNAL";
+  createdAt: string;
+};
 
 /* Status → Status.* i18n key (resolved via the Status namespace t()). */
 const STATUS_LABEL: Record<ReportStatus, string> = {
@@ -184,6 +198,8 @@ export function PdfViewer({
   canReview,
   backHref,
   watchTickers = [],
+  attachments = [],
+  canManageAttachments = false,
   viewUrl,
   reviewerName,
 }: PdfViewerProps) {
@@ -650,6 +666,8 @@ export function PdfViewer({
               locale={locale}
               canViewWorkflow={canViewWorkflow}
               canReview={canReview}
+              attachments={attachments}
+              canManageAttachments={canManageAttachments}
               reviewerName={reviewerName}
               onSubmit={() => {
                 setReviewNote("");
@@ -913,6 +931,8 @@ function SidePanel({
   locale,
   canViewWorkflow,
   canReview,
+  attachments,
+  canManageAttachments,
   reviewerName,
   onSubmit,
   onApprove,
@@ -923,6 +943,8 @@ function SidePanel({
   locale: string;
   canViewWorkflow: boolean;
   canReview: boolean;
+  attachments: AttachmentItem[];
+  canManageAttachments: boolean;
   reviewerName: string;
   onSubmit: () => void;
   onApprove: () => void;
@@ -1150,6 +1172,11 @@ function SidePanel({
             <MetaRow
               k={t("attachment")}
               v={report.hasFile ? t("attachmentUploaded") : t("attachmentNone")}
+            />
+            <AttachmentsPanel
+              reportId={report.id}
+              attachments={attachments}
+              canManage={canManageAttachments}
             />
             <div className="rounded-card border border-line bg-surface-1 p-3">
               <div className="mb-[6px] flex items-center gap-2 text-ink-2">

@@ -163,6 +163,7 @@ model User {
   uploadSessions  UploadSession[]
   watchlistItems  WatchlistItem[]
   notifications   ReportNotification[]
+  uploadedAttachments ReportAttachment[] @relation("AttachmentUploadedBy")
 
   // Auth.js adapter relations (kept for future OAuth/magic-link; JWT is primary).
   accounts Account[]
@@ -281,6 +282,7 @@ model Report {
   accessLogs   ReportAccessLog[]
   symbols      ReportSymbol[]
   notifications ReportNotification[]
+  attachments  ReportAttachment[]
 
   // Keyset pagination index (publishedAt, id) — blueprint §F2.
   @@index([status, publishedAt, id])
@@ -507,4 +509,27 @@ model ReportNotification {
 
   @@unique([reportId, userId, channel])
   @@index([userId])
+}
+
+// F3: supplementary download-only files (Excel/Word) on a report. audience
+// CLIENT = visible to entitled clients (same gate as the report); INTERNAL =
+// staff-only. Stored via the storage seam under attachments/<reportId>/<uuid>.<ext>;
+// the fileKey is NEVER exposed — bytes stream through the authed download route.
+model ReportAttachment {
+  id           String   @id @default(cuid())
+  reportId     String
+  fileKey      String // storage key (server-controlled, random UUID)
+  fileName     String // original display name (shown + Content-Disposition)
+  mimeType     String
+  fileSize     Int
+  sha256       String
+  audience     Audience @default(CLIENT)
+  uploadedById String?
+  createdAt    DateTime @default(now())
+
+  report     Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  uploadedBy User?  @relation("AttachmentUploadedBy", fields: [uploadedById], references: [id])
+
+  @@unique([reportId, sha256]) // dedup the same file on one report (idempotent upload)
+  @@index([reportId])
 }
