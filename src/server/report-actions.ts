@@ -213,7 +213,8 @@ export async function setReportSymbols(input: {
 
   await logAudit({
     actorId: actor.id,
-    action: "REPORT_TAG_ADD",
+    // An empty set clears all links — log that as a REMOVE, not an ADD.
+    action: tickers.length ? "REPORT_TAG_ADD" : "REPORT_TAG_REMOVE",
     targetType: "Report",
     targetId: reportId,
     metadata: { tickers },

@@ -462,7 +462,8 @@
     "actionTags": "Gắn mã chứng khoán",
     "actionTagsTitle": "Gắn mã chứng khoán",
     "actionTagsBody": "Nhập các mã, cách nhau bằng dấu phẩy hoặc khoảng trắng. Mã đầu tiên là mã chính.",
-    "fieldTickers": "Mã chứng khoán (không bắt buộc)"
+    "fieldTickers": "Mã chứng khoán (không bắt buộc)",
+    "uploadTagFailed": "Đã tải lên, nhưng gắn mã thất bại — hãy gắn lại trong bảng tài liệu."
   },
   "Errors": {
     "systemError": "Lỗi hệ thống",

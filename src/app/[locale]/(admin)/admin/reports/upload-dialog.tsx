@@ -130,22 +130,32 @@ export function UploadReportDialog({
       });
       // Tag tickers (optional) on the freshly-created report so it's findable by
       // ticker + can trigger watchlist alerts. Best-effort: a tag failure must not
-      // fail the upload that already succeeded.
+      // fail the upload that already succeeded — but DO surface it (don't claim a
+      // clean success) so staff know to re-tag from the reports table.
       const tickers = String(fd.get("tickers") ?? "")
         .split(/[,\s]+/)
         .map((s) => s.trim())
         .filter(Boolean);
+      let tagFailed = false;
       if (tickers.length && result.reportId) {
         try {
-          await setReportSymbols({ reportId: result.reportId, tickers });
-        } catch {
-          /* non-fatal — staff can re-tag from the reports table */
+          const res = await setReportSymbols({ reportId: result.reportId, tickers });
+          tagFailed = !res.ok;
+        } catch (err) {
+          console.error("[upload] tagging tickers failed:", err);
+          tagFailed = true;
         }
       }
       setOpen(false);
       setFile(null);
       reset();
-      setToast({ title: result.duplicate ? t("uploadDuplicate") : t("uploadSuccess") });
+      setToast({
+        title: tagFailed
+          ? t("uploadTagFailed")
+          : result.duplicate
+            ? t("uploadDuplicate")
+            : t("uploadSuccess"),
+      });
       router.refresh();
     } catch (err) {
       if (err instanceof UploadCanceledError) {

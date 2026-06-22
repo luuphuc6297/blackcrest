@@ -462,7 +462,8 @@
     "actionTags": "Tag tickers",
     "actionTagsTitle": "Tag tickers",
     "actionTagsBody": "Enter tickers separated by commas or spaces. The first is the primary one.",
-    "fieldTickers": "Tickers (optional)"
+    "fieldTickers": "Tickers (optional)",
+    "uploadTagFailed": "Uploaded, but tagging failed — re-tag from the reports table."
   },
   "Errors": {
     "systemError": "System error",

@@ -44,6 +44,9 @@ export function LibraryGrid({
   const pathname = usePathname();
   const sp = useSearchParams();
   const [pending, start] = React.useTransition();
+  // Optimistic filter state so a facet/chip click reflects as SELECTED instantly
+  // (before the server round-trip lands) — the click never looks dead.
+  const [optimistic, setOptimistic] = React.useOptimistic<Params>(params);
 
   // Apply a filter patch. Any filter change resets pagination back to the first page.
   const apply = React.useCallback(
@@ -54,9 +57,18 @@ export function LibraryGrid({
         else next.set(k, v);
       }
       next.delete("take");
-      start(() => router.replace(`${pathname}?${next.toString()}`, { scroll: false }));
+      start(() => {
+        // Reflect the new filter set immediately; useOptimistic re-syncs to the
+        // real `params` once the transition (RSC re-fetch) completes.
+        setOptimistic((prev) => {
+          const m: Params = { ...prev };
+          for (const [k, v] of Object.entries(patch)) m[k as keyof Params] = v ?? undefined;
+          return m;
+        });
+        router.replace(`${pathname}?${next.toString()}`, { scroll: false });
+      });
     },
-    [sp, pathname, router],
+    [sp, pathname, router, setOptimistic],
   );
 
   // "Load more" grows ?take WITHOUT resetting it (accumulate).
@@ -67,7 +79,7 @@ export function LibraryGrid({
   };
 
   const toggleCsv = (key: keyof Params, value: string) => {
-    const cur = (params[key] ?? "").split(",").filter(Boolean);
+    const cur = (optimistic[key] ?? "").split(",").filter(Boolean);
     const has = cur.includes(value);
     apply({ [key]: (has ? cur.filter((x) => x !== value) : [...cur, value]).join(",") || null });
   };
@@ -83,9 +95,9 @@ export function LibraryGrid({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [text]);
 
-  const activeType = (params.type ?? "").split(",").filter(Boolean);
-  const activeRec = (params.rec ?? "").split(",").filter(Boolean);
-  const anyFilter = !!(params.q || params.type || params.rec || params.tier || params.symbol);
+  const activeType = (optimistic.type ?? "").split(",").filter(Boolean);
+  const activeRec = (optimistic.rec ?? "").split(",").filter(Boolean);
+  const anyFilter = !!(optimistic.q || optimistic.type || optimistic.rec || optimistic.tier || optimistic.symbol);
 
   return (
     <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:gap-10">
@@ -103,13 +115,13 @@ export function LibraryGrid({
           />
         </div>
 
-        {params.symbol && (
+        {optimistic.symbol && (
           <button
             type="button"
             onClick={() => apply({ symbol: null })}
             className="mt-3 inline-flex items-center gap-[6px] rounded-control border border-accent bg-accent px-[10px] py-[5px] text-mini font-medium text-on-accent"
           >
-            <Icon name="x" size={12} /> {params.symbol}
+            <Icon name="x" size={12} /> {optimistic.symbol}
           </button>
         )}
 
@@ -118,9 +130,9 @@ export function LibraryGrid({
         <FacetGroup
           title={t("facetTier")}
           values={facets.tier}
-          active={params.tier ? [params.tier] : []}
+          active={optimistic.tier ? [optimistic.tier] : []}
           label={tierLabel}
-          onToggle={(v) => apply({ tier: params.tier === v ? null : v })}
+          onToggle={(v) => apply({ tier: optimistic.tier === v ? null : v })}
         />
       </aside>
 
@@ -136,6 +148,16 @@ export function LibraryGrid({
           </span>
         </div>
 
+        <div className="relative" aria-busy={pending}>
+          {pending && (
+            <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex justify-center pt-2">
+              <span className="inline-flex items-center gap-[7px] rounded-pill border border-line bg-surface-card px-[14px] py-[6px] text-mini font-medium text-ink-3 shadow-soft-lit">
+                <Icon name="refresh-cw" size={13} className="animate-spin" />
+                {tc("loading")}
+              </span>
+            </div>
+          )}
+          <div className={pending ? "opacity-45 transition-opacity duration-200" : "transition-opacity duration-200"}>
         {items.length === 0 ? (
           <Card padding={0}>
             <EmptyState icon="file-text" title={anyFilter ? t("emptyFiltered") : t("emptyAll")} />
@@ -145,7 +167,7 @@ export function LibraryGrid({
             {items.map((d) => {
               const kicker = d.reportType ? typeLabel(d.reportType) : d.tier ? tierLabel(d.tier) : "";
               return (
-                <Card key={d.id} padding={18} className="flex h-full min-h-[148px] flex-col">
+                <Card key={d.id} padding={18} className="flex h-full min-h-[148px] flex-col transition-[transform,box-shadow] duration-150 hover:-translate-y-px hover:shadow-soft-lit active:scale-[0.99]">
                   {/* top: tickers + recommendation */}
                   <div className="mb-3 flex items-start justify-between gap-2">
                     <div className="flex min-w-0 flex-wrap items-center gap-[5px]">
@@ -198,6 +220,8 @@ export function LibraryGrid({
             })}
           </div>
         )}
+          </div>
+        </div>
 
         {hasMore && (
           <div className="mt-8 flex justify-center">
