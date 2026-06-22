@@ -236,7 +236,16 @@
     "facetTier": "格式",
     "loadMore": "加载更多",
     "emptyAll": "尚未发布任何文档。",
-    "documentCountCapped": "{n, number}+ 份文档"
+    "documentCountCapped": "{n, number}+ 份文档",
+    "sectionLatest": "最新报告",
+    "viewAll": "查看全部",
+    "browseAll": "浏览全部文库",
+    "sortLabel": "排序",
+    "sortDateDesc": "最新",
+    "sortDateAsc": "最早",
+    "sortAZ": "A → Z",
+    "sortZA": "Z → A",
+    "searchForQuery": "在全部文档中搜索“{q}”"
   },
   "Viewer": {
     "backToLibrary": "返回文档库",

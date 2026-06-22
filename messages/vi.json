@@ -236,7 +236,16 @@
     "facetTier": "Định dạng",
     "loadMore": "Xem thêm",
     "emptyAll": "Chưa có tài liệu nào được phát hành.",
-    "documentCountCapped": "{n, number}+ tài liệu"
+    "documentCountCapped": "{n, number}+ tài liệu",
+    "sectionLatest": "Báo cáo mới nhất",
+    "viewAll": "Xem tất cả",
+    "browseAll": "Xem toàn bộ thư viện",
+    "sortLabel": "Sắp xếp",
+    "sortDateDesc": "Mới nhất",
+    "sortDateAsc": "Cũ nhất",
+    "sortAZ": "A → Z",
+    "sortZA": "Z → A",
+    "searchForQuery": "Tìm “{q}” trong toàn bộ tài liệu"
   },
   "Viewer": {
     "backToLibrary": "Quay lại thư viện",
