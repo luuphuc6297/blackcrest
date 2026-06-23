@@ -34,6 +34,7 @@ export default auth((req) => {
     rest.startsWith("/portal") ||
     rest.startsWith("/admin") ||
     rest.startsWith("/reports") ||
+    rest.startsWith("/research") ||
     rest.startsWith("/watchlist") ||
     rest.startsWith("/profile");
   const needsStaff = rest.startsWith("/admin");
