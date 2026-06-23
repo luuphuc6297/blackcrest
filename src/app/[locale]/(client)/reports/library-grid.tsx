@@ -3,20 +3,17 @@
 import * as React from "react";
 import { useTranslations } from "next-intl";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { Link } from "@/i18n/navigation";
-import { Badge, Card, EmptyState } from "@/components/ui";
+import { Card, EmptyState, Select } from "@/components/ui";
 import { Icon } from "@/components/icon";
-import { formatDate } from "@/lib/format";
-import type { SearchedReport, ReportFacets } from "@/lib/authz";
+import { ReportCard } from "@/components/report-card";
+import type { SearchedReport, ReportFacets, ReportSort } from "@/lib/authz";
 
 const PAGE = 24;
-const recTone = (r: string | null) =>
-  r === "BUY" || r === "ADD" ? "success" : r === "SELL" || r === "REDUCE" ? "danger" : "neutral";
 
 type Params = { q?: string; type?: string; rec?: string; tier?: string; symbol?: string };
 
 export function LibraryGrid({
-  items, facets, total, capped, hasMore, shown, params, locale,
+  items, facets, total, capped, hasMore, shown, params, sort, locale,
 }: {
   items: SearchedReport[];
   facets: ReportFacets;
@@ -25,6 +22,7 @@ export function LibraryGrid({
   hasMore: boolean;
   shown: number;
   params: Params;
+  sort: ReportSort;
   locale: string;
 }) {
   const t = useTranslations("Library");
@@ -143,9 +141,22 @@ export function LibraryGrid({
             <h2 className="bc-display text-[26px] text-ink">{t("title")}</h2>
             <p className="mt-[6px] text-small text-ink-3">{t("description")}</p>
           </div>
-          <span data-numeric className="flex-none rounded-control border border-line bg-surface-card px-[10px] py-[5px] font-mono text-mini text-ink-3 shadow-soft">
-            {pending ? "…" : capped ? t("documentCountCapped", { n: total }) : t("documentCount", { n: total })}
-          </span>
+          <div className="flex flex-none items-center gap-[10px]">
+            <Select
+              size="sm"
+              aria-label={t("sortLabel")}
+              value={sort}
+              onChange={(e) => apply({ sort: e.target.value === "date" ? null : e.target.value })}
+            >
+              <option value="date">{t("sortDateDesc")}</option>
+              <option value="date-asc">{t("sortDateAsc")}</option>
+              <option value="az">{t("sortAZ")}</option>
+              <option value="za">{t("sortZA")}</option>
+            </Select>
+            <span data-numeric className="rounded-control border border-line bg-surface-card px-[10px] py-[5px] font-mono text-mini text-ink-3 shadow-soft">
+              {pending ? "…" : capped ? t("documentCountCapped", { n: total }) : t("documentCount", { n: total })}
+            </span>
+          </div>
         </div>
 
         <div className="relative" aria-busy={pending}>
@@ -164,60 +175,9 @@ export function LibraryGrid({
           </Card>
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {items.map((d) => {
-              const kicker = d.reportType ? typeLabel(d.reportType) : d.tier ? tierLabel(d.tier) : "";
-              return (
-                <Card key={d.id} padding={18} className="flex h-full min-h-[148px] flex-col transition-[transform,box-shadow] duration-150 hover:-translate-y-px hover:shadow-soft-lit active:scale-[0.99]">
-                  {/* top: tickers + recommendation */}
-                  <div className="mb-3 flex items-start justify-between gap-2">
-                    <div className="flex min-w-0 flex-wrap items-center gap-[5px]">
-                      {d.tickers.slice(0, 3).map((tk) => (
-                        <button
-                          key={tk}
-                          type="button"
-                          onClick={() => apply({ symbol: tk })}
-                          className="rounded-control border border-line bg-surface-2 px-[7px] py-[2px] font-mono text-micro font-medium text-ink-2 transition-colors hover:border-accent hover:text-accent"
-                        >
-                          {tk}
-                        </button>
-                      ))}
-                    </div>
-                    {d.recommendation && (
-                      <Badge tone={recTone(d.recommendation)} size="sm">
-                        {recLabel(d.recommendation)}
-                      </Badge>
-                    )}
-                  </div>
-
-                  <Link href={`/reports/${d.slug}`} className="group flex flex-1 flex-col">
-                    <div className="flex items-start gap-3">
-                      <span className="flex size-[42px] flex-none items-center justify-center rounded-card border border-line bg-surface-2">
-                        <Icon name="file-text" size={19} className="text-ink-3" />
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        {/* kicker: always one reserved line so cards stay aligned */}
-                        <div className="h-[15px] truncate text-mini font-medium text-ink-4">{kicker}</div>
-                        <div className="mt-[3px] line-clamp-2 min-h-[2.5em] text-regular font-semibold leading-[1.25] tracking-[-0.01em] text-ink transition-colors group-hover:text-accent">
-                          {d.title}
-                        </div>
-                      </div>
-                    </div>
-                    {d.summary && (
-                      <p className="mt-3 line-clamp-2 text-small leading-normal text-ink-3">{d.summary}</p>
-                    )}
-                    <div className="mt-auto flex items-center justify-between gap-2 border-t border-line pt-3 text-mini text-ink-3">
-                      <span data-numeric className="font-mono">{formatDate(d.reportDate ?? d.publishedAt, locale)}</span>
-                      {d.pageCount != null && (
-                        <span data-numeric className="inline-flex items-center gap-[5px] font-mono">
-                          <Icon name="files" size={13} className="text-ink-4" />
-                          {t("pageCount", { n: d.pageCount })}
-                        </span>
-                      )}
-                    </div>
-                  </Link>
-                </Card>
-              );
-            })}
+            {items.map((d) => (
+              <ReportCard key={d.id} report={d} locale={locale} />
+            ))}
           </div>
         )}
           </div>

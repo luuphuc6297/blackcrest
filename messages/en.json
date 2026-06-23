@@ -236,7 +236,16 @@
     "facetTier": "Format",
     "loadMore": "Load more",
     "emptyAll": "No documents have been published yet.",
-    "documentCountCapped": "{n, number}+ documents"
+    "documentCountCapped": "{n, number}+ documents",
+    "sectionLatest": "Latest reports",
+    "viewAll": "View all",
+    "browseAll": "Browse the full library",
+    "sortLabel": "Sort",
+    "sortDateDesc": "Newest",
+    "sortDateAsc": "Oldest",
+    "sortAZ": "A → Z",
+    "sortZA": "Z → A",
+    "searchForQuery": "Search “{q}” across all reports"
   },
   "Viewer": {
     "backToLibrary": "Back to library",

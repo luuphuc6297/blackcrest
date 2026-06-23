@@ -226,6 +226,94 @@ export type ReportFacets = {
   tier: { value: string; count: number }[];
 };
 
+/** The relations a report CARD needs (translations for the title, symbols for tickers). */
+export const REPORT_CARD_INCLUDE = {
+  translations: true,
+  symbols: { include: { symbol: true } },
+} as const;
+export type ReportRowWithRel = Prisma.ReportGetPayload<{ include: typeof REPORT_CARD_INCLUDE }>;
+
+/** Map a DB row (with card relations) to the client-facing SearchedReport shape. */
+export function toSearchedReport(r: ReportRowWithRel, locale: string): SearchedReport {
+  return {
+    id: r.id,
+    slug: r.slug,
+    status: r.status,
+    accessLevel: r.accessLevel,
+    publishedAt: r.publishedAt,
+    reportType: r.reportType,
+    recommendation: r.recommendation,
+    tier: r.tier,
+    reportDate: r.reportDate,
+    pageCount: r.pageCount,
+    coverLabel: r.coverLabel,
+    tickers: r.symbols.map((s) => s.symbol.ticker),
+    ...resolveTranslation(r.translations, locale),
+  };
+}
+
+export type ReportSection = { key: string; reportType: ReportType | null; reports: SearchedReport[] };
+
+/**
+ * F1 landing: a handful of curated sections (Latest + top report types), built
+ * from ONE pooled query (the latest reports the user may see) and bucketed in the
+ * app layer — NOT one findMany per section.
+ *
+ * WHY one query: Prisma loads each `include` relation as its own round-trip, so
+ * "one findMany per section" exploded to ~50 round-trips (7 sections × main +
+ * translations + symbols). Harmless on a local DB, but FATAL cross-region — on
+ * Vercel ↔ Supabase Tokyo (~170ms each) it blew past the serverless function
+ * timeout and the whole route 500'd. A single pooled fetch is ~3 round-trips.
+ *
+ * Trade-off: a per-type section only shows if that type appears in the recent
+ * pool. For a "what's new" landing that's the right behaviour; rarer types are
+ * still reachable via "View all". Sections with nothing are dropped.
+ */
+const SECTION_TYPES: ReportType[] = [
+  "EARNINGS",
+  "RESULT",
+  "AGM",
+  "COMPANY",
+  "INVESTOR_MEETING",
+  "INITIATION",
+];
+
+export async function listReportSections(opts: {
+  userId: string;
+  role: Role;
+  locale: string;
+  perSection?: number;
+}): Promise<ReportSection[]> {
+  const { userId, role, locale, perSection = 12 } = opts;
+  const where: Prisma.ReportWhereInput = isStaff(role)
+    ? { status: "PUBLISHED" }
+    : visibleWhere(userId);
+
+  // One indexed query (Report_status_publishedAt_id), deep enough to fill the
+  // "Latest" row plus the per-type sections, then bucketed below.
+  const pool = await prisma.report.findMany({
+    where,
+    orderBy: [{ publishedAt: "desc" }, { id: "desc" }],
+    take: Math.max(perSection * 12, 160),
+    include: REPORT_CARD_INCLUDE,
+  });
+  const cards = pool.map((r) => toSearchedReport(r, locale));
+  if (cards.length === 0) return [];
+
+  const sections: ReportSection[] = [
+    { key: "latest", reportType: null, reports: cards.slice(0, perSection) },
+  ];
+  for (const rt of SECTION_TYPES) {
+    const reports = cards.filter((c) => c.reportType === rt).slice(0, perSection);
+    if (reports.length > 0) sections.push({ key: rt, reportType: rt, reports });
+  }
+  return sections;
+}
+
+/** Sort order for the browse/filtered grid (ignored when a text query `q` is set —
+ * those stay relevance-ranked). "az"/"za" order by the vi title. */
+export type ReportSort = "date" | "date-asc" | "az" | "za";
+
 /**
  * F1 search/facet over reports. Full-text `q` is diacritic-insensitive (the
  * SearchIndex seam returns ranked IDs which are then AND-intersected with the
@@ -242,6 +330,7 @@ export async function searchReports(opts: {
   tier?: string | null;
   symbol?: string | null;
   take?: number;
+  sort?: ReportSort;
 }): Promise<{
   items: SearchedReport[];
   hasMore: boolean;
@@ -249,7 +338,7 @@ export async function searchReports(opts: {
   capped: boolean;
   facets: ReportFacets;
 }> {
-  const { userId, role, locale, q, reportType, recommendation, tier, symbol, take = 24 } = opts;
+  const { userId, role, locale, q, reportType, recommendation, tier, symbol, take = 24, sort = "date" } = opts;
   const FTS_LIMIT = 400;
 
   const and: Prisma.ReportWhereInput[] = [
@@ -268,26 +357,8 @@ export async function searchReports(opts: {
     and.push({ id: { in: rankOrder.length ? rankOrder : ["__no_match__"] } });
   }
   const where: Prisma.ReportWhereInput = { AND: and };
-  const include = { translations: true, symbols: { include: { symbol: true } } };
-
-  type RowWithRel = Prisma.ReportGetPayload<{
-    include: { translations: true; symbols: { include: { symbol: true } } };
-  }>;
-  const mapRow = (r: RowWithRel): SearchedReport => ({
-    id: r.id,
-    slug: r.slug,
-    status: r.status,
-    accessLevel: r.accessLevel,
-    publishedAt: r.publishedAt,
-    reportType: r.reportType,
-    recommendation: r.recommendation,
-    tier: r.tier,
-    reportDate: r.reportDate,
-    pageCount: r.pageCount,
-    coverLabel: r.coverLabel,
-    tickers: r.symbols.map((s) => s.symbol.ticker),
-    ...resolveTranslation(r.translations, locale),
-  });
+  const include = REPORT_CARD_INCLUDE;
+  const mapRow = (r: ReportRowWithRel) => toSearchedReport(r, locale);
   // Tally a facet from rows already in memory (search path).
   const tally = (
     rows: { reportType: ReportType | null; recommendation: Recommendation | null; tier: ReportTier | null }[],
@@ -337,18 +408,33 @@ export async function searchReports(opts: {
     items = rows.map(mapRow);
   } else {
     // BROWSE PATH: facets span the whole visible set (too large to pull into JS),
-    // so count them with DB groupBy; the page is the first `take` by recency.
+    // so count them with DB groupBy; the page is the first `take` per `sort`.
+    // A→Z/Z→A order by the vi title (held in ReportTranslation), so that page is
+    // fetched FROM the translation table; date orders the Report rows directly.
+    const fetchPage = async (): Promise<ReportRowWithRel[]> => {
+      if (sort === "az" || sort === "za") {
+        const trs = await prisma.reportTranslation.findMany({
+          where: { locale: "vi", report: where },
+          orderBy: { title: sort === "za" ? "desc" : "asc" },
+          take,
+          select: { report: { include } },
+        });
+        return trs.map((t) => t.report);
+      }
+      return prisma.report.findMany({
+        where,
+        orderBy:
+          sort === "date-asc" ? [{ publishedAt: "asc" }, { id: "asc" }] : [{ publishedAt: "desc" }, { id: "desc" }],
+        take, // grow-on-"load more" (accumulate from the top), no cursor
+        include,
+      });
+    };
     const [byType, byRec, byTier, count, rows] = await Promise.all([
       prisma.report.groupBy({ by: ["reportType"], where, _count: { _all: true } }),
       prisma.report.groupBy({ by: ["recommendation"], where, _count: { _all: true } }),
       prisma.report.groupBy({ by: ["tier"], where, _count: { _all: true } }),
       prisma.report.count({ where }),
-      prisma.report.findMany({
-        where,
-        orderBy: [{ publishedAt: "desc" }, { id: "desc" }],
-        take, // grow-on-"load more" (accumulate from the top), no cursor
-        include,
-      }),
+      fetchPage(),
     ]);
     total = count;
     facets = {
