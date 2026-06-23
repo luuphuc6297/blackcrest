@@ -181,7 +181,18 @@ export async function listVisibleReports(opts: {
     orderBy: [{ publishedAt: "desc" }, { id: "desc" }],
     take: take + 1,
     ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
-    include: { translations: true, category: true },
+    // SELECT (not include) — never pull the heavy `contentText` body for a list.
+    select: {
+      id: true,
+      slug: true,
+      status: true,
+      accessLevel: true,
+      publishedAt: true,
+      pageCount: true,
+      coverLabel: true,
+      category: true,
+      translations: { select: { locale: true, title: true, summary: true, author: true } },
+    },
   });
 
   const hasMore = rows.length > take;
@@ -227,11 +238,26 @@ export type ReportFacets = {
 };
 
 /** The relations a report CARD needs (translations for the title, symbols for tickers). */
-export const REPORT_CARD_INCLUDE = {
-  translations: true,
-  symbols: { include: { symbol: true } },
+// SELECT (not include) is deliberate: `include` pulls EVERY Report scalar,
+// including `contentText` — the full PDF body (~8KB/row, avg row 22KB) used only
+// by search. Dragging it into every card list made the library 4-8× slower
+// (160 cards = ~3.5MB of dead weight). List only the columns a card renders.
+export const REPORT_CARD_SELECT = {
+  id: true,
+  slug: true,
+  status: true,
+  accessLevel: true,
+  publishedAt: true,
+  reportType: true,
+  recommendation: true,
+  tier: true,
+  reportDate: true,
+  pageCount: true,
+  coverLabel: true,
+  translations: { select: { locale: true, title: true, summary: true, author: true } },
+  symbols: { select: { symbol: { select: { ticker: true } } } },
 } as const;
-export type ReportRowWithRel = Prisma.ReportGetPayload<{ include: typeof REPORT_CARD_INCLUDE }>;
+export type ReportRowWithRel = Prisma.ReportGetPayload<{ select: typeof REPORT_CARD_SELECT }>;
 
 /** Map a DB row (with card relations) to the client-facing SearchedReport shape. */
 export function toSearchedReport(r: ReportRowWithRel, locale: string): SearchedReport {
@@ -295,7 +321,7 @@ export async function listReportSections(opts: {
     where,
     orderBy: [{ publishedAt: "desc" }, { id: "desc" }],
     take: Math.max(perSection * 12, 160),
-    include: REPORT_CARD_INCLUDE,
+    select: REPORT_CARD_SELECT,
   });
   const cards = pool.map((r) => toSearchedReport(r, locale));
   if (cards.length === 0) return [];
@@ -357,7 +383,7 @@ export async function searchReports(opts: {
     and.push({ id: { in: rankOrder.length ? rankOrder : ["__no_match__"] } });
   }
   const where: Prisma.ReportWhereInput = { AND: and };
-  const include = REPORT_CARD_INCLUDE;
+  const cardSelect = REPORT_CARD_SELECT;
   const mapRow = (r: ReportRowWithRel) => toSearchedReport(r, locale);
   // Tally a facet from rows already in memory (search path).
   const tally = (
@@ -402,7 +428,7 @@ export async function searchReports(opts: {
     // pre-vetted subset — defence in depth, negligible cost (≤ take ids).
     const rows = await prisma.report.findMany({
       where: { AND: [where, { id: { in: pageIds } }] },
-      include,
+      select: cardSelect,
     });
     rows.sort((a, b) => (rank.get(a.id) ?? 1e9) - (rank.get(b.id) ?? 1e9));
     items = rows.map(mapRow);
@@ -417,7 +443,7 @@ export async function searchReports(opts: {
           where: { locale: "vi", report: where },
           orderBy: { title: sort === "za" ? "desc" : "asc" },
           take,
-          select: { report: { include } },
+          select: { report: { select: cardSelect } },
         });
         return trs.map((t) => t.report);
       }
@@ -426,7 +452,7 @@ export async function searchReports(opts: {
         orderBy:
           sort === "date-asc" ? [{ publishedAt: "asc" }, { id: "asc" }] : [{ publishedAt: "desc" }, { id: "desc" }],
         take, // grow-on-"load more" (accumulate from the top), no cursor
-        include,
+        select: cardSelect,
       });
     };
     const [byType, byRec, byTier, count, rows] = await Promise.all([
