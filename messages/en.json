@@ -34,7 +34,8 @@
     "settings": "Settings",
     "signOut": "Sign out",
     "admin": "Admin",
-    "watchlist": "Watchlist"
+    "watchlist": "Watchlist",
+    "research": "Research"
   },
   "Actions": {
     "signIn": "Sign in",
@@ -629,5 +630,28 @@
   "ReportTier": {
     "FULL": "Full report",
     "FLASH": "Flash note"
+  },
+  "Research": {
+    "title": "Proprietary Indicators",
+    "description": "Aggregated market indicators, sourced from the cloud data feed.",
+    "mockNotice": "Illustrative (mock) data — switches to the live API once the data source is configured.",
+    "asOf": "As of {date}",
+    "sourceLabel": "Source: {source}",
+    "kpi": {
+      "vnindex": "VN-Index",
+      "liquidity": "Liquidity",
+      "foreignNet": "Foreign net",
+      "pe": "Market P/E"
+    },
+    "series": {
+      "vnindex": "VN-Index",
+      "liquidity": "Market liquidity",
+      "foreignNet": "Foreign net flow"
+    },
+    "range": {
+      "1M": "1M",
+      "3M": "3M",
+      "1Y": "1Y"
+    }
   }
 }

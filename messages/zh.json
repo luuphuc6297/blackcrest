@@ -34,7 +34,8 @@
     "settings": "设置",
     "signOut": "退出登录",
     "admin": "管理",
-    "watchlist": "关注列表"
+    "watchlist": "关注列表",
+    "research": "研究"
   },
   "Actions": {
     "signIn": "登录",
@@ -629,5 +630,28 @@
   "ReportTier": {
     "FULL": "完整报告",
     "FLASH": "快讯"
+  },
+  "Research": {
+    "title": "自有指标",
+    "description": "聚合市场指标，来自云端数据源。",
+    "mockNotice": "示例（模拟）数据 — 配置数据源后将切换到实时 API。",
+    "asOf": "更新于 {date}",
+    "sourceLabel": "来源：{source}",
+    "kpi": {
+      "vnindex": "VN指数",
+      "liquidity": "流动性",
+      "foreignNet": "外资净额",
+      "pe": "市场市盈率"
+    },
+    "series": {
+      "vnindex": "VN指数",
+      "liquidity": "市场流动性",
+      "foreignNet": "外资净流向"
+    },
+    "range": {
+      "1M": "1月",
+      "3M": "3月",
+      "1Y": "1年"
+    }
   }
 }

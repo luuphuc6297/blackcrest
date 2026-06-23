@@ -34,7 +34,8 @@
     "settings": "Cài đặt",
     "signOut": "Đăng xuất",
     "admin": "Quản trị",
-    "watchlist": "Danh mục theo dõi"
+    "watchlist": "Danh mục theo dõi",
+    "research": "Nghiên cứu"
   },
   "Actions": {
     "signIn": "Đăng nhập",
@@ -629,5 +630,28 @@
   "ReportTier": {
     "FULL": "Báo cáo đầy đủ",
     "FLASH": "Nhận định nhanh"
+  },
+  "Research": {
+    "title": "Chỉ báo độc quyền",
+    "description": "Bảng chỉ báo thị trường tổng hợp, lấy từ nguồn dữ liệu đám mây.",
+    "mockNotice": "Dữ liệu minh hoạ (mock) — sẽ thay bằng API thật khi cấu hình nguồn dữ liệu.",
+    "asOf": "Cập nhật: {date}",
+    "sourceLabel": "Nguồn: {source}",
+    "kpi": {
+      "vnindex": "VN-Index",
+      "liquidity": "Thanh khoản",
+      "foreignNet": "Khối ngoại ròng",
+      "pe": "P/E thị trường"
+    },
+    "series": {
+      "vnindex": "VN-Index",
+      "liquidity": "Thanh khoản thị trường",
+      "foreignNet": "Giao dịch khối ngoại"
+    },
+    "range": {
+      "1M": "1 tháng",
+      "3M": "3 tháng",
+      "1Y": "1 năm"
+    }
   }
 }
