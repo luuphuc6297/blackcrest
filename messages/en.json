@@ -480,7 +480,8 @@
     "uploadAttachments": "Attachments (Excel/Word)",
     "uploadAttachmentsHint": "Optional · .xlsx .xls .docx .doc",
     "uploadAttachmentsCount": "{n} attachment(s) selected",
-    "uploadFileCounter": "File {i}/{n}"
+    "uploadFileCounter": "File {i}/{n}",
+    "uploadTooManyFiles": "Up to {max} files at a time."
   },
   "Errors": {
     "systemError": "System error",

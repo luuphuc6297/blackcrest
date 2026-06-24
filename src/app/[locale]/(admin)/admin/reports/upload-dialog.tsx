@@ -15,6 +15,10 @@ import {
   type UploadMeta,
 } from "@/lib/chunked-upload";
 
+/** Cap a single batch so an accidental "select all" can't spawn thousands of
+ *  sequential upload sessions. */
+const MAX_BATCH_FILES = 50;
+
 /**
  * Admin "upload report" dialog — resumable chunked upload (Upload Flow).
  * Supports MULTIPLE PDFs in one go (each becomes its own DRAFT report; the title
@@ -102,8 +106,15 @@ export function UploadReportDialog({
           body: af,
           signal,
         });
-        if (!res.ok) ok = false;
-      } catch {
+        if (!res.ok) {
+          ok = false;
+          console.error(`[upload] attachment "${att.name}" failed: ${res.status}`);
+        }
+      } catch (err) {
+        // A cancel aborts the fetch — re-throw so the main handler reports
+        // "canceled" instead of swallowing it into a "secondary step failed" toast.
+        if (err instanceof DOMException && err.name === "AbortError") throw err;
+        console.error(`[upload] attachment "${att.name}" failed:`, err);
         ok = false;
       }
     }
@@ -129,6 +140,8 @@ export function UploadReportDialog({
     const fErrs: { file?: string; titleVi?: string } = {};
     if (files.length === 0) {
       fErrs.file = t("uploadFileRequired");
+    } else if (files.length > MAX_BATCH_FILES) {
+      fErrs.file = t("uploadTooManyFiles", { max: MAX_BATCH_FILES });
     } else {
       const tooBig = files.find((f) => f.size > MAX_UPLOAD_BYTES);
       const notPdf = files.find((f) => f.type && f.type !== "application/pdf");
@@ -207,7 +220,9 @@ export function UploadReportDialog({
       });
       router.refresh();
     } catch (err) {
-      if (err instanceof UploadCanceledError) {
+      // controller.signal.aborted covers a cancel that surfaced as any error type
+      // (e.g. a fetch AbortError from the attachment step), not just UploadCanceledError.
+      if (err instanceof UploadCanceledError || controller.signal.aborted) {
         setError(t("uploadCanceled"));
       } else {
         setError(mapError(err instanceof Error ? err.message : "unknown"));

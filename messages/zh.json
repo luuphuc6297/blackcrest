@@ -480,7 +480,8 @@
     "uploadAttachments": "附件（Excel/Word）",
     "uploadAttachmentsHint": "可选 · .xlsx .xls .docx .doc",
     "uploadAttachmentsCount": "已选择 {n} 个附件",
-    "uploadFileCounter": "文件 {i}/{n}"
+    "uploadFileCounter": "文件 {i}/{n}",
+    "uploadTooManyFiles": "每次最多 {max} 个文件。"
   },
   "Errors": {
     "systemError": "系统错误",

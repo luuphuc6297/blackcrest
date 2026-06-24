@@ -480,7 +480,8 @@
     "uploadAttachments": "Tệp đính kèm (Excel/Word)",
     "uploadAttachmentsHint": "Không bắt buộc · .xlsx .xls .docx .doc",
     "uploadAttachmentsCount": "Đã chọn {n} tệp đính kèm",
-    "uploadFileCounter": "Tệp {i}/{n}"
+    "uploadFileCounter": "Tệp {i}/{n}",
+    "uploadTooManyFiles": "Tối đa {max} tệp một lượt."
   },
   "Errors": {
     "systemError": "Lỗi hệ thống",
