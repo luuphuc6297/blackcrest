@@ -99,7 +99,6 @@ export function UploadReportDialog({
     else if (f.size > MAX_UPLOAD_BYTES) fErrs.file = t("uploadTooLarge");
     else if (f.type && f.type !== "application/pdf") fErrs.file = t("uploadNotPdf");
     if (!titleVi) fErrs.titleVi = t("fieldRequired");
-    if (!categoryId) fErrs.categoryId = t("fieldRequired");
     if (Object.keys(fErrs).length > 0) {
       setFieldErrors(fErrs);
       setError(null);
@@ -295,8 +294,7 @@ export function UploadReportDialog({
             <Select
               label={t("fieldCategory")}
               name="categoryId"
-              required
-              defaultValue=""
+              defaultValue={categories[0]?.id ?? ""}
               disabled={busy}
               error={fieldErrors.categoryId}
               onChange={() =>
