@@ -294,16 +294,15 @@ export function UploadReportDialog({
             <Select
               label={t("fieldCategory")}
               name="categoryId"
-              defaultValue={categories[0]?.id ?? ""}
+              defaultValue=""
               disabled={busy}
               error={fieldErrors.categoryId}
               onChange={() =>
                 setFieldErrors((p) => ({ ...p, categoryId: undefined }))
               }
             >
-              <option value="" disabled>
-                {t("selectPlaceholder")}
-              </option>
+              {/* Selectable (not disabled): leaving this = "Chưa phân loại" (UNKNOWN) */}
+              <option value="">{t("fieldCategoryNone")}</option>
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.label}

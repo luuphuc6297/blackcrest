@@ -64,12 +64,35 @@ export async function initUploadSession(input: InitInput): Promise<InitResult> {
   if (!parsedMeta.success) {
     return { ok: false, status: 400, error: "meta" };
   }
-  // Category must exist up-front (clearer than failing only at finalize).
-  const category = await prisma.category.findUnique({
-    where: { id: parsedMeta.data.categoryId },
-    select: { id: true },
-  });
-  if (!category) return { ok: false, status: 400, error: "category" };
+  // Category is OPTIONAL. A chosen id must exist; an EMPTY choice maps to the
+  // shared "Chưa phân loại" (UNKNOWN) category (find-or-create). The RESOLVED id
+  // is persisted into the session meta so finalize creates the report with it.
+  const wantedCategoryId = parsedMeta.data.categoryId.trim();
+  let categoryId: string;
+  if (wantedCategoryId) {
+    const category = await prisma.category.findUnique({
+      where: { id: wantedCategoryId },
+      select: { id: true },
+    });
+    if (!category) return { ok: false, status: 400, error: "category" };
+    categoryId = category.id;
+  } else {
+    const unknown = await prisma.category.upsert({
+      where: { slug: "chua-phan-loai" },
+      update: {},
+      create: {
+        slug: "chua-phan-loai",
+        kind: "THEMATIC",
+        nameVi: "Chưa phân loại",
+        nameEn: "Uncategorized",
+        nameZh: "未分类",
+        sortOrder: 99,
+      },
+      select: { id: true },
+    });
+    categoryId = unknown.id;
+  }
+  const resolvedMeta = { ...parsedMeta.data, categoryId };
 
   // Resume: an OPEN session for the same user + content + size already in flight.
   const open = await prisma.uploadSession.findFirst({
@@ -95,7 +118,7 @@ export async function initUploadSession(input: InitInput): Promise<InitResult> {
       chunkSize: CHUNK_SIZE,
       sha256: sha256.toLowerCase(),
       status: "OPEN",
-      meta: parsedMeta.data,
+      meta: resolvedMeta,
       expiresAt: new Date(Date.now() + SESSION_TTL_MS),
     },
     select: { id: true },

@@ -473,7 +473,8 @@
     "actionTagsTitle": "标记证券代码",
     "actionTagsBody": "输入证券代码，用逗号或空格分隔。第一个为主要代码。",
     "fieldTickers": "证券代码（可选）",
-    "uploadTagFailed": "已上传，但标记代码失败 — 请在文档表中重新标记。"
+    "uploadTagFailed": "已上传，但标记代码失败 — 请在文档表中重新标记。",
+    "fieldCategoryNone": "— 未分类 —"
   },
   "Errors": {
     "systemError": "系统错误",

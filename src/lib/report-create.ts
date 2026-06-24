@@ -18,7 +18,9 @@ import { getStorage } from "@/lib/storage";
  */
 
 export const reportMetaSchema = z.object({
-  categoryId: z.string().cuid(),
+  // Optional: an empty choice is resolved to the "Chưa phân loại" (UNKNOWN)
+  // category by initUploadSession. A non-empty value must be a real category id.
+  categoryId: z.string().trim().default(""),
   accessLevel: z.enum(["PUBLIC", "RESTRICTED"]),
   // NOTE: no `status` here on purpose. An upload ALWAYS creates a DRAFT —
   // publishing is a separate APPROVER decision (separation of duties). This
