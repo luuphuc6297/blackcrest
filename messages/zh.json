@@ -474,7 +474,13 @@
     "actionTagsBody": "输入证券代码，用逗号或空格分隔。第一个为主要代码。",
     "fieldTickers": "证券代码（可选）",
     "uploadTagFailed": "已上传，但标记代码失败 — 请在文档表中重新标记。",
-    "fieldCategoryNone": "— 未分类 —"
+    "fieldCategoryNone": "— 未分类 —",
+    "uploadMultiNote": "{n} 个 PDF 文件 — 每个生成一份草稿报告（标题取自文件名）。",
+    "uploadSuccessMulti": "已上传 {n} 份报告（草稿）。",
+    "uploadAttachments": "附件（Excel/Word）",
+    "uploadAttachmentsHint": "可选 · .xlsx .xls .docx .doc",
+    "uploadAttachmentsCount": "已选择 {n} 个附件",
+    "uploadFileCounter": "文件 {i}/{n}"
   },
   "Errors": {
     "systemError": "系统错误",

@@ -474,7 +474,13 @@
     "actionTagsBody": "Nhập các mã, cách nhau bằng dấu phẩy hoặc khoảng trắng. Mã đầu tiên là mã chính.",
     "fieldTickers": "Mã chứng khoán (không bắt buộc)",
     "uploadTagFailed": "Đã tải lên, nhưng gắn mã thất bại — hãy gắn lại trong bảng tài liệu.",
-    "fieldCategoryNone": "— Chưa phân loại —"
+    "fieldCategoryNone": "— Chưa phân loại —",
+    "uploadMultiNote": "{n} tệp PDF — mỗi tệp sẽ tạo một báo cáo nháp riêng (tiêu đề lấy từ tên tệp).",
+    "uploadSuccessMulti": "Đã tải lên {n} báo cáo (trạng thái Nháp).",
+    "uploadAttachments": "Tệp đính kèm (Excel/Word)",
+    "uploadAttachmentsHint": "Không bắt buộc · .xlsx .xls .docx .doc",
+    "uploadAttachmentsCount": "Đã chọn {n} tệp đính kèm",
+    "uploadFileCounter": "Tệp {i}/{n}"
   },
   "Errors": {
     "systemError": "Lỗi hệ thống",

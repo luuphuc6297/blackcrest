@@ -474,7 +474,13 @@
     "actionTagsBody": "Enter tickers separated by commas or spaces. The first is the primary one.",
     "fieldTickers": "Tickers (optional)",
     "uploadTagFailed": "Uploaded, but tagging failed — re-tag from the reports table.",
-    "fieldCategoryNone": "— Uncategorized —"
+    "fieldCategoryNone": "— Uncategorized —",
+    "uploadMultiNote": "{n} PDF files — each becomes its own draft report (title taken from the file name).",
+    "uploadSuccessMulti": "Uploaded {n} reports (Draft).",
+    "uploadAttachments": "Attachments (Excel/Word)",
+    "uploadAttachmentsHint": "Optional · .xlsx .xls .docx .doc",
+    "uploadAttachmentsCount": "{n} attachment(s) selected",
+    "uploadFileCounter": "File {i}/{n}"
   },
   "Errors": {
     "systemError": "System error",
