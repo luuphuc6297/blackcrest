@@ -1,8 +1,4 @@
-import { getTranslations, setRequestLocale } from "next-intl/server";
-import { getSession } from "@/auth";
-import { AppShell } from "@/components/app-shell";
-import { LanguageSwitcher } from "@/components/language-switcher";
-import { portalNav } from "@/lib/nav";
+import { setRequestLocale } from "next-intl/server";
 import { getIndicatorDashboard } from "@/lib/indicators";
 import { type IndicatorRange, INDICATOR_RANGES } from "@/lib/indicators-types";
 import { IndicatorDashboard } from "./indicator-dashboard.client";
@@ -28,27 +24,11 @@ export default async function ResearchPage({
     ? (rangeParam as IndicatorRange)
     : "3M";
 
-  const session = await getSession();
-  const user = session!.user;
-  const userName = user.name ?? user.email ?? "Nhà đầu tư";
-
-  const [tNav, tRoles, data] = await Promise.all([
-    getTranslations("Nav"),
-    getTranslations("Roles"),
-    getIndicatorDashboard(range),
-  ]);
+  const data = await getIndicatorDashboard(range);
 
   return (
-    <AppShell
-      nav={portalNav(tNav)}
-      activeKey="research"
-      user={{ name: userName, role: tRoles(user.role) }}
-      title={tNav("research")}
-      actions={<LanguageSwitcher />}
-    >
-      <div className="mx-auto max-w-[1180px] px-4 py-6 sm:px-7">
-        <IndicatorDashboard data={data} locale={locale} />
-      </div>
-    </AppShell>
+    <div className="mx-auto max-w-[1180px] px-4 py-6 sm:px-7">
+      <IndicatorDashboard data={data} locale={locale} />
+    </div>
   );
 }

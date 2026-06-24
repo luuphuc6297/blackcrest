@@ -1,11 +1,8 @@
 import type { ReactNode } from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getSession } from "@/auth";
-import { AppShell } from "@/components/app-shell";
-import { LanguageSwitcher } from "@/components/language-switcher";
 import { searchReports, listReportSections, type ReportSort } from "@/lib/authz";
 import { listWatchableSymbols } from "@/server/watchlist";
-import { portalNav } from "@/lib/nav";
 import { LibraryGrid } from "./library-grid";
 import { SectionsView, type ViewSection } from "./sections-view";
 
@@ -33,12 +30,6 @@ export default async function ReportsPage({
 
   const session = await getSession();
   const user = session!.user;
-  const userName = user.name ?? user.email ?? "Nhà đầu tư";
-
-  const [tNav, tRoles] = await Promise.all([
-    getTranslations("Nav"),
-    getTranslations("Roles"),
-  ]);
 
   const filters = {
     q: one("q"),
@@ -54,15 +45,7 @@ export default async function ReportsPage({
   );
 
   const shell = (body: ReactNode) => (
-    <AppShell
-      nav={portalNav(tNav)}
-      activeKey="documents"
-      user={{ name: userName, role: tRoles(user.role) }}
-      title={tNav("documents")}
-      actions={<LanguageSwitcher />}
-    >
-      <div className="mx-auto max-w-[1440px] px-4 py-6 sm:px-7">{body}</div>
-    </AppShell>
+    <div className="mx-auto max-w-[1440px] px-4 py-6 sm:px-7">{body}</div>
   );
 
   if (!showGrid) {

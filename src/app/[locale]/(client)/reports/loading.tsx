@@ -1,12 +1,10 @@
-import { AppShellSkeleton, LibraryGridSkeleton } from "@/components/skeleton";
+import { LibraryGridSkeleton } from "@/components/skeleton";
 
-// Shown the instant the library route is entered, while the (force-dynamic) page
-// streams its data — replaces the previous "frozen old page" wait with an
-// immediate shell + card-grid skeleton.
+// Content-only skeleton for the library (shell is persistent in the layout).
 export default function ReportsLoading() {
   return (
-    <AppShellSkeleton>
+    <div className="mx-auto max-w-[1440px] px-4 py-6 sm:px-7">
       <LibraryGridSkeleton />
-    </AppShellSkeleton>
+    </div>
   );
 }

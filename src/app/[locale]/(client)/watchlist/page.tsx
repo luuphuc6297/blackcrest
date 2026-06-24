@@ -1,8 +1,5 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getSession } from "@/auth";
-import { AppShell } from "@/components/app-shell";
-import { LanguageSwitcher } from "@/components/language-switcher";
-import { portalNav } from "@/lib/nav";
 import { countVisibleReportsBySymbols } from "@/lib/authz";
 import { getMyWatchlist, listWatchableSymbols } from "@/server/watchlist";
 import { WatchlistManager } from "./watchlist-manager";
@@ -20,13 +17,8 @@ export default async function WatchlistPage({
 
   const session = await getSession();
   const user = session!.user;
-  const userName = user.name ?? user.email ?? "Nhà đầu tư";
 
-  const [tNav, tRoles, t] = await Promise.all([
-    getTranslations("Nav"),
-    getTranslations("Roles"),
-    getTranslations("Watchlist"),
-  ]);
+  const t = await getTranslations("Watchlist");
 
   const [watched, allSymbols] = await Promise.all([
     getMyWatchlist(user.id),
@@ -40,22 +32,14 @@ export default async function WatchlistPage({
   const watchedWithCounts = watched.map((w) => ({ ...w, reportCount: counts[w.id] ?? 0 }));
 
   return (
-    <AppShell
-      nav={portalNav(tNav)}
-      activeKey="watchlist"
-      user={{ name: userName, role: tRoles(user.role) }}
-      title={tNav("watchlist")}
-      actions={<LanguageSwitcher />}
-    >
-      <div className="mx-auto max-w-[900px] px-4 py-6 sm:px-7">
-        <div className="mb-6">
-          <h2 className="bc-display text-[26px] text-ink">{t("title")}</h2>
-          <p className="mt-[6px] max-w-[58ch] text-small leading-relaxed text-ink-3">
-            {t("description")}
-          </p>
-        </div>
-        <WatchlistManager watched={watchedWithCounts} allSymbols={allSymbols} locale={locale} />
+    <div className="mx-auto max-w-[900px] px-4 py-6 sm:px-7">
+      <div className="mb-6">
+        <h2 className="bc-display text-[26px] text-ink">{t("title")}</h2>
+        <p className="mt-[6px] max-w-[58ch] text-small leading-relaxed text-ink-3">
+          {t("description")}
+        </p>
       </div>
-    </AppShell>
+      <WatchlistManager watched={watchedWithCounts} allSymbols={allSymbols} locale={locale} />
+    </div>
   );
 }
