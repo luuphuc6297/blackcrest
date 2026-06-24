@@ -23,7 +23,7 @@ vi.mock("next-intl/server", () => ({
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     report: { findUnique: vi.fn() },
-    reportNotification: { create: vi.fn() },
+    reportNotification: { createMany: vi.fn() },
   },
 }));
 
@@ -60,13 +60,16 @@ describe("notifier — notifyReportPublished", () => {
     vi.mocked(prisma.report.findUnique).mockResolvedValue(REPORT as never);
     vi.mocked(listWatchersToNotify).mockResolvedValue([WATCHER]);
     vi.mocked(sendMail).mockResolvedValue({ delivered: false }); // console fallback
+    vi.mocked(prisma.reportNotification.createMany).mockResolvedValue({ count: 1 });
 
     const res = await getNotifier().notifyReportPublished("r1");
 
     expect(res).toEqual({ notified: 1 });
     expect(sendMail).toHaveBeenCalledOnce();
-    expect(prisma.reportNotification.create).toHaveBeenCalledWith({
-      data: { reportId: "r1", userId: "u1", channel: "EMAIL" },
+    // Sends are recorded in ONE batched createMany (skipDuplicates is the guard).
+    expect(prisma.reportNotification.createMany).toHaveBeenCalledWith({
+      data: [{ reportId: "r1", userId: "u1", channel: "EMAIL" }],
+      skipDuplicates: true,
     });
     expect(logAudit).toHaveBeenCalledWith(
       expect.objectContaining({ action: "REPORT_NOTIFY", targetId: "r1" }),
@@ -82,7 +85,7 @@ describe("notifier — notifyReportPublished", () => {
     const res = await getNotifier().notifyReportPublished("r1");
 
     expect(res).toEqual({ notified: 0 });
-    expect(prisma.reportNotification.create).not.toHaveBeenCalled();
+    expect(prisma.reportNotification.createMany).not.toHaveBeenCalled();
     expect(logAudit).not.toHaveBeenCalled();
   });
 

@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { auth } from "@/auth";
+import { getSession } from "@/auth";
 import { AppShell } from "@/components/app-shell";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { searchReports, listReportSections, type ReportSort } from "@/lib/authz";
@@ -31,7 +31,7 @@ export default async function ReportsPage({
   const sp = await searchParams;
   const one = (k: string) => (Array.isArray(sp[k]) ? sp[k][0] : sp[k]) as string | undefined;
 
-  const session = await auth();
+  const session = await getSession();
   const user = session!.user;
   const userName = user.name ?? user.email ?? "Nhà đầu tư";
 

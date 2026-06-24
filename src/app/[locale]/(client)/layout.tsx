@@ -1,4 +1,4 @@
-import { auth } from "@/auth";
+import { getSession } from "@/auth";
 import { redirect } from "@/i18n/navigation";
 
 // Auth-gated + per-user data → always render per request (never prerender/cache).
@@ -16,7 +16,7 @@ export default async function ClientLayout({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const session = await auth();
+  const session = await getSession();
   if (!session?.user) redirect({ href: "/login", locale });
   return <>{children}</>;
 }

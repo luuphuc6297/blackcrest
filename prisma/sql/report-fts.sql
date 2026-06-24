@@ -18,19 +18,17 @@ CREATE OR REPLACE FUNCTION f_unaccent(text) RETURNS text
   SET search_path = public, pg_catalog
   AS $func$ SELECT public.unaccent('public.unaccent', $1) $func$;
 
--- Precompute the diacritic-folded tsvector ONCE per row and store it. Without
--- this, ts_rank() and the bitmap recheck recompute to_tsvector() over the (large)
--- extracted PDF text for every matched row — ~12s for a common term. Reading the
--- stored vector instead drops the same query to a few ms.
-ALTER TABLE "Report"
-  ADD COLUMN IF NOT EXISTS "contentTsv" tsvector
-  GENERATED ALWAYS AS (to_tsvector('simple', f_unaccent(coalesce("contentText", '')))) STORED;
+-- DEAD full-body FTS apparatus — REMOVED (AUDIT-perf-e2e-2026-06-24).
+-- src/lib/search.ts ranks against the SMALL per-translation "searchTsv" below,
+-- never the full-PDF-body "contentTsv" (ranking the body seq-scanned ~200MB for
+-- common terms → ~15s, which is exactly why the search was moved to searchTsv).
+-- The generated "contentTsv" column + its ~91MB GIN were still recomputed on every
+-- ingest insert/update for nothing. Drop both — idempotent; drop the GIN before
+-- the column it depends on.
+DROP INDEX IF EXISTS report_contenttsv_gin;
+ALTER TABLE "Report" DROP COLUMN IF EXISTS "contentTsv";
 
--- GIN over the stored vector. The query in src/lib/search.ts matches AND ranks
--- against "contentTsv" directly so nothing is recomputed at query time.
-CREATE INDEX IF NOT EXISTS report_contenttsv_gin ON "Report" USING GIN ("contentTsv");
-
--- Superseded by the stored-column index above.
+-- Superseded long ago by the per-translation searchTsv index.
 DROP INDEX IF EXISTS report_contenttext_fts;
 
 -- "Small search vector": title + summary + author per ReportTranslation. The

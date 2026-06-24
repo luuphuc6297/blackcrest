@@ -1,11 +1,11 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { auth } from "@/auth";
+import { getSession } from "@/auth";
 import { AppShell } from "@/components/app-shell";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { portalNav } from "@/lib/nav";
 import { getIndicatorDashboard } from "@/lib/indicators";
 import { type IndicatorRange, INDICATOR_RANGES } from "@/lib/indicators-types";
-import { IndicatorDashboardView } from "./indicator-dashboard";
+import { IndicatorDashboard } from "./indicator-dashboard.client";
 
 // Market data is global + cached in the seam (unstable_cache), but the page is a
 // gated portal route — render per-request so auth always runs.
@@ -28,7 +28,7 @@ export default async function ResearchPage({
     ? (rangeParam as IndicatorRange)
     : "3M";
 
-  const session = await auth();
+  const session = await getSession();
   const user = session!.user;
   const userName = user.name ?? user.email ?? "Nhà đầu tư";
 
@@ -47,7 +47,7 @@ export default async function ResearchPage({
       actions={<LanguageSwitcher />}
     >
       <div className="mx-auto max-w-[1180px] px-4 py-6 sm:px-7">
-        <IndicatorDashboardView data={data} locale={locale} />
+        <IndicatorDashboard data={data} locale={locale} />
       </div>
     </AppShell>
   );

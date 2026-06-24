@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
-import { auth } from "@/auth";
+import { getSession } from "@/auth";
 import { getReportBySlug } from "@/server/reports";
 import { getWatchedSymbolIds } from "@/server/watchlist";
 import { listReportAttachments } from "@/server/attachments";
@@ -29,10 +29,17 @@ export default async function ReportViewerPage({
   const { locale, slug } = await params;
   setRequestLocale(locale);
 
-  const session = await auth();
+  const session = await getSession();
   // (client) layout already guards, but never trust the middleware.
   if (!session?.user) notFound();
   const user = session.user;
+
+  // Watched-symbol ids depend only on user.id (never on the report), so start
+  // that read concurrently with the report fetch — it overlaps the round-trip
+  // instead of adding a serial one. Staff have no watchlist → skip the query.
+  const watchedIdsPromise = isStaff(user.role)
+    ? Promise.resolve<string[]>([])
+    : getWatchedSymbolIds(user.id);
 
   const report = await getReportBySlug(slug, locale, {
     id: user.id,
@@ -49,18 +56,18 @@ export default async function ReportViewerPage({
   // table (their "route quản trị") instead of being dropped on the client library.
   const backHref = isStaff(user.role) ? "/admin/reports" : "/reports";
 
-  // Watch toggles are a client (portal) feature — staff have no watchlist nav, so
-  // only clients get the per-ticker toggle. Mark each ticker with its watch state.
-  const watched = isStaff(user.role)
-    ? new Set<string>()
-    : new Set(await getWatchedSymbolIds(user.id));
+  // report.id is now known → attachments can resolve. Await it together with the
+  // already-in-flight watched ids (F3 read applies the per-file audience gate:
+  // INTERNAL → staff only; all staff may manage via report.upload).
+  const [watchedIds, attachmentRows] = await Promise.all([
+    watchedIdsPromise,
+    listReportAttachments(report.id, user.role),
+  ]);
+  const watched = new Set(watchedIds);
   const watchTickers = isStaff(user.role)
     ? []
     : report.symbols.map((s) => ({ id: s.id, ticker: s.ticker, watching: watched.has(s.id) }));
-
-  // F3 attachments — the read helper applies the per-file audience gate (INTERNAL
-  // → staff only); all staff may manage (report.upload capability).
-  const attachments = (await listReportAttachments(report.id, user.role)).map((a) => ({
+  const attachments = attachmentRows.map((a) => ({
     ...a,
     createdAt: a.createdAt.toISOString(),
   }));

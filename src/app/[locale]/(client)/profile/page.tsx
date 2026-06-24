@@ -1,5 +1,5 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { auth } from "@/auth";
+import { getSession } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { AppShell } from "@/components/app-shell";
 import { LanguageSwitcher } from "@/components/language-switcher";
@@ -19,19 +19,20 @@ export default async function ProfilePage({
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const session = await auth();
+  const session = await getSession();
   const user = session!.user;
 
-  const [tNav, tRoles] = await Promise.all([
+  // Overlap the user DB read with the (in-memory) translation resolution instead
+  // of running it as a serial tail after them.
+  const [tNav, tRoles, tProfile, dbUser] = await Promise.all([
     getTranslations("Nav"),
     getTranslations("Roles"),
+    getTranslations("Profile"),
+    prisma.user.findUnique({
+      where: { id: user.id },
+      select: { name: true, email: true, organization: true },
+    }),
   ]);
-  const tProfile = await getTranslations("Profile");
-
-  const dbUser = await prisma.user.findUnique({
-    where: { id: user.id },
-    select: { name: true, email: true, organization: true },
-  });
 
   const nav = isStaff(user.role) ? adminNav((k) => tNav(k)) : portalNav(tNav);
 

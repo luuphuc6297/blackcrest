@@ -1,3 +1,4 @@
+import { cache } from "react";
 import NextAuth, { CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
@@ -75,3 +76,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
 });
+
+/**
+ * Request-deduped session read for RSC. A single gated request resolves the
+ * session in BOTH the (client)/(admin) layout guard AND the page body; auth()
+ * verifies the JWT (and runs the session callback) on each call. React cache()
+ * collapses those to one resolution per request render. Use this in
+ * layouts/pages/RSC reads; route handlers (one call/request) can use auth() directly.
+ */
+export const getSession = cache(() => auth());

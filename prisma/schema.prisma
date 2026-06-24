@@ -284,11 +284,16 @@ model Report {
   notifications ReportNotification[]
   attachments  ReportAttachment[]
 
-  // Keyset pagination index (publishedAt, id) — blueprint §F2.
-  @@index([status, publishedAt, id])
+  // Keyset pagination index — includes `audience` because the client browse gate
+  // (visibleWhere) ALWAYS filters status='PUBLISHED' AND audience='CLIENT' before
+  // ordering by (publishedAt, id); leading both equality columns lets the index
+  // serve the filter AND the keyset sort in one pass (blueprint §F2).
+  @@index([status, audience, publishedAt, id])
   @@index([categoryId])
   @@index([reportType, publishedAt])
   @@index([recommendation])
+  // Admin Reports table orders by updatedAt desc (take 500) — back it with an index.
+  @@index([updatedAt])
   // Content dedup (Upload Flow). UNIQUE closes the app-level TOCTOU race —
   // Postgres allows multiple NULLs, so file-less drafts are unaffected; the
   // create path catches P2002 and returns the existing report.
@@ -305,6 +310,9 @@ model ReportTranslation {
   report   Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
 
   @@unique([reportId, locale])
+  // Library A–Z / Z–A sort orders by (locale, title); without this btree it is a
+  // full ~5.7k-row seq-scan + external heapsort on every alphabetical sort.
+  @@index([locale, title])
 }
 
 // ─── Entitlements (group → report OR group → category) ───────────────────────

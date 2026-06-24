@@ -1,6 +1,5 @@
 import "server-only";
 import { getTranslations } from "next-intl/server";
-import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { listWatchersToNotify, resolveTranslation } from "@/lib/authz";
 import { watchlistEmailsEnabled } from "@/lib/flags";
@@ -52,41 +51,61 @@ const emailNotifier: Notifier = {
     const tickers = report.symbols.map((s) => s.symbol.ticker).join(" · ");
     const reportUrl = `${getAppUrl()}/${EMAIL_LOCALE}/reports/${report.slug}`;
 
+    // Fan out with BOUNDED concurrency instead of strictly serial: W watchers
+    // previously cost W × (SMTP RTT + DB RTT) end-to-end. Send in parallel batches,
+    // then write the idempotency rows in ONE createMany instead of W inserts.
+    const CONCURRENCY = 8;
+    const sentIds: string[] = [];
+    for (let i = 0; i < watchers.length; i += CONCURRENCY) {
+      const batch = watchers.slice(i, i + CONCURRENCY);
+      const results = await Promise.allSettled(
+        batch.map(async (w) => {
+          const token = w.unsubscribeToken ?? (await getOrCreateUnsubscribeToken(w.id));
+          const email = buildWatchlistEmail({
+            subject: t("subject", { tickers }),
+            heading: t("heading"),
+            intro: t("intro", { name: w.name }),
+            tickers,
+            reportTitle: title,
+            buttonLabel: t("button"),
+            url: reportUrl,
+            unsubscribeNote: t("unsubscribeNote"),
+            unsubscribeLabel: t("unsubscribeLabel"),
+            unsubscribeUrl: unsubscribeUrl(token, EMAIL_LOCALE),
+          });
+          await sendMail({ to: w.email, subject: email.subject, html: email.html, text: email.text });
+          return w.id;
+        }),
+      );
+      for (const r of results) {
+        if (r.status === "fulfilled") sentIds.push(r.value);
+        else
+          console.error(
+            `[notifier] send failed for report ${reportId}:`,
+            r.reason instanceof Error ? r.reason.message : r.reason,
+          );
+      }
+    }
+
+    // Record sends AFTER they succeed, batched. The @@unique([reportId,userId,
+    // channel]) is the durable guard; skipDuplicates makes a concurrent publish /
+    // retry a no-op. AT-LEAST-ONCE preserved: if this write throws (e.g. a pool
+    // timeout) the users were emailed but no rows are written, so a later republish
+    // may email them once more — preferred over silently dropping.
     let notified = 0;
-    for (const w of watchers) {
+    if (sentIds.length > 0) {
       try {
-        const token = w.unsubscribeToken ?? (await getOrCreateUnsubscribeToken(w.id));
-        const email = buildWatchlistEmail({
-          subject: t("subject", { tickers }),
-          heading: t("heading"),
-          intro: t("intro", { name: w.name }),
-          tickers,
-          reportTitle: title,
-          buttonLabel: t("button"),
-          url: reportUrl,
-          unsubscribeNote: t("unsubscribeNote"),
-          unsubscribeLabel: t("unsubscribeLabel"),
-          unsubscribeUrl: unsubscribeUrl(token, EMAIL_LOCALE),
+        const recorded = await prisma.reportNotification.createMany({
+          data: sentIds.map((userId) => ({ reportId: report.id, userId, channel: "EMAIL" })),
+          skipDuplicates: true,
         });
-        await sendMail({ to: w.email, subject: email.subject, html: email.html, text: email.text });
-        // Record the send AFTER it succeeds — a failed send leaves no row, so a
-        // future republish naturally retries it; the @@unique([reportId,userId,
-        // channel]) prevents any double-record. Contract is AT-LEAST-ONCE: if the
-        // send succeeds but this create() throws a non-P2002 error (e.g. a pool
-        // timeout), the user was emailed but no row is written, so a later
-        // republish may email them once more — preferred over silently dropping.
-        await prisma.reportNotification.create({
-          data: { reportId: report.id, userId: w.id, channel: "EMAIL" },
-        });
-        notified++;
+        notified = recorded.count;
       } catch (err) {
-        if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
-          continue; // already recorded by a concurrent publish — fine
-        }
         console.error(
-          `[notifier] failed to notify ${w.id} for report ${reportId}:`,
+          `[notifier] failed to record ${sentIds.length} sends for report ${reportId}:`,
           err instanceof Error ? err.message : err,
         );
+        notified = sentIds.length;
       }
     }
 

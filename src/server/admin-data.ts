@@ -37,7 +37,10 @@ export async function listGroupsWithEntitlements(locale: string) {
       entitlements: {
         include: {
           category: true,
-          report: { include: { translations: true } },
+          // Only the localized title is read below — narrow select avoids pulling
+          // every Report scalar (incl. the @db.Text contentText body) + all-locale
+          // summary/author per entitlement just to render one label string.
+          report: { select: { translations: { select: { locale: true, title: true } } } },
         },
       },
     },

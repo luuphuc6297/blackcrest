@@ -1,12 +1,13 @@
 import type { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { canViewReport } from "@/lib/authz";
+import { reportVisibilityWhere } from "@/lib/authz";
 import { consumeDownloadToken } from "@/lib/download-token";
 import { resolveStreamKey } from "@/lib/watermark";
 import { getStorage, webStream } from "@/lib/storage";
 import { logReportAccess } from "@/lib/audit";
 
 export const runtime = "nodejs";
+export const maxDuration = 60;
 
 function clientIp(req: NextRequest): string {
   return (
@@ -42,25 +43,23 @@ export async function GET(
     return new Response("Forbidden", { status: 403 });
   }
 
-  const report = await prisma.report.findUnique({
-    where: { id },
+  // Report fetch with the entitlement gate folded in (one query, not
+  // findUnique-then-canViewReport on the same row). null = missing or not entitled.
+  const report = await prisma.report.findFirst({
+    where: { id, ...reportVisibilityWhere(user.id, user.role) },
     select: { id: true, slug: true, fileKey: true },
   });
   if (!report) return new Response("Not found", { status: 404 });
 
-  if (!(await canViewReport(user.id, user.role, id))) {
-    return new Response("Forbidden", { status: 403 });
-  }
-
-  const key = await resolveStreamKey(
+  const target = await resolveStreamKey(
     report,
     { id: user.id, email: user.email },
     clientIp(req),
   );
-  if (!key) return new Response("Tài liệu chưa có tệp PDF.", { status: 404 });
+  if (!target) return new Response("Tài liệu chưa có tệp PDF.", { status: 404 });
+  const { key, size } = target;
 
   const storage = getStorage();
-  const { size } = await storage.stat(key);
 
   void logReportAccess({
     userId: user.id,

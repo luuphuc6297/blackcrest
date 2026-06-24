@@ -1,5 +1,5 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { auth } from "@/auth";
+import { getSession } from "@/auth";
 import { can } from "@/lib/permissions";
 import { AppShell } from "@/components/app-shell";
 import { Badge } from "@/components/ui";
@@ -19,7 +19,7 @@ export default async function AdminAccountsPage({
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const session = await auth();
+  const session = await getSession();
   const user = session!.user;
 
   const [tNav, tRoles] = await Promise.all([

@@ -307,6 +307,22 @@ html[data-radius="round"] {
   animation: bc-rise 480ms var(--ease-out-quint) both;
 }
 
+/* Staggered row entrance for data tables — CSS-only (static nth-child) so the
+ * table doesn't allocate a fresh inline `animationDelay` style object per row on
+ * every render/sort/filter. Caps the stagger at the 11th row (matches the old
+ * JS `Math.min(i,10) * 35ms`); later rows share the final delay. */
+.bc-rise-rows > .bc-rise:nth-child(1) { animation-delay: 0ms; }
+.bc-rise-rows > .bc-rise:nth-child(2) { animation-delay: 35ms; }
+.bc-rise-rows > .bc-rise:nth-child(3) { animation-delay: 70ms; }
+.bc-rise-rows > .bc-rise:nth-child(4) { animation-delay: 105ms; }
+.bc-rise-rows > .bc-rise:nth-child(5) { animation-delay: 140ms; }
+.bc-rise-rows > .bc-rise:nth-child(6) { animation-delay: 175ms; }
+.bc-rise-rows > .bc-rise:nth-child(7) { animation-delay: 210ms; }
+.bc-rise-rows > .bc-rise:nth-child(8) { animation-delay: 245ms; }
+.bc-rise-rows > .bc-rise:nth-child(9) { animation-delay: 280ms; }
+.bc-rise-rows > .bc-rise:nth-child(10) { animation-delay: 315ms; }
+.bc-rise-rows > .bc-rise:nth-child(n + 11) { animation-delay: 350ms; }
+
 /* Global reduced-motion guard (a11y): near-instant for any animation/transition,
  * so Dialog pop, Toast slide, spinners, reveals and hover all respect the setting. */
 @media (prefers-reduced-motion: reduce) {

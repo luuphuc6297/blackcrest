@@ -35,6 +35,17 @@ export async function canViewReport(
   return hit !== null;
 }
 
+/** Visibility WHERE for a given role+user, ready to spread into a report query.
+ * Staff → {} (no restriction); clients → the entitlement/audience gate. Lets a
+ * caller that is ALREADY fetching the report fold the canViewReport() check into
+ * that same query instead of issuing a second findFirst on the same row. */
+export function reportVisibilityWhere(
+  userId: string,
+  role: Role,
+): Prisma.ReportWhereInput {
+  return isStaff(role) ? {} : visibleWhere(userId);
+}
+
 /** The reusable WHERE fragment for "reports this client may see".
  * LOCKSTEP: listWatchersToNotify() below mirrors this exact predicate (audience +
  * entitlement) as a USER/report filter — any change here (new entitlement path,
@@ -178,7 +189,7 @@ export async function listVisibleReports(opts: {
 
   const rows = await prisma.report.findMany({
     where,
-    orderBy: [{ publishedAt: "desc" }, { id: "desc" }],
+    orderBy: [{ publishedAt: { sort: "desc", nulls: "first" } }, { id: "desc" }],
     take: take + 1,
     ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
     // SELECT (not include) — never pull the heavy `contentText` body for a list.
@@ -319,7 +330,7 @@ export async function listReportSections(opts: {
   // "Latest" row plus the per-type sections, then bucketed below.
   const pool = await prisma.report.findMany({
     where,
-    orderBy: [{ publishedAt: "desc" }, { id: "desc" }],
+    orderBy: [{ publishedAt: { sort: "desc", nulls: "first" } }, { id: "desc" }],
     take: Math.max(perSection * 12, 160),
     select: REPORT_CARD_SELECT,
   });
@@ -450,7 +461,7 @@ export async function searchReports(opts: {
       return prisma.report.findMany({
         where,
         orderBy:
-          sort === "date-asc" ? [{ publishedAt: "asc" }, { id: "asc" }] : [{ publishedAt: "desc" }, { id: "desc" }],
+          sort === "date-asc" ? [{ publishedAt: "asc" }, { id: "asc" }] : [{ publishedAt: { sort: "desc", nulls: "first" } }, { id: "desc" }],
         take, // grow-on-"load more" (accumulate from the top), no cursor
         select: cardSelect,
       });
@@ -493,7 +504,10 @@ export async function searchReports(opts: {
 
 /** Resolve a report's display fields with the requested → vi → any fallback. */
 export function resolveTranslation(
-  translations: { locale: string; title: string; summary: string | null; author: string | null }[],
+  // summary/author are optional so callers that only need the title (e.g. the
+  // entitlement dropdown) can `select` just { locale, title } — the body already
+  // falls back to null when they're absent.
+  translations: { locale: string; title: string; summary?: string | null; author?: string | null }[],
   locale: string,
 ) {
   const pick =

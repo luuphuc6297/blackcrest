@@ -1,7 +1,7 @@
 import "server-only";
 import type { Category, Role } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { canViewReport, resolveTranslation } from "@/lib/authz";
+import { reportVisibilityWhere, resolveTranslation } from "@/lib/authz";
 
 export function categoryName(category: Category, locale: string): string {
   if (locale === "en") return category.nameEn;
@@ -15,12 +15,24 @@ export async function getReportBySlug(
   locale: string,
   user: { id: string; role: Role },
 ) {
-  const report = await prisma.report.findUnique({
-    where: { slug },
-    include: {
-      translations: true,
+  // ONE entitlement-gated query: the visibility predicate is folded into the
+  // WHERE (reportVisibilityWhere), so a non-entitled report returns null here
+  // instead of a second canViewReport() findFirst on the same row. `select` (not
+  // `include`) keeps the heavy @db.Text `contentText` body off this hot path.
+  const report = await prisma.report.findFirst({
+    where: { slug, ...reportVisibilityWhere(user.id, user.role) },
+    select: {
+      id: true,
+      slug: true,
+      status: true,
+      accessLevel: true,
+      publishedAt: true,
+      pageCount: true,
+      coverLabel: true,
+      fileKey: true,
       category: true,
       uploadedBy: { select: { name: true } },
+      translations: { select: { locale: true, title: true, summary: true, author: true } },
       symbols: {
         orderBy: { isPrimary: "desc" },
         select: { symbol: { select: { id: true, ticker: true } } },
@@ -28,7 +40,6 @@ export async function getReportBySlug(
     },
   });
   if (!report) return null;
-  if (!(await canViewReport(user.id, user.role, report.id))) return null;
 
   return {
     id: report.id,
@@ -53,9 +64,19 @@ export async function listAdminReports(locale: string) {
   const rows = await prisma.report.findMany({
     orderBy: [{ updatedAt: "desc" }],
     take: 500,
-    include: {
-      translations: true,
+    // SELECT (not include) — never drag the heavy `contentText` body (~8KB/row,
+    // ~22KB/full row) into a 500-row admin list. Same trap REPORT_CARD_SELECT
+    // avoids on the client paths (commit bc8550f); this was the admin leftover.
+    select: {
+      id: true,
+      slug: true,
+      status: true,
+      accessLevel: true,
+      publishedAt: true,
+      updatedAt: true,
+      pageCount: true,
       category: true,
+      translations: { select: { locale: true, title: true, summary: true, author: true } },
       symbols: { orderBy: { isPrimary: "desc" }, select: { symbol: { select: { ticker: true } } } },
     },
   });
@@ -78,7 +99,12 @@ export async function listReportOptions(locale: string) {
   const rows = await prisma.report.findMany({
     orderBy: [{ updatedAt: "desc" }],
     take: 1000,
-    include: { translations: true },
+    // Dropdown needs only { id, title } — narrow select avoids dragging every
+    // Report scalar + all-locale summary/author across the wire for 1000 rows.
+    select: {
+      id: true,
+      translations: { select: { locale: true, title: true } },
+    },
   });
   return rows.map((r) => ({
     id: r.id,

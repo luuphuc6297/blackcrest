@@ -16,11 +16,17 @@ export type WatchableSymbol = {
   nameZh: string | null;
 };
 
-/** All active symbols, for the add-to-watchlist picker (client-filtered). */
+/** All active symbols, for the add-to-watchlist picker (client-filtered).
+ * Bounded by a safety `take`: the whole catalogue is shipped to the client for
+ * in-memory filtering on two high-traffic routes (/reports, /watchlist), so an
+ * unbounded scan + payload would grow with the market. 2000 is generous headroom
+ * over the ~1,600 listed VN tickers; if the catalogue ever approaches it, move
+ * this picker to a server-side typeahead (query on demand by ticker prefix). */
 export async function listWatchableSymbols(): Promise<WatchableSymbol[]> {
   return prisma.symbol.findMany({
     where: { isActive: true },
     orderBy: { ticker: "asc" },
+    take: 2000,
     select: { id: true, ticker: true, nameVi: true, nameEn: true, nameZh: true },
   });
 }

@@ -31,7 +31,16 @@ async function main() {
 
   const reports = await prisma.report.findMany({
     where: { fileKey: { not: null } },
-    include: { translations: true, category: true },
+    // select only what the generator draws — never pull the @db.Text contentText
+    // body (tens of KB/row × thousands of rows held in RAM) just to render a title.
+    select: {
+      slug: true,
+      pageCount: true,
+      coverLabel: true,
+      fileKey: true,
+      category: { select: { nameVi: true } },
+      translations: { select: { locale: true, title: true, author: true } },
+    },
   });
 
   let count = 0;

@@ -1,5 +1,5 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { auth } from "@/auth";
+import { getSession } from "@/auth";
 import { AppShell } from "@/components/app-shell";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { Badge, type BadgeTone, Card, EmptyState, StatCard } from "@/components/ui";
@@ -29,13 +29,15 @@ export default async function PortalPage({
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const session = await auth();
+  const session = await getSession();
   const user = session!.user;
 
-  const t = await getTranslations("Portal");
-  const tNav = await getTranslations("Nav");
-  const tStatus = await getTranslations("Status");
-  const tRoles = await getTranslations("Roles");
+  const [t, tNav, tStatus, tRoles] = await Promise.all([
+    getTranslations("Portal"),
+    getTranslations("Nav"),
+    getTranslations("Status"),
+    getTranslations("Roles"),
+  ]);
 
   const userName = user.name ?? user.email ?? tRoles("CLIENT");
 

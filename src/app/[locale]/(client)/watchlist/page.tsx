@@ -1,5 +1,5 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { auth } from "@/auth";
+import { getSession } from "@/auth";
 import { AppShell } from "@/components/app-shell";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { portalNav } from "@/lib/nav";
@@ -18,7 +18,7 @@ export default async function WatchlistPage({
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const session = await auth();
+  const session = await getSession();
   const user = session!.user;
   const userName = user.name ?? user.email ?? "Nhà đầu tư";
 

@@ -1,5 +1,5 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { auth } from "@/auth";
+import { getSession } from "@/auth";
 import { can } from "@/lib/permissions";
 import { AppShell } from "@/components/app-shell";
 import { adminNav } from "@/lib/nav";
@@ -18,7 +18,7 @@ export default async function AdminReportsPage({
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const session = await auth();
+  const session = await getSession();
   const user = session!.user;
 
   // Row-action permissions, derived from the central PERMISSIONS map so the UI

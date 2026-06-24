@@ -101,7 +101,12 @@ const STATUS_LABEL: Record<ReportStatus, string> = {
  * Renders to <canvas> at devicePixelRatio × zoom (crisp; replaces the old,
  * non-standard CSS `zoom`).
  * ──────────────────────────────────────────────────────────────────────── */
-function PdfPageCanvas({
+// memo: the parent re-renders on every scroll tick (current-page tracking) and
+// maps all N pages. The active-page highlight lives on the WRAPPER div, not here,
+// so these props (doc ref, pageNumber, scale, constant className) are stable —
+// memo keeps a scroll from re-rendering/re-decoding every page. Pages still
+// re-render on a real zoom change (scale changes), which is correct.
+const PdfPageCanvas = React.memo(function PdfPageCanvas({
   doc,
   pageNumber,
   scale,
@@ -186,7 +191,7 @@ function PdfPageCanvas({
       />
     </div>
   );
-}
+});
 
 /* ─────────────────────────────────────────────────────────────────────────
  * Main viewer island.

@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { Badge, Card } from "@/components/ui";
@@ -17,7 +18,17 @@ const recTone = (r: string | null) =>
  * tree without a callback. `safe()` falls back to the raw enum if a label key is
  * missing (next-intl throws on missing keys).
  */
-export function ReportCard({ report: d, locale }: { report: SearchedReport; locale: string }) {
+// memo: the library grid re-renders on every search keystroke / filter toggle,
+// but each card's props (report object ref, locale) are stable across .filter(),
+// so unchanged tiles skip re-render. (Full RSC conversion is a follow-up — the
+// card is shared by both the client grid and the server carousels.)
+export const ReportCard = memo(function ReportCard({
+  report: d,
+  locale,
+}: {
+  report: SearchedReport;
+  locale: string;
+}) {
   const t = useTranslations("Library");
   const tType = useTranslations("ReportType");
   const tRec = useTranslations("Recommendation");
@@ -87,4 +98,4 @@ export function ReportCard({ report: d, locale }: { report: SearchedReport; loca
       </Link>
     </Card>
   );
-}
+});

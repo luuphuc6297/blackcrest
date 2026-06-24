@@ -2,10 +2,12 @@ import "server-only";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { createHash } from "node:crypto";
-import { PDFDocument, degrees, rgb } from "pdf-lib";
-import fontkit from "@pdf-lib/fontkit";
 import { getStorage } from "@/lib/storage";
 import { watermarkEnabled } from "@/lib/flags";
+
+/** Resolved stream target — the key to stream AND its byte size (captured from
+ * the stat/save the resolver already performs, so the route never stat()s again). */
+export type StreamTarget = { key: string; size: number };
 
 /**
  * Per-user PDF watermark (blueprint §F1, §6.6) — NOT DRM, a leak-tracing stamp.
@@ -35,6 +37,13 @@ async function stamp(
   baseBytes: Buffer,
   meta: { email: string; ip: string; when: Date },
 ): Promise<Uint8Array> {
+  // Dynamic-import the heavy pdf-lib/fontkit CJS trees only when a watermark is
+  // actually produced. Watermarking is OFF by default, so the common /view and
+  // /download paths (which import resolveStreamKey from this module) no longer
+  // drag pdf-lib into their cold-start bundle.
+  const { PDFDocument, degrees, rgb } = await import("pdf-lib");
+  const fontkit = (await import("@pdf-lib/fontkit")).default;
+
   const pdf = await PDFDocument.load(baseBytes, { ignoreEncryption: true });
   pdf.registerFontkit(fontkit);
   const font = await pdf.embedFont(await loadFontBytes(), { subset: true });
@@ -87,13 +96,13 @@ export async function getWatermarkedKey(
   report: { id: string; fileKey: string | null },
   user: { id: string; email: string },
   ip: string,
-): Promise<string | null> {
+): Promise<StreamTarget | null> {
   if (!report.fileKey) return null;
   const storage = getStorage();
 
   const key = watermarkKey(report.id, user.id);
   const cached = await storage.stat(key);
-  if (cached.exists) return key;
+  if (cached.exists) return { key, size: cached.size };
 
   const base = await storage.stat(report.fileKey);
   if (!base.exists) return null;
@@ -105,7 +114,7 @@ export async function getWatermarkedKey(
     when: new Date(),
   });
   await storage.put(key, stamped);
-  return key;
+  return { key, size: stamped.byteLength };
 }
 
 /**
@@ -118,11 +127,11 @@ export async function resolveStreamKey(
   report: { id: string; fileKey: string | null },
   user: { id: string; email: string },
   ip: string,
-): Promise<string | null> {
+): Promise<StreamTarget | null> {
   if (!report.fileKey) return null;
   if (!watermarkEnabled()) {
     const base = await getStorage().stat(report.fileKey);
-    return base.exists ? report.fileKey : null;
+    return base.exists ? { key: report.fileKey, size: base.size } : null;
   }
   return getWatermarkedKey(report, user, ip);
 }

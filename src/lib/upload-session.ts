@@ -123,7 +123,7 @@ async function loadOwned(sessionId: string, userId: string): Promise<Session | n
 }
 
 export type ChunkResult =
-  | { ok: true; received: number }
+  | { ok: true; index: number }
   | { ok: false; status: number; error: string };
 
 /** Store one chunk. Idempotent: the same index can be re-sent (retry/resume). */
@@ -152,8 +152,10 @@ export async function recordChunk(opts: {
     update: { size: buf.length },
   });
 
-  const received = await prisma.uploadChunk.count({ where: { sessionId } });
-  return { ok: true, received };
+  // No COUNT(*) per chunk PUT: the client derives the received-chunk set from the
+  // init/status response (which returns the full index list) and ignores this
+  // field, so echo the just-recorded index instead of scanning the chunk table.
+  return { ok: true, index };
 }
 
 export type StatusResult =

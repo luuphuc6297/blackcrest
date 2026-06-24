@@ -16,8 +16,35 @@ function intl(locale: string): string {
   return INTL_LOCALE[locale] ?? INTL_LOCALE.vi;
 }
 
+// Intl.NumberFormat/DateTimeFormat construction is expensive (loads ICU data) and
+// these run per-row in re-rendering client tables (reports/accounts/audit) — sorting
+// or filtering an N-row table otherwise builds N fresh formatters every render.
+// Cache by (locale, options); the key space is tiny (3 locales × a few option sets),
+// so the Maps are effectively bounded.
+const nfCache = new Map<string, Intl.NumberFormat>();
+function nf(locale: string, opts?: Intl.NumberFormatOptions): Intl.NumberFormat {
+  const key = intl(locale) + "|" + (opts ? JSON.stringify(opts) : "");
+  let f = nfCache.get(key);
+  if (!f) {
+    f = new Intl.NumberFormat(intl(locale), opts);
+    nfCache.set(key, f);
+  }
+  return f;
+}
+
+const dtfCache = new Map<string, Intl.DateTimeFormat>();
+function dtf(locale: string, opts: Intl.DateTimeFormatOptions): Intl.DateTimeFormat {
+  const key = intl(locale) + "|" + JSON.stringify(opts);
+  let f = dtfCache.get(key);
+  if (!f) {
+    f = new Intl.DateTimeFormat(intl(locale), opts);
+    dtfCache.set(key, f);
+  }
+  return f;
+}
+
 export function formatVND(amount: number, locale = "vi"): string {
-  return "₫ " + new Intl.NumberFormat(intl(locale)).format(Math.round(amount));
+  return "₫ " + nf(locale).format(Math.round(amount));
 }
 
 /** Compact VND for dense KPI cards. ₫ stays; scale word follows the locale. */
@@ -39,7 +66,7 @@ export function formatVNDCompact(amount: number, locale = "vi"): string {
 }
 
 export function formatPercent(value: number, locale = "vi", digits = 2): string {
-  const s = new Intl.NumberFormat(intl(locale), {
+  const s = nf(locale, {
     minimumFractionDigits: digits,
     maximumFractionDigits: digits,
     signDisplay: "always",
@@ -48,7 +75,7 @@ export function formatPercent(value: number, locale = "vi", digits = 2): string 
 }
 
 export function formatNumber(value: number, locale = "vi", digits = 2): string {
-  return new Intl.NumberFormat(intl(locale), {
+  return nf(locale, {
     minimumFractionDigits: digits,
     maximumFractionDigits: digits,
   }).format(value);
@@ -56,7 +83,7 @@ export function formatNumber(value: number, locale = "vi", digits = 2): string {
 
 export function formatDate(date: Date | string | null, locale = "vi"): string {
   if (!date) return "—";
-  return new Intl.DateTimeFormat(intl(locale), {
+  return dtf(locale, {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
@@ -66,7 +93,7 @@ export function formatDate(date: Date | string | null, locale = "vi"): string {
 
 export function formatDateTime(date: Date | string | null, locale = "vi"): string {
   if (!date) return "—";
-  return new Intl.DateTimeFormat(intl(locale), {
+  return dtf(locale, {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",

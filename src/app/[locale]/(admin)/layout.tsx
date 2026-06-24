@@ -1,4 +1,4 @@
-import { auth } from "@/auth";
+import { getSession } from "@/auth";
 import { redirect } from "@/i18n/navigation";
 import { isStaff } from "@/lib/rbac";
 
@@ -17,7 +17,7 @@ export default async function AdminLayout({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const session = await auth();
+  const session = await getSession();
   const user = session?.user;
   if (!user) {
     redirect({ href: "/login", locale });

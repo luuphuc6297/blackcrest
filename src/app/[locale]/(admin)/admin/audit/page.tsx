@@ -1,6 +1,6 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { AuditAction } from "@prisma/client";
-import { auth } from "@/auth";
+import { getSession } from "@/auth";
 import { AppShell } from "@/components/app-shell";
 import { Avatar, DataTable, EmptyState } from "@/components/ui";
 import { adminNav } from "@/lib/nav";
@@ -59,7 +59,7 @@ export default async function AdminAuditPage({
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const session = await auth();
+  const session = await getSession();
   const user = session!.user;
 
   const [tNav, tRoles, tAdmin] = await Promise.all([

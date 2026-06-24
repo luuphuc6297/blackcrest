@@ -70,7 +70,7 @@ export function DataTable<T>({
             ))}
           </tr>
         </thead>
-        <tbody>
+        <tbody className="bc-rise-rows">
           {rows.length === 0 ? (
             <tr>
               <td colSpan={columns.length} className="p-0">
@@ -78,10 +78,9 @@ export function DataTable<T>({
               </td>
             </tr>
           ) : (
-            rows.map((row, i) => (
+            rows.map((row) => (
               <tr
                 key={getRowKey(row)}
-                style={{ animationDelay: `${Math.min(i, 10) * 35}ms` }}
                 className="bc-rise border-b border-line transition-colors duration-[180ms] even:bg-surface-2/40 hover:bg-surface-hover"
               >
                 {columns.map((c, i) => (
