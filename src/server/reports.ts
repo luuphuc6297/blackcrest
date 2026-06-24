@@ -63,10 +63,13 @@ export async function getReportBySlug(
 export async function listAdminReports(locale: string) {
   const rows = await prisma.report.findMany({
     orderBy: [{ updatedAt: "desc" }],
-    take: 500,
-    // SELECT (not include) — never drag the heavy `contentText` body (~8KB/row,
-    // ~22KB/full row) into a 500-row admin list. Same trap REPORT_CARD_SELECT
-    // avoids on the client paths (commit bc8550f); this was the admin leftover.
+    // Show the WHOLE catalogue — `take: 500` hid ~5.2k of the 5.7k reports from
+    // admin. Cheap now: served by Report_updatedAt_idx, and SELECT (not include)
+    // keeps each row light (never the heavy `contentText` body — the bc8550f
+    // trap). The table paginates/searches in memory (search is deferred so it
+    // stays smooth at full size). If the catalogue ever outgrows ~10k rows, move
+    // to server-side pagination (the public-library pattern).
+    take: 10000,
     select: {
       id: true,
       slug: true,

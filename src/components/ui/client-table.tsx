@@ -44,15 +44,18 @@ export function ClientTable<T>({
   const [q, setQ] = React.useState("");
   const [active, setActive] = React.useState<string | null>(null);
   const [page, setPage] = React.useState(1);
+  // Defer the filter pass off the keystroke so typing stays responsive even when
+  // the table holds the full catalogue (admin loads every report).
+  const deferredQ = React.useDeferredValue(q);
 
   React.useEffect(() => setPage(1), [q, active]);
 
   // Rows matching the search term only (drives tab counts).
   const searched = React.useMemo(() => {
-    const term = q.trim().toLowerCase();
+    const term = deferredQ.trim().toLowerCase();
     if (!term) return rows;
     return rows.filter((r) => searchText(r).toLowerCase().includes(term));
-  }, [rows, q, searchText]);
+  }, [rows, deferredQ, searchText]);
 
   // Then apply the active filter tab.
   const filtered = React.useMemo(() => {

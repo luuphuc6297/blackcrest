@@ -104,7 +104,7 @@ export function AppShell({
   }, [open]);
 
   return (
-    <div className="h-[100dvh] bg-surface font-sans text-ink md:grid md:grid-cols-[240px_1fr]">
+    <div className="h-[100dvh] bg-surface font-sans text-ink sm:grid sm:grid-cols-[240px_1fr]">
       {/* Skip-link — first focusable element; lets keyboard users jump past the
           240px sidebar straight to the page content. */}
       <a
@@ -119,7 +119,7 @@ export function AppShell({
           type="button"
           aria-label={tc("closeMenu")}
           onClick={close}
-          className="fixed inset-0 z-40 bg-overlay backdrop-blur-[1px] md:hidden"
+          className="fixed inset-0 z-40 bg-overlay backdrop-blur-[1px] sm:hidden"
         />
       )}
 
@@ -127,8 +127,8 @@ export function AppShell({
       <aside
         aria-label={tc("primaryNav")}
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex w-[240px] flex-col border-r border-line-2 bg-surface-1 px-[12px] py-[14px] transition-transform duration-[260ms] ease-signature md:static md:z-auto md:translate-x-0",
-          open ? "translate-x-0 shadow-float md:shadow-none" : "-translate-x-full",
+          "fixed inset-y-0 left-0 z-50 flex w-[240px] flex-col border-r border-line-2 bg-surface-1 px-[12px] py-[14px] transition-transform duration-[260ms] ease-signature sm:static sm:z-auto sm:translate-x-0",
+          open ? "translate-x-0 shadow-float sm:shadow-none" : "-translate-x-full",
         )}
       >
         <div className="flex items-center justify-between px-[6px] pb-[14px] pt-[4px]">
@@ -139,7 +139,7 @@ export function AppShell({
             type="button"
             aria-label={tc("closeMenu")}
             onClick={close}
-            className="flex size-[28px] items-center justify-center rounded-control text-ink-3 hover:bg-surface-hover md:hidden"
+            className="flex size-[28px] items-center justify-center rounded-control text-ink-3 hover:bg-surface-hover sm:hidden"
           >
             <Icon name="x" size={16} />
           </button>
@@ -208,12 +208,12 @@ export function AppShell({
 
       {/* Main */}
       <main id="main" tabIndex={-1} className="flex min-w-0 flex-col overflow-hidden outline-none">
-        <header className="flex h-12 flex-none items-center gap-2 border-b border-line px-4 md:gap-3 md:px-7">
+        <header className="flex h-12 flex-none items-center gap-2 border-b border-line px-4 sm:gap-3 sm:px-7">
           <button
             type="button"
             aria-label={tc("openMenu")}
             onClick={() => setOpen(true)}
-            className="flex size-[28px] flex-none items-center justify-center rounded-control border border-line text-ink-3 hover:bg-surface-hover md:hidden"
+            className="flex size-[28px] flex-none items-center justify-center rounded-control border border-line text-ink-3 hover:bg-surface-hover sm:hidden"
           >
             <Icon name="menu" size={16} />
           </button>
@@ -225,7 +225,7 @@ export function AppShell({
           >
             <Icon name="arrow-left" size={16} />
           </button>
-          <h1 className="truncate text-[17px] font-semibold tracking-tight md:text-[19px]">
+          <h1 className="truncate text-[17px] font-semibold tracking-tight sm:text-[19px]">
             {title}
           </h1>
           <div className="ml-auto flex items-center gap-[10px]">{actions}</div>
