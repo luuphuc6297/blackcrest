@@ -58,9 +58,9 @@ export function LibraryGridSkeleton({ cards = 9 }: { cards?: number }) {
  */
 export function AppShellSkeleton({ children }: { children?: ReactNode }) {
   return (
-    <div className="flex min-h-screen flex-col bg-surface md:grid md:grid-cols-[240px_1fr]">
-      {/* Sidebar — desktop only (mobile shows the drawer/hamburger in AppShell) */}
-      <aside className="hidden flex-col gap-2 border-r border-line bg-surface-1 px-3 py-[14px] md:flex">
+    <div className="flex min-h-screen flex-col bg-surface sm:grid sm:grid-cols-[240px_1fr]">
+      {/* Sidebar — shown from sm+ (mirrors AppShell); below that the drawer/hamburger */}
+      <aside className="hidden flex-col gap-2 border-r border-line bg-surface-1 px-3 py-[14px] sm:flex">
         <div className="mb-3 flex items-center gap-[9px] px-1.5 py-1">
           <Skeleton className="h-7 w-7 rounded-card" />
           <Skeleton className="h-4 w-24" />
@@ -77,8 +77,8 @@ export function AppShellSkeleton({ children }: { children?: ReactNode }) {
       {/* Main */}
       <main className="flex min-w-0 flex-col overflow-hidden">
         <header className="flex h-12 flex-none items-center gap-2 border-b border-line px-4 md:gap-3 md:px-7">
-          {/* Hamburger placeholder — mobile only */}
-          <Skeleton className="size-[28px] rounded-control md:hidden" />
+          {/* Hamburger placeholder — below sm only */}
+          <Skeleton className="size-[28px] rounded-control sm:hidden" />
           <Skeleton className="h-5 w-32 sm:w-40" />
           <Skeleton className="ml-auto h-[28px] w-16" />
         </header>
