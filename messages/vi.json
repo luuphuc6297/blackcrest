@@ -246,7 +246,12 @@
     "sortDateAsc": "Cũ nhất",
     "sortAZ": "A → Z",
     "sortZA": "Z → A",
-    "searchForQuery": "Tìm “{q}” trong toàn bộ tài liệu"
+    "searchForQuery": "Tìm “{q}” trong toàn bộ tài liệu",
+    "searchRichPlaceholder": "Tìm theo mã CK, tên báo cáo, loại báo cáo…",
+    "groupSymbols": "Mã chứng khoán",
+    "groupReports": "Báo cáo",
+    "groupTypes": "Loại báo cáo",
+    "quickFilters": "Lọc nhanh"
   },
   "Viewer": {
     "backToLibrary": "Quay lại thư viện",

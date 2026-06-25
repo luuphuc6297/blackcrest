@@ -246,7 +246,12 @@
     "sortDateAsc": "Oldest",
     "sortAZ": "A → Z",
     "sortZA": "Z → A",
-    "searchForQuery": "Search “{q}” across all reports"
+    "searchForQuery": "Search “{q}” across all reports",
+    "searchRichPlaceholder": "Search by symbol, report title, type…",
+    "groupSymbols": "Stock symbols",
+    "groupReports": "Reports",
+    "groupTypes": "Report types",
+    "quickFilters": "Quick filters"
   },
   "Viewer": {
     "backToLibrary": "Back to library",
