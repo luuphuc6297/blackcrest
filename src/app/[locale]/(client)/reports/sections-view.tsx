@@ -4,7 +4,8 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { Icon } from "@/components/icon";
 import { ReportCarousel } from "@/components/report-carousel";
-import { LibrarySearchBox, type SymbolOption } from "@/components/library-search-box";
+import { LibraryBookingSearch, type SymbolOption } from "@/components/library-booking-search";
+import { LandingQuickFilters } from "@/components/landing-quick-filters";
 import type { SearchedReport } from "@/lib/authz";
 
 export type ViewSection = {
@@ -23,10 +24,14 @@ export type ViewSection = {
 export function SectionsView({
   sections,
   symbols,
+  reportTypes,
+  recommendations,
   locale,
 }: {
   sections: ViewSection[];
   symbols: SymbolOption[];
+  reportTypes: string[];
+  recommendations: string[];
   locale: string;
 }) {
   const t = useTranslations("Library");
@@ -46,7 +51,8 @@ export function SectionsView({
         </Link>
       </div>
 
-      <LibrarySearchBox symbols={symbols} locale={locale} />
+      <LibraryBookingSearch symbols={symbols} locale={locale} />
+      <LandingQuickFilters reportTypes={reportTypes} recommendations={recommendations} locale={locale} />
 
       {sections.map((s) => (
         <section key={s.key} className="mt-9">

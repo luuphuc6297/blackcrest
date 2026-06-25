@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import type { Recommendation } from "@prisma/client";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getSession } from "@/auth";
 import { searchReports, listReportSections, type ReportSort } from "@/lib/authz";
@@ -69,7 +70,22 @@ export default async function ReportsPage({
       reports: s.reports,
     }));
     const symbols = allSymbols.map((s) => ({ ticker: s.ticker, nameVi: s.nameVi }));
-    return shell(<SectionsView sections={view} symbols={symbols} locale={locale} />);
+    // Quick-filter chips: report types present in the recent pool (data-driven,
+    // no extra query) + the actionable recommendation ratings.
+    const reportTypes: string[] = [];
+    for (const s of sections) if (s.reportType) reportTypes.push(s.reportType);
+    // Typed against the Prisma enum so a renamed/removed value fails the build
+    // instead of silently rendering a dead ?rec= chip.
+    const recommendations: Recommendation[] = ["BUY", "ADD", "HOLD"];
+    return shell(
+      <SectionsView
+        sections={view}
+        symbols={symbols}
+        reportTypes={reportTypes}
+        recommendations={recommendations}
+        locale={locale}
+      />,
+    );
   }
 
   // "Load more" grows ?take (accumulate from the top). Clamp to a sane ceiling.

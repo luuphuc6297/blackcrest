@@ -246,7 +246,12 @@
     "sortDateAsc": "最早",
     "sortAZ": "A → Z",
     "sortZA": "Z → A",
-    "searchForQuery": "在全部文档中搜索“{q}”"
+    "searchForQuery": "在全部文档中搜索“{q}”",
+    "searchRichPlaceholder": "按代码、报告名称、类型搜索…",
+    "groupSymbols": "股票代码",
+    "groupReports": "报告",
+    "groupTypes": "报告类型",
+    "quickFilters": "快速筛选"
   },
   "Viewer": {
     "backToLibrary": "返回文档库",
