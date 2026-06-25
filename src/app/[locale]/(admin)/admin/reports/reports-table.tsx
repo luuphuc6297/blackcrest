@@ -55,6 +55,10 @@ export function ReportsTable({
     () => [
     {
       header: tNav("documents"),
+      // Greedy column that shrink-wraps (w-full + max-w-0) so long titles
+      // ellipsize instead of stretching the table (table-auto would otherwise
+      // size this column to the longest title).
+      cellClassName: "w-full max-w-0",
       cell: (r) => (
         <Link
           href={`/reports/${r.slug}`}
@@ -67,7 +71,7 @@ export function ReportsTable({
             <span className="block truncate text-[14px] font-medium text-ink">
               {r.title}
             </span>
-            <span data-numeric className="font-mono text-micro text-ink-4">
+            <span data-numeric className="block truncate font-mono text-micro text-ink-4">
               {r.slug}
             </span>
           </span>
