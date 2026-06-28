@@ -6,6 +6,9 @@
  * there is no flash. Each default value needs NO attribute, so the baseline is
  * the plain :root.
  */
+import { type Skin, SKIN_IDS, DEFAULT_SKIN } from "./skins";
+
+export type { Skin } from "./skins";
 export type Theme = "light" | "dark" | "system";
 export type Depth = "flat" | "soft" | "elevated";
 export type Density = "comfortable" | "compact";
@@ -21,6 +24,7 @@ export type FontChoice =
   | "mono";
 
 export interface Appearance {
+  skin: Skin;
   theme: Theme;
   depth: Depth;
   density: Density;
@@ -31,6 +35,7 @@ export interface Appearance {
 }
 
 export const DEFAULT_APPEARANCE: Appearance = {
+  skin: DEFAULT_SKIN,
   theme: "light",
   depth: "soft",
   density: "comfortable",
@@ -44,6 +49,7 @@ const COOKIE = "bc-appearance";
 const ONE_YEAR = 60 * 60 * 24 * 365;
 
 const OPTIONS = {
+  skin: SKIN_IDS,
   theme: ["light", "dark", "system"],
   depth: ["flat", "soft", "elevated"],
   density: ["comfortable", "compact"],
@@ -66,6 +72,7 @@ function pick<K extends keyof Appearance>(
 function coerce(raw: unknown): Appearance {
   const p = (raw ?? {}) as Partial<Appearance>;
   return {
+    skin: pick("skin", p),
     theme: pick("theme", p),
     depth: pick("depth", p),
     density: pick("density", p),
@@ -94,6 +101,9 @@ export function applyAppearance(a: Appearance): void {
   const d = document.documentElement;
   const set = (attr: string, value: string, isDefault: boolean) =>
     isDefault ? d.removeAttribute(attr) : d.setAttribute(attr, value);
+
+  // Skin = the brand layer; the axes below compose on top. Default emits nothing.
+  set("data-skin", a.skin, a.skin === DEFAULT_SKIN);
 
   // Theme: resolve "system" against the OS preference to a concrete light/dark.
   const sysDark =

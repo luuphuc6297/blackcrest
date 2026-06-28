@@ -530,6 +530,10 @@
   },
   "Appearance": {
     "title": "Giao diện",
+    "skin": "Bộ giao diện",
+    "skinHint": "Đổi toàn bộ phong cách thiết kế (màu, phông chữ, bo góc) chỉ với một lựa chọn.",
+    "skinBlackcrest": "Blackcrest",
+    "skinAtelier": "Atelier",
     "depth": "Chiều sâu bề mặt",
     "depthHint": "Độ nổi của thẻ và bóng đổ trên nền.",
     "depthFlat": "Phẳng",

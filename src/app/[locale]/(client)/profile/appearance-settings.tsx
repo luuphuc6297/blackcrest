@@ -4,6 +4,7 @@ import * as React from "react";
 import { useTranslations } from "next-intl";
 import { Card, Select } from "@/components/ui";
 import { Icon } from "@/components/icon";
+import { SKINS, type Skin } from "@/lib/skins";
 import {
   readAppearance,
   writeAppearance,
@@ -63,6 +64,58 @@ function Segmented<T extends string>({
   );
 }
 
+/** Full design-system ("skin") picker — swatch chips driven by the SKINS registry,
+ * so adding a skin needs no change here. Each chip shows the skin's canvas/card/
+ * accent so the visual identity reads before selecting. */
+function SkinPicker({
+  label,
+  hint,
+  value,
+  onChange,
+  labelOf,
+}: {
+  label: string;
+  hint: string;
+  value: Skin;
+  onChange: (v: Skin) => void;
+  labelOf: (key: string) => string;
+}) {
+  return (
+    <div className="flex flex-col gap-[10px] sm:flex-row sm:items-start sm:justify-between">
+      <div className="min-w-0">
+        <div className="text-small font-medium text-ink">{label}</div>
+        <div className="mt-[2px] text-mini leading-normal text-ink-3">{hint}</div>
+      </div>
+      <div className="flex flex-none flex-wrap gap-[8px] sm:max-w-[320px] sm:justify-end">
+        {SKINS.map((s) => {
+          const active = value === s.id;
+          return (
+            <button
+              key={s.id}
+              type="button"
+              aria-pressed={active}
+              onClick={() => onChange(s.id)}
+              className={
+                "inline-flex items-center gap-[8px] rounded-control border px-[11px] py-[7px] text-mini font-medium transition-colors " +
+                (active
+                  ? "border-accent bg-surface-card text-ink shadow-soft-lit"
+                  : "border-line-2 bg-surface-input text-ink-3 hover:text-ink")
+              }
+            >
+              <span className="flex flex-none" aria-hidden>
+                <span className="size-[13px] rounded-full border border-line" style={{ background: s.swatch.canvas }} />
+                <span className="-ml-[5px] size-[13px] rounded-full border border-line" style={{ background: s.swatch.card }} />
+                <span className="-ml-[5px] size-[13px] rounded-full border border-line" style={{ background: s.swatch.accent }} />
+              </span>
+              {labelOf(s.labelKey)}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 /**
  * Appearance settings — lets the user retune the depth/elevation system, table
  * density, and PDF reading background. Writes the bc-appearance cookie and
@@ -95,6 +148,14 @@ export function AppearanceSettings() {
         <h2 className="text-medium font-semibold tracking-tight">{t("title")}</h2>
       </div>
       <div className="flex flex-col gap-[20px] p-[20px]">
+        <SkinPicker
+          label={t("skin")}
+          hint={t("skinHint")}
+          value={a.skin}
+          onChange={(v) => update({ skin: v })}
+          labelOf={(k) => t(k)}
+        />
+        <div className="h-px bg-line" />
         <Segmented<Theme>
           label={t("theme")}
           hint={t("themeHint")}
