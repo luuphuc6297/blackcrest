@@ -530,6 +530,10 @@
   },
   "Appearance": {
     "title": "Appearance",
+    "skin": "Theme preset",
+    "skinHint": "Switch the entire design language (palette, typography, corners) in one choice.",
+    "skinBlackcrest": "Blackcrest",
+    "skinAtelier": "Atelier",
     "depth": "Surface depth",
     "depthHint": "How much cards lift and cast shadow over the canvas.",
     "depthFlat": "Flat",

@@ -10,6 +10,11 @@
 @import "tailwindcss";
 
 @import "../styles/tokens/colors.css";
+/* Theme presets ("skins") — full design-system swaps via [data-skin]. Imported
+ * AFTER colors.css (so a skin out-ranks the base palette) but BEFORE the axis
+ * scopes below (typography/elevation/radius), so an explicit user setting still
+ * wins over the skin's default. Add a new skin = +1 file here + entry in lib/skins.ts. */
+@import "../styles/tokens/skins/atelier.css";
 @import "../styles/tokens/typography.css";
 @import "../styles/tokens/spacing.css";
 @import "../styles/tokens/elevation.css";

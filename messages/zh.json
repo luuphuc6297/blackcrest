@@ -530,6 +530,10 @@
   },
   "Appearance": {
     "title": "外观",
+    "skin": "设计主题",
+    "skinHint": "一键切换整套设计语言（配色、字体、圆角）。",
+    "skinBlackcrest": "Blackcrest",
+    "skinAtelier": "Atelier",
     "depth": "表面层次",
     "depthHint": "卡片在画布上的浮起与投影程度。",
     "depthFlat": "扁平",

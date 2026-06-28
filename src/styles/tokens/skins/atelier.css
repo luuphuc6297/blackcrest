@@ -1,0 +1,111 @@
+/* Atelier skin — calm soft-modern fintech: cool off-white, indigo accent,
+ * generous rounding, humanist (Plus Jakarta Sans) typography, soft cool shadows.
+ *
+ * Composes with the 7 Appearance axes (theme/depth/density/radius/text/font):
+ * this file is imported BEFORE those axis scopes (after colors.css in
+ * globals.css), so an EXPLICIT user setting (data-radius / data-font / data-depth
+ * …) still wins over the skin's default. Three scopes:
+ *   1. theme-independent (corners + typography — apply in light AND dark),
+ *   2. light colors + cool elevation  (:not([data-theme="dark"])),
+ *   3. dark  colors + elevation       ([data-theme="dark"]).
+ * Dark colors MUST be in the two-attribute selector so they out-rank the base
+ * [data-theme="dark"] scope and dark mode keeps working inside the skin.
+ */
+
+/* ── 1. Theme-independent: corners + typography ───────────────────────────── */
+html[data-skin="atelier"] {
+  --radius-control: 9px;
+  --radius-badge: 7px;
+  --radius-card: 14px;
+  --radius-card-lg: 18px;
+  --radius-page: 4px;
+  /* Fully sans, humanist — no serif headings (a deliberate typographic shift). */
+  --font-regular: var(--font-jakarta), "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-serif-display: var(--font-jakarta), "Plus Jakarta Sans", system-ui, sans-serif;
+}
+
+/* ── 2. Light — cool mist canvas, indigo accent, soft cool shadows ────────── */
+html[data-skin="atelier"]:not([data-theme="dark"]) {
+  --color-accent: #3b5bdb;
+  --color-accent-hover: #2f4bc0;
+  --color-accent-active: #2742a8;
+  --color-accent-vivid: #3b5bdb;
+  --color-accent-tint: #eef1fb;
+  --color-brand-bg: #1b2230;
+  --color-bg-inverse: #1b2230;
+  --color-link: #3b5bdb;
+  --color-link-hover: #2742a8;
+  --color-focus-ring: rgba(59, 91, 219, 0.18);
+  --color-selection-bg: rgba(59, 91, 219, 0.14);
+
+  --color-bg-primary: #eef1f5;
+  --color-bg-card: #ffffff;
+  --color-bg-canvas-reading: #e7ebf1;
+  --color-bg-marketing: #f6f8fb;
+  --color-bg-level-1: #f5f7fa;
+  --color-bg-level-2: #eef1f5;
+  --color-bg-level-3: #e7ebf1;
+  --color-bg-secondary: #f1f4f8;
+  --color-bg-tertiary: #e9edf3;
+  --color-bg-quaternary: #dfe5ee;
+  --color-bg-translucent: rgba(27, 34, 48, 0.04);
+  --color-bg-overlay: rgba(13, 19, 32, 0.34);
+
+  --color-text-primary: #1b2230;
+  --color-text-secondary: #3c4656;
+  --color-text-tertiary: #586478;
+  --color-text-quaternary: #6b7688;
+  --color-text-on-accent: #ffffff;
+
+  --color-border-primary: #e3e8ef;
+  --color-border-secondary: #d4dbe5;
+  --color-border-tertiary: #c2cbd9;
+  --color-border-translucent: rgba(27, 34, 48, 0.07);
+
+  --shadow-low: 0 1px 2px rgba(27, 40, 70, 0.05), 0 6px 18px -4px rgba(27, 40, 70, 0.10);
+  --shadow-medium: 0 2px 6px -1px rgba(27, 40, 70, 0.07), 0 16px 34px -8px rgba(27, 40, 70, 0.13);
+  --shadow-high: 0 8px 20px -6px rgba(27, 40, 70, 0.12), 0 30px 60px -12px rgba(27, 40, 70, 0.20);
+}
+
+/* ── 3. Dark — navy-charcoal canvas, brighter indigo ─────────────────────── */
+html[data-skin="atelier"][data-theme="dark"] {
+  --color-accent: #6d86f5;
+  --color-accent-hover: #5a76ef;
+  --color-accent-active: #4f6ce6;
+  --color-accent-vivid: #6d86f5;
+  --color-accent-tint: rgba(109, 134, 245, 0.14);
+  --color-brand-bg: #6d86f5;
+  --color-bg-inverse: #6d86f5;
+  --color-link: #6d86f5;
+  --color-link-hover: #93a6f8;
+  --color-focus-ring: rgba(109, 134, 245, 0.28);
+  --color-selection-bg: rgba(109, 134, 245, 0.20);
+
+  --color-bg-primary: #0d1320;
+  --color-bg-card: #151c2b;
+  --color-bg-canvas-reading: #0a0f1a;
+  --color-bg-marketing: #0a0f1a;
+  --color-bg-level-1: #121a28;
+  --color-bg-level-2: #151c2b;
+  --color-bg-level-3: #1b2435;
+  --color-bg-secondary: #1a2233;
+  --color-bg-tertiary: #202a3d;
+  --color-bg-quaternary: #283349;
+  --color-bg-translucent: rgba(255, 255, 255, 0.05);
+  --color-bg-overlay: rgba(0, 0, 0, 0.55);
+
+  --color-text-primary: #eef2f8;
+  --color-text-secondary: #c0c8d6;
+  --color-text-tertiary: #8b97a9;
+  --color-text-quaternary: #6b7688;
+  --color-text-on-accent: #0d1320;
+
+  --color-border-primary: #283242;
+  --color-border-secondary: #344054;
+  --color-border-tertiary: #3f4d63;
+  --color-border-translucent: rgba(255, 255, 255, 0.06);
+
+  --shadow-low: 0 1px 2px rgba(0, 0, 0, 0.40), 0 6px 18px -4px rgba(0, 0, 0, 0.50);
+  --shadow-medium: 0 2px 6px -1px rgba(0, 0, 0, 0.45), 0 16px 34px -8px rgba(0, 0, 0, 0.55);
+  --shadow-high: 0 8px 20px -6px rgba(0, 0, 0, 0.50), 0 30px 60px -12px rgba(0, 0, 0, 0.62);
+}
